@@ -8,7 +8,7 @@
  *
  */
 
-#include "pasl.hpp"
+#include "example.hpp"
 #include "io.hpp"
 #include "dpsdatapar.hpp"
 #include "pstring.hpp"
@@ -90,7 +90,7 @@ namespace pasl {
 /*---------------------------------------------------------------------*/
 
 int main(int argc, char** argv) {
-  pasl::sched::launch(argc, argv, [&] (bool sequential) {
+  pbbs::launch(argc, argv, [&] {
     pasl::pctl::ex();
   });
   return 0;

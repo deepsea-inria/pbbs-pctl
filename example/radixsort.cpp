@@ -18,8 +18,6 @@
 namespace pasl {
   namespace pctl {
     
-    
-    
     void ex() {
       
       parray<unsigned int> xs = { 3028713, 3798448, 4071828, 3028713 };
