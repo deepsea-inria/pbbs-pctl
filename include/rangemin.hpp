@@ -67,7 +67,7 @@ void myRMQ::precomputeQueries(){
   
   parallel_for((intT)0, m, [&] (intT i) {
     intT start = i*BSIZE;
-    intT end = min(start+BSIZE,n);
+    intT end = std::min(start+BSIZE,n);
     intT k = i*BSIZE;
     for (intT j = start+1; j < end; j++)
       if (a[j] < a[k]) k = j;

@@ -1,7 +1,5 @@
 
 
-#include "cmdline.hpp"
-
 #ifndef _PBBS_PCTL_EXAMPLE_H_
 #define _PBBS_PCTL_EXAMPLE_H_
 
@@ -18,7 +16,6 @@ namespace pbbs {
   
 template <class Body>
 void launch(int argc, char** argv, const Body& body) {
-  pasl::util::cmdline::set(argc, argv);
 #if defined(USE_PASL_RUNTIME)
   threaddag::init();
 #endif

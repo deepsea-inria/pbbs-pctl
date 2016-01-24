@@ -476,9 +476,9 @@ parray<intT> rayCast(triangles<pointT> Tri, ray<pointT>* rays, intT numRays) {
     pointT p0 = P[Tri.T[i].C[0]];
     pointT p1 = P[Tri.T[i].C[1]];
     pointT p2 = P[Tri.T[i].C[2]];
-    boxes[0][i] = fixRange(min(p0.x,min(p1.x,p2.x)),max(p0.x,max(p1.x,p2.x)));
-    boxes[1][i] = fixRange(min(p0.y,min(p1.y,p2.y)),max(p0.y,max(p1.y,p2.y)));
-    boxes[2][i] = fixRange(min(p0.z,min(p1.z,p2.z)),max(p0.z,max(p1.z,p2.z)));
+    boxes[0][i] = fixRange(std::min(p0.x,std::min(p1.x,p2.x)),std::max(p0.x,std::max(p1.x,p2.x)));
+    boxes[1][i] = fixRange(std::min(p0.y,std::min(p1.y,p2.y)),std::max(p0.y,std::max(p1.y,p2.y)));
+    boxes[2][i] = fixRange(std::min(p0.z,std::min(p1.z,p2.z)),std::max(p0.z,std::max(p1.z,p2.z)));
   });
   
   // Loop over the dimensions creating an array of events for each
@@ -497,7 +497,7 @@ parray<intT> rayCast(triangles<pointT> Tri, ray<pointT>* rays, intT numRays) {
   }
   
   // build the tree
-  intT recursionDepth = min(maxRecursionDepth, utils::log2Up(n)-1);
+  intT recursionDepth = std::min(maxRecursionDepth, utils::log2Up(n)-1);
   treeNode* R = generateNode(boxes, events, boundingBox, n*2,
                              recursionDepth);
   

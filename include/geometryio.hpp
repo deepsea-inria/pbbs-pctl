@@ -24,12 +24,13 @@ template <class intT>
 parray<point2d> load_points2d() {
   parray<point2d> points;
   intT n = (intT)pasl::util::cmdline::parse_or_default_long("n", 10);
-  pasl::util::cmdline::argmap_dispatch d;
+  pasl::util::cmdline::dispatcher d;
   d.add("from_file", [&] {
-    pasl::util::atomic::die("todo");
+    std::cout << "todo" << std::endl;
+    exit(0);
   });
   d.add("by_generator", [&] {
-    pasl::util::cmdline::argmap_dispatch d;
+    pasl::util::cmdline::dispatcher d;
     d.add("plummer", [&] {
       points = plummer2d(n);
     });
@@ -38,9 +39,9 @@ parray<point2d> load_points2d() {
       bool onSphere = pasl::util::cmdline::parse_or_default_bool("on_sphere", false);
       points = uniform2d(inSphere, onSphere, n);
     });
-    d.find_by_arg_or_default_key("generator", "plummer")();
+    d.dispatch_or_default("generator", "plummer");
   });
-  d.find_by_arg_or_default_key("load", "by_generator")();
+  d.dispatch_or_default("load", "by_generator");
   return points;
 }
 
@@ -48,12 +49,13 @@ template <class intT, class uintT>
 parray<point3d> load_points3d() {
   parray<point3d> points;
   intT n = (intT)pasl::util::cmdline::parse_or_default_long("n", 10);
-  pasl::util::cmdline::argmap_dispatch d;
+  pasl::util::cmdline::dispatcher d;
   d.add("from_file", [&] {
-    pasl::util::atomic::die("todo");
+    std::cout << "todo" << std::endl;
+    exit(0);
   });
   d.add("by_generator", [&] {
-    pasl::util::cmdline::argmap_dispatch d;
+    pasl::util::cmdline::dispatcher d;
     d.add("plummer", [&] {
       points = plummer3d<intT,uintT>(n);
     });
@@ -62,9 +64,9 @@ parray<point3d> load_points3d() {
       bool onSphere = pasl::util::cmdline::parse_or_default_bool("on_sphere", false);
       points = uniform3d<intT,uintT>(inSphere, onSphere, n);
     });
-    d.find_by_arg_or_default_key("generator", "plummer")();
+    d.dispatch_or_default("generator", "plummer");
   });
-  d.find_by_arg_or_default_key("load", "by_generator")();
+  d.dispatch_or_default("load", "by_generator");
   return points;
 }
   

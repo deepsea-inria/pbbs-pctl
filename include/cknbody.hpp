@@ -91,7 +91,7 @@ using namespace std;
 //#define BOXSIZE 250
 
 double check(particle** p, intT n) {
-  int nCheck = min<intT>(n,200);
+  int nCheck = std::min<intT>(n,200);
   parray<double> Err(nCheck, [&] (int i) {
     intT idx = prandgen::hashi(i)%n;
     vect3d force(0.,0.,0.);
@@ -181,7 +181,7 @@ struct node {
   double radius() { return (top - bot).Length()/2.0;}
   double lmax() {
     vect3d d = top-bot;
-    return max(d.x,max(d.y,d.z));
+    return std::max(d.x,std::max(d.y,d.z));
   }
   node(node* L, node* R, intT _n, point3d _minPt, point3d _maxPt)
   : left(L), right(R), particles(NULL), n(_n), bot(_minPt), top(_maxPt) {}
@@ -277,7 +277,7 @@ bool far(node* a, node* b) {
     else sep[dim] = 0.0;
   }
   double sepDistance = sep.Length();
-  double rmax = max(a->radius(), b->radius());
+  double rmax = std::max(a->radius(), b->radius());
   double r = (a->center() - b->center()).Length();
   return r >= (ALPHA * rmax);
   //return sepDistance/rmax > 1.2;

@@ -20,11 +20,12 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "graph.hpp"
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
 #include <math.h>
+
+#include "graph.hpp"
 #include "dpsdatapar.hpp"
 #include "blockradixsort.hpp"
 #include "deterministichash.hpp"
