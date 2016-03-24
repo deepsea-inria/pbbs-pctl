@@ -8,6 +8,8 @@
 
 using namespace std;
 
+#define EPS 1e-20
+
 // *************************************************************
 //    POINTS AND VECTORS (3d),  2d is below
 // *************************************************************
@@ -201,17 +203,17 @@ typedef _point3d<GCTYPE> point3d;
 // *************************************************************
 
 // Returns twice the area of the oriented triangle (a, b, c)
-inline double triArea(point2d a, point2d b, point2d c) {
-  return (b-a).cross(c-a);
+inline double triangle_area(point2d a, point2d b, point2d c) {
+  return (b - a).cross(c - a);
 }
 
 inline double triAreaNormalized(point2d a, point2d b, point2d c) {
-  return triArea(a,b,c)/((b-a).Length()*(c-a).Length());
+  return triangle_area(a,b,c)/((b-a).Length()*(c-a).Length());
 }
 
 // Returns TRUE if the points a, b, c are in a counterclockise order
-inline int counterClockwise(point2d a, point2d b, point2d c) {
-  return (b-a).cross(c-a) > 0.0;
+inline int counter_clockwise(point2d a, point2d b, point2d c) {
+  return (b - a).cross(c - a) > 0.0;
 }
 
 template <class floatT>

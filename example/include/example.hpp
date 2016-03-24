@@ -2,6 +2,13 @@
 
 #ifndef _PBBS_PCTL_EXAMPLE_H_
 #define _PBBS_PCTL_EXAMPLE_H_
+#include "cmdline.hpp"
+#ifdef PCTL_CILK_PLUS
+#include <cilk/cilk.h>
+#include <cilk/cilk_api.h>
+#endif
+#include <iostream>
+#include <string>
 
 namespace pbbs {
   
@@ -16,6 +23,9 @@ namespace pbbs {
   
 template <class Body>
 void launch(int argc, char** argv, const Body& body) {
+  pasl::util::cmdline::set(argc, argv);
+  int proc = pasl::util::cmdline::parse_or_default_int("proc", 1);
+
 #if defined(USE_PASL_RUNTIME)
   threaddag::init();
 #endif
@@ -27,6 +37,10 @@ void launch(int argc, char** argv, const Body& body) {
 #elif defined(USE_PASL_RUNTIME)
   threaddag::launch(native::new_multishot_by_lambda([&] { body(); }));
 #else
+#ifdef PCTL_CILK_PLUS
+  __cilkrts_set_param("nworkers", std::to_string(proc).c_str());
+  std::cerr << "Number of workers: " << __cilkrts_get_nworkers() << std::endl;
+#endif
   body();
 #endif
 #if defined(USE_PASL_RUNTIME)

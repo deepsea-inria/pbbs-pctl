@@ -43,8 +43,14 @@ namespace pbbs {
   template <class Body>
   void launch(int argc, char** argv, const Body& body) {
     pasl::util::cmdline::set(argc, argv);
+    int proc = pasl::util::cmdline::parse_or_default_int("proc", 1);
+
 #if defined(USE_PASL_RUNTIME)
     threaddag::init();
+#endif
+#ifdef USE_CILK_RUNTIME
+  __cilkrts_set_param("nworkers", std::to_string(proc).c_str());
+  std::cerr << "Number of workers: " << __cilkrts_get_nworkers() << std::endl;
 #endif
     auto f = [&] (thunk_type measured) {
       auto start = std::chrono::system_clock::now();

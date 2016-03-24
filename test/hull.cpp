@@ -11,7 +11,6 @@
 #include "test.hpp"
 #include "prandgen.hpp"
 #include "hull.hpp"
-#include "seqhull.hpp"
 #include "geometryio.hpp"
 
 /***********************************************************************/
@@ -59,52 +58,54 @@ struct getX {
 struct lessX {bool operator() (point2d a, point2d b) {
   return (a.x < b.x) ? 1 : (a.x > b.x) ? 0 : (a.y < b.y);} };
 
-bool eq(point2d a, point2d b) {
+bool equals(point2d a, point2d b) {
   return (a.x == b.x) && (a.y == b.y);
 }
 
-
-template <class ET, class intT, class F, class G>
-intT maxIndexSerial(intT s, intT e, F f, G g) {
-  ET r = g(s);
-  intT k = 0;
-  for (intT j=s+1; j < e; j++) {
-    ET v = g(j);
-    if (f(v,r)) { r = v; k = j;}
+//    if (f(v,r)) { r = v; k = j;}
+bool check_hull(parray<point2d>& points,  parray<intT>& indices) {
+  point2d* p = points.begin();
+  intT n = points.size();
+  intT hull_size = indices.size();
+  point2d* convex_hull = newA(point2d, hull_size);
+  for (intT i = 0; i < hull_size; i++) {
+    convex_hull[i] = p[indices[i]];
   }
-  return k;
-}
-
-bool checkHull(parray<point2d>& PIn,  parray<intT>& I) {
-  point2d* P = PIn.begin();
-  intT n = PIn.size();
-  intT nOut = I.size();
-  point2d* PO = newA(point2d, nOut);
-  for (intT i=0; i < nOut; i++) PO[i] = P[I[i]];
-  intT idx = maxIndexSerial<double>((intT)0, nOut,  greater<double>(), getX(PO));
-  std::sort(P, P + n, lessX());
-  if (!eq(P[0], PO[0])) {
+  intT idx = 0;
+  for (int i = 0; i < hull_size; i++) {
+    if (convex_hull[i].x > convex_hull[idx].x ||
+      (convex_hull[i].x == convex_hull[idx].x && convex_hull[i].y > convex_hull[idx].y)) {
+      idx = i;
+    }
+  }
+  std::sort(p, p + n, lessX());
+  if (!equals(p[0], convex_hull[0])) {
     cout << "checkHull: bad leftmost point" << endl;
-    P[0].print();  PO[0].print(); cout << endl;
+    p[0].print();  convex_hull[0].print(); cout << endl;
     return 1;
   }
-  if (!eq(P[n-1], PO[idx])) {
+  if (!equals(p[n - 1], convex_hull[idx])) {
     cout << "checkHull: bad rightmost point" << endl;
     return 1;
   }
   intT k = 1;
   for (intT i = 0; i < idx; i++) {
-    if (i > 0 && counterClockwise(PO[i-1],PO[i],P[i+1])) {
-      cout << "checkHull: not convex" << endl;
+    if (i > 0 && counter_clockwise(convex_hull[i - 1], convex_hull[i], convex_hull[i + 1])) {
+      cout << "checkHull: not convex sides" << endl;
       return 1;
     }
-    if (PO[i].x > PO[i+1].x) {
-      cout << "checkHull: not sorted by x" << endl;
+    if (convex_hull[i].x > convex_hull[i + 1].x) {
+      cout << "checkHull: upper hull not sorted by x" << endl;
+      cout << indices << endl;
+      for (int i = 0; i < hull_size; i++) {
+        cout << convex_hull[i] << " ";
+      }
+      cout << std::endl;
       return 1;
     }
-    while (!eq(P[k], PO[i+1]) && k < n)
-      if (counterClockwise(PO[i],PO[i+1],P[k++])) {
-        cout << "checkHull: above hull" << endl;
+    while (k < n && !equals(p[k], convex_hull[i + 1]))
+      if (counter_clockwise(convex_hull[i], convex_hull[i + 1], p[k++])) {
+        cout << "checkHull: not convex" << endl;
         return 1;
       }
     if (k == n) {
@@ -113,7 +114,24 @@ bool checkHull(parray<point2d>& PIn,  parray<intT>& I) {
     }
     k++;
   }
-  free(PO);
+  k = n - 2;
+  for (intT i = idx; i < hull_size - 1; i++) {
+    if (i > idx && counter_clockwise(convex_hull[i - 1], convex_hull[i], convex_hull[i + 1])) {
+      cout << "checkHull: not convex sides" << endl;
+      return 1;
+    }
+    if (convex_hull[i].x < convex_hull[i + 1].x) {
+      cout << "checkHull: lower hull not sorted by x" << endl;
+      return 1;
+    }
+    while (k >= 0 && !equals(p[k], convex_hull[i + 1])) {
+      if (counter_clockwise(convex_hull[i], convex_hull[i + 1], p[k--])) {
+        cout << "checkHull: not convex" << endl;
+      }
+    }
+    k--;
+  }
+  free(convex_hull);
   return 0;
 }
 
@@ -126,7 +144,7 @@ public:
   bool holdsFor(const parray_wrapper& _in) {
     parray_wrapper in(_in);
     parray<intT> idxs = hull(in.c);
-    return ! checkHull(in.c, idxs);
+    return ! check_hull(in.c, idxs);
   }
   
 };
