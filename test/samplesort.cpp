@@ -33,18 +33,18 @@ std::ostream& operator<<(std::ostream& out, const container_wrapper<Container>& 
 using value_type = unsigned int;
 
 void generate(size_t _nb, parray<value_type>& dst) {
-  long n = 10000000;//_nb * 1000000;
-  std::cerr << n << "\n";
+  long n = _nb * 10000;
+//  std::cerr << n << "\n";
   int r = quickcheck::generateInRange(0, 2); // currently something is wrong with exp_dist
-  std::cerr << r << "\n";
+//  std::cerr << r << "\n";
   if (r == 0) {
     dst = sequencedata::rand_int_range((value_type)0, (value_type)n, (value_type)INT_MAX);
   } else if (r == 1) {
     int m = quickcheck::generateInRange(0, 1 << 10);
     dst = sequencedata::almost_sorted<value_type>(0L, n, m);
-/*  } else if (r == 2) {
+  } else if (r == 2) {
     value_type x = (value_type)quickcheck::generateInRange(0, INT_MAX);
-    dst = sequencedata::all_same(n, x);*/
+    dst = sequencedata::all_same(n, x);
   } else {
     dst = sequencedata::exp_dist<value_type>(0L, (value_type)n);
   }

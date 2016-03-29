@@ -38,21 +38,30 @@ void split_positions(E* a, E* b, intT* c, intT length_a, intT length_b, BinPred 
   }
   int pos_a = 0;
   int pos_b = 0;
-  for (intT i = 0; i <= length_b; i++) {
+  int pos_c = 0;
+  for (intT i = 0; i < 2 * length_b; i++) {
     c[i] = 0;
   }
   while (pos_b < length_b) {
     while (pos_a < length_a && compare(a[pos_a], b[pos_b])) {
-      c[pos_b]++;
+      c[pos_c]++;
       pos_a++;
     }
+    pos_c++;
+    while (pos_a < length_a && (compare(a[pos_a], b[pos_b]) ^ compare(b[pos_b], a[pos_a]) ^ true)) {
+      c[pos_c]++;
+      pos_a++;
+    }
+
     pos_b++;
+    pos_c++;
     // The pivots are equal
     while (pos_b < length_b && !compare(b[pos_b - 1], b[pos_b])) {
       pos_b++;
+      pos_c += 2;
     }
   }
-  c[pos_b] = length_a - pos_a;
+  c[pos_c] = length_a - pos_a;
 }
 
 #define SSORT_THR 128
@@ -106,7 +115,7 @@ void sample_sort (E* a, intT n, BinPred compare) {
     });
     //nextTime("samples");
               
-
+    segments = 2 * segments - 1;
     parray<E> b(rows * row_length);
     parray<intT> segments_sizes(rows * segments);
     parray<intT> offset_a(rows * segments);
@@ -116,11 +125,13 @@ void sample_sort (E* a, intT n, BinPred compare) {
     range::parallel_for((intT)0, rows, [&] (intT lo, intT hi) { return (hi - lo) * row_length; }, [&] (intT r) {
       intT offset = r * row_length;
       intT size = (r < rows - 1) ? row_length : n - offset;
-      sample_sort(a + offset, size, compare);
-      split_positions(a + offset, pivots.begin(), segments_sizes.begin() + r * segments, size, segments - 1, compare);
+      std::sort(a + offset, a + offset + size, compare);
+      split_positions(a + offset, pivots.begin(), segments_sizes.begin() + r * segments, size, (intT)pivots.size(), compare);
     });
     //nextTime("sort and merge");
-    
+//    std::cerr << pivots << "\n";
+//    std::cerr << segments << " " << rows << " " << segments_sizes << "\n";
+
     // transpose from rows to columns
     auto plus = [&] (intT x, intT y) {
       return x + y;
@@ -142,18 +153,16 @@ void sample_sort (E* a, intT n, BinPred compare) {
         return n - offset_b[lo * rows];
       }
     };
-    range::parallel_for((intT)0, segments, complexity_fct, [&] (intT i) {
-      intT offset = offset_b[i * rows];
+    range::parallel_for((intT)0, (intT)(pivots.size() + 1), complexity_fct, [&] (intT i) {
+      intT offset = offset_b[(2 * i) * rows];
       if (i == 0) {
           sample_sort(a, offset_b[rows], compare); // first segment
 //          std::sort(a, a + offset_b[rows], compare); // first segment
-      } else if (i < segments - 1) { // middle segments
+      } else if (i < pivots.size()) { // middle segments
         // if not all equal in the segment
         if (compare(pivots[i - 1], pivots[i])) {
-          if (offset_b[(i + 1) * rows] - offset != n) {
-            sample_sort(a + offset, offset_b[(i + 1) * rows] - offset, compare);
+          sample_sort(a + offset, offset_b[(2 * i + 1) * rows] - offset, compare);
 //            std::sort(a + offset, a + offset_b[(i + 1) * rows], compare);
-          }
         }
       } else { // last segment
           sample_sort(a + offset, n - offset, compare);
