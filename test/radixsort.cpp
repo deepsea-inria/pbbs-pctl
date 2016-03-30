@@ -12,7 +12,6 @@
 #include "prandgen.hpp"
 #include "sequencedata.hpp"
 #include "blockradixsort.hpp"
-#include "seqradixsort.hpp"
 
 /***********************************************************************/
 
@@ -67,11 +66,11 @@ class sorted_property : public quickcheck::Property<parray_wrapper> {
 public:
   
   bool holdsFor(const parray_wrapper& _in) {
-    parray_wrapper t(_in);
-    parray_wrapper u(_in);
-    integerSort(u.c.begin(), (int)u.c.size());
-    std::sort(t.c.begin(), t.c.end());
-    return same_sequence(t.c.cbegin(), t.c.cend(), u.c.cbegin(), u.c.cend());
+    parray<value_type> a = _in.c;
+    parray<value_type> b = _in.c;
+    integer_sort(a.begin(), (int)a.size());
+    std::sort(b.begin(), b.end());
+    return same_sequence(a.cbegin(), a.cend(), b.cbegin(), b.cend());
   }
   
 };

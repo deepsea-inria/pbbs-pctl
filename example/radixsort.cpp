@@ -11,7 +11,6 @@
 #include "example.hpp"
 #include "io.hpp"
 #include "blockradixsort.hpp"
-#include "seqradixsort.hpp"
 
 /***********************************************************************/
 
@@ -19,13 +18,17 @@ namespace pasl {
   namespace pctl {
     
     void ex() {
-      
-      parray<unsigned int> xs = { 3028713, 3798448, 4071828, 3028713 };
-      parray<unsigned int> xs2(xs);
-      integerSort(xs.begin(), (int)xs.size());
-      std::sort(xs2.begin(),xs2.end());
-      std::cout << "untrusted:\t" << xs << std::endl;
-      std::cout << "trusted:\t" << xs2 << std::endl;
+      int n = pasl::util::cmdline::parse_or_default_int("n", 1000000);
+
+      int* a = new int[n];
+      for (int i = 0; i < n; i++) {
+        a[i] = n - i;
+      }
+      integer_sort(a, n);
+
+      for (int i = 0; i < 10; i++) {
+        printf("result[%d] = %d\n", i * n / 10, a[i * n / 10]);
+      }
     }
     
   }
