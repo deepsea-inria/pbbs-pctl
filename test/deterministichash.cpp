@@ -50,6 +50,10 @@ using value_type = int;
 
 void generate(size_t nb, parray<value_type>& dst) {
   std::vector<value_type> vec;
+  if (quickcheck::generateInRange(0, 4) == 0) {
+    nb = nb * 10000;
+  }
+//  std::cout << "Test: " << nb << std::endl;
   quickcheck::generate(nb, vec);
   { // generate only positive numbers
     for (auto it = vec.begin(); it != vec.end(); it++) {
@@ -57,16 +61,16 @@ void generate(size_t nb, parray<value_type>& dst) {
     }
   }
   { // add a randomly chosen number of duplicates to random positions
-    int m = quickcheck::generateInRange(0, 1<<12);
+    int m = quickcheck::generateInRange(0, 1 << 12);
     int nb_duplicates = std::min((int)vec.size(), m);
     for (long i = 0; i < nb_duplicates; i++) {
-      int ix = quickcheck::generateInRange(0, (int)vec.size()-1);
+      int ix = quickcheck::generateInRange(0, (int)vec.size() - 1);
       vec.push_back(vec[ix]);
     }
-    int nb_swaps = std::min((int)vec.size(), 1<<10);
+    int nb_swaps = std::min((int)vec.size(), 1 << 10);
     for (long i = 0; i < nb_swaps; i++) {
-      int p1 = quickcheck::generateInRange(0, (int)vec.size()-1);
-      int p2 = quickcheck::generateInRange(0, (int)vec.size()-1);
+      int p1 = quickcheck::generateInRange(0, (int)vec.size() - 1);
+      int p2 = quickcheck::generateInRange(0, (int)vec.size() - 1);
       std::swap(vec[p1], vec[p2]);
     }
   }
@@ -93,12 +97,12 @@ public:
   
   bool holdsFor(const parray_wrapper& _in) {
     parray_wrapper in(_in);
-    parray<value_type> vals = removeDuplicates(in.c);
+    parray<value_type> vals = remove_duplicates(in.c);
     { // ensure that there are no duplicates
       std::set<value_type> set;
       for (auto it = vals.cbegin(); it != vals.cend(); it++) {
         auto v = set.insert(*it);
-        if (! v.second) { // same item was already inserted => we had a duplicate
+        if (!v.second) { // same item was already inserted => we had a duplicate
           return false;
         }
       }

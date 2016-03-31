@@ -24,6 +24,7 @@
 #define A_HASH_INCLUDED
 
 #include "utils.hpp"
+#include "prandgen.hpp"
 #include "dpsdatapar.hpp"
 
 namespace pasl {
@@ -53,42 +54,54 @@ private:
   intT m;
   intT mask;
   eType empty;
-  HASH hashStruct;
-  eType* TA;
+  HASH hash_struct;
+  eType* table;
   intT* compactL;
   
   // needs to be in separate routine due to Cilk bugs
-  static void clearA(eType* A, intT n, eType v) {
-    pmem::fill(A, A+n, v);
+  static void clear(eType* A, intT n, eType v) {
+    pmem::fill(A, A + n, v);
   }
   
   struct notEmptyF {
     eType e; notEmptyF(eType _e) : e(_e) {}
     int operator() (eType a) {return e != a;}};
   
-  uintT hashToRange(intT h) {return h & mask;}
-  intT firstIndex(kType v) {return hashToRange(hashStruct.hash(v));}
-  intT incrementIndex(intT h) {return hashToRange(h+1);}
-  intT decrementIndex(intT h) {return hashToRange(h-1);}
-  bool lessIndex(intT a, intT b) {return 2 * hashToRange(a - b) > m;}
+  uintT hash_to_range(intT h) {
+    return h & mask;
+  }
+  intT first_index(kType v) {
+    return hash_to_range(hash_struct.hash(v));
+  }
+  intT increment_index(intT h) {
+    return hash_to_range(h + 1);
+  }
+  intT decrement_index(intT h) {
+    return hash_to_range(h - 1);
+  }
+  bool less_index(intT a, intT b) {
+    return 2 * hash_to_range(a - b) > m;
+  }
   
   
 public:
   // Size is the maximum number of values the hash table will hold.
   // Overfilling the table could put it into an infinite loop.
-  Table(intT size, HASH hashF) :
-  m(1 << utils::log2Up(100+2*size)),
-  mask(m-1),
-  empty(hashF.empty()),
-  hashStruct(hashF),
-  TA(newA(eType,m)),
-  compactL(NULL)
-  { clearA(TA,m,empty); }
+  Table(intT size, HASH hash) : m(1 << utils::log2Up(100 + 2 * size)),
+                                mask(m - 1),
+                                empty(hash.empty()),
+                                hash_struct(hash),
+                                table(newA(eType, m)),
+                                compactL(NULL) {
+    clear(table, m, empty);
+  }
   
   // Deletes the allocated arrays
   void del() {
-    free(TA);
-    if (compactL != NULL) free(compactL);
+    free(table);
+    if (compactL != NULL) {
+      free(compactL);
+    }
   }
   
   // prioritized linear probing
@@ -96,68 +109,76 @@ public:
   //   an equal key will replace an old key if replaceQ(new,old) is true
   // returns 0 if not inserted (i.e. equal and replaceQ false) and 1 otherwise
   bool insert(eType v) {
-    kType vkey = hashStruct.getKey(v);
-    intT h = firstIndex(vkey);
-    while (1) {
+    kType vkey = hash_struct.get_key(v);
+    intT h = first_index(vkey);
+    while (true) {
       eType c;
       int cmp;
       bool swapped = 0;
-      c = TA[h];
-      cmp = (c==empty) ? 1 : hashStruct.cmp(vkey,hashStruct.getKey(c));
+      c = table[h];
+      cmp = (c == empty) ? 1 : hash_struct.cmp(vkey, hash_struct.get_key(c));
       
-      // while v is higher priority than entry at TA[h] try to swap it in
-      while (cmp == 1 && !(swapped=utils::CAS(&TA[h],c,v))) {
-        c = TA[h];
-        cmp = hashStruct.cmp(vkey,hashStruct.getKey(c));
+      // while v is higher priority than entry at table[h] try to swap it in
+      while (cmp > 0 && !(swapped = utils::CAS(&table[h], c, v))) {
+        c = table[h];
+        cmp = hash_struct.cmp(vkey, hash_struct.get_key(c));
       }
       
       // if swap succeeded either we are done (if swapped with empty)
       // or we have a new lower priority value we have to insert
       if (swapped) {
-        if (c==empty) return 1; // done
-        else { v = c; vkey = hashStruct.getKey(v);} // new value to insert
-        
+        if (c == empty) {
+          return 1; // done
+        } else {
+          v = c;
+          vkey = hash_struct.get_key(v);
+        } // new value to insert
       } else {
-        // if swap did not succeed then priority of TA[h] >= priority of v
+        // if swap did not succeed then priority of table[h] >= priority of v
         
         // if equal keys (priorities equal) then either quit or try to replace
         while (cmp == 0) {
           // if other equal element does not need to be replaced then quit
-          if (!hashStruct.replaceQ(v,c)) return 0;
+          if (!hash_struct.replaceQ(v, c)) {
+            return 0;
+          }
           
           // otherwise try to replace (atomically) and quit if successful
-          else if (utils::CAS(&TA[h],c,v)) return 1;
-          
+          else if (utils::CAS(&table[h], c, v)) {
+            return 1;
+          }
           // otherwise failed due to concurrent write, try again
-          c = TA[h];
-          cmp = hashStruct.cmp(vkey,hashStruct.getKey(c));
+          c = table[h];
+          cmp = hash_struct.cmp(vkey, hash_struct.get_key(c));
         }
       }
       
       // move to next bucket
-      h = incrementIndex(h);
+      h = increment_index(h);
     }
     return 0; // should never get here
   }
   
   // needs to be more thoroughly tested
   // currently always returns true
-  bool deleteVal(kType v) {
-    intT i = firstIndex(v);
+  bool remove(kType v) {
+    intT i = first_index(v);
     int cmp;
     
     // find first element less than or equal to v in priority order
     intT j = i;
-    eType c = TA[j];
-    while ((cmp = (c==empty) ? 1 : hashStruct.cmp(v,hashStruct.getKey(c))) < 0) {
-      j = incrementIndex(j);
-      c = TA[j];
+    eType c = table[j];
+    while ((cmp = (c == empty) ? 1 : hash_struct.cmp(v, hash_struct.get_key(c))) < 0) {
+      j = increment_index(j);
+      c = table[j];
     }
     do {
       if (cmp > 0) {
         // value at j is less than v, need to move down one
-        if (j == i) return true;
-        j = decrementIndex(j);
+        if (j == i) {
+          return true;
+        }
+        j = decrement_index(j);
       }
       else { // (cmp == 0)
         // found the element to delete at location j
@@ -168,41 +189,47 @@ public:
         // things being moved around by others as we search.
         // Makes use of the fact that values in a cell can only decrease
         // during a delete phase as elements are moved from the right to left.
-        intT jj = incrementIndex(j);
-        eType x = TA[jj];
-        while (x != empty && lessIndex(j, firstIndex(hashStruct.getKey(x)))) {
-          jj = incrementIndex(jj);
-          x = TA[jj];
+        intT jj = increment_index(j);
+        eType x = table[jj];
+        while (x != empty && less_index(j, first_index(hash_struct.get_key(x)))) {
+          jj = increment_index(jj);
+          x = table[jj];
         }
-        intT jjj = decrementIndex(jj);
+        intT jjj = decrement_index(jj);
         while (jjj != j) {
-          eType y = TA[jjj];
-          if (y == empty || !lessIndex(j, firstIndex(hashStruct.getKey(y)))) x = y;
-          jjj = decrementIndex(jjj);
+          eType y = table[jjj];
+          if (y == empty || !less_index(j, first_index(hash_struct.get_key(y)))) {
+            x = y;
+          }
+          jjj = decrement_index(jjj);
         }
         
         // try to copy the the replacement element into j
-        if (utils::CAS(&TA[j],c,x)) {
+        if (utils::CAS(&table[j], c, x)) {
           // swap was successful
           // if the replacement element was empty, we are done
-          if (x == empty) return true;
+          if (x == empty) {
+            return true;
+          }
           
           // Otherwise there are now two copies of the replacement element x
           // delete one copy (probably the original) by starting to look at jj.
           // Note that others can come along in the meantime and delete
           // one or both of them, but that is fine.
-          v = hashStruct.getKey(x);
+          v = hash_struct.get_key(x);
           j = jj;
         } else {
           // if fails then c (with value v) has been deleted or moved to a lower
           // location by someone else.
           // start looking at one location lower
-          if (j == i) return true;
-          j = decrementIndex(j);
+          if (j == i) {
+            return true;
+          }
+          j = decrement_index(j);
         }
       }
-      c = TA[j];
-      cmp = (c == empty) ? 1 : hashStruct.cmp(v, hashStruct.getKey(c));
+      c = table[j];
+      cmp = (c == empty) ? 1 : hash_struct.cmp(v, hash_struct.get_key(c));
     } while (cmp >= 0);
     return true;
   }
@@ -211,32 +238,38 @@ public:
   // otherwise returns the "empty" element.
   // due to prioritization, can quit early if v is greater than cell
   eType find(kType v) {
-    intT h = firstIndex(v);
-    eType c = TA[h];
-    while (1) {
-      if (c == empty) return empty;
-      int cmp = hashStruct.cmp(v,hashStruct.getKey(c));
-      if (cmp >= 0)
-        if (cmp == 1) return empty;
-        else return c;
-      h = incrementIndex(h);
-      c = TA[h];
+    intT h = first_index(v);
+    eType c = table[h];
+    while (true) {
+      if (c == empty) {
+        return empty;
+      }
+      int cmp = hash_struct.cmp(v, hash_struct.get_key(c));
+      if (cmp >= 0) {
+        if (cmp > 0) {
+          return empty;
+        } else {
+          return c;
+        }
+      }
+      h = increment_index(h);
+      c = table[h];
     }
   }
   
   // returns the number of entries
   intT count() {
-    return level1::reduce(TA, TA+m, (intT)0, [&] (intT x, intT y) {
+    return level1::reduce(table, table + m, (intT)0, [&] (intT x, intT y) {
       return x + y;
     }, [&] (eType a) {
         return empty != a;
     });
-//    return sequence::mapReduce<intT>(TA,m,utils::addF<intT>(),notEmptyF(empty));
+//    return sequence::mapReduce<intT>(table,m,utils::addF<intT>(),notEmptyF(empty));
   }
   
   // returns all the current entries compacted into a sequence
   parray<eType> entries() {
-    return filter(TA, TA+m, [&] (eType x) {
+    return filter(table, table + m, [&] (eType x) {
       return x != empty;
     });
   }
@@ -244,101 +277,138 @@ public:
   // prints the current entries along with the index they are stored at
   void print() {
     cout << "vals = ";
-    for (intT i=0; i < m; i++)
-      if (TA[i] != empty)
-        cout << i << ":" << TA[i] << ",";
+    for (intT i = 0; i < m; i++)
+      if (table[i] != empty)
+        cout << i << ":" << table[i] << ",";
     cout << endl;
   }
 };
 
-template <class HASH, class ET, class intT>
-parray<ET> removeDuplicates(parray<ET>& S, intT m, HASH hashF) {
-  Table<HASH,intT> T(m,hashF);
-  parallel_for(S.begin(), S.end(), [&] (ET* it) {
-    T.insert(*it);
+template <class Hash, class ET, class intT>
+parray<ET> remove_duplicates(parray<ET>& a, intT m, Hash hash) {
+  Table<Hash, intT> t(m, hash);
+  parallel_for(a.begin(), a.end(), [&] (ET* it) {
+    t.insert(*it);
   });
-  parray<ET> R = T.entries();
-  T.del();
-  return R;
+  parray<ET> r = t.entries();
+  t.del();
+  return r;
 }
 
 template <class HASH, class ET>
-parray<ET> removeDuplicates(parray<ET>& S, HASH hashF) {
-  return removeDuplicates(S, (intT)S.size(), hashF);
+parray<ET> remove_duplicates(parray<ET>& a, HASH hashF) {
+  return remove_duplicates(a, (intT)a.size(), hashF);
 }
 
 template <class intT>
-struct hashInt {
+struct hash_int {
   typedef intT eType;
   typedef intT kType;
-  eType empty() {return -1;}
-  kType getKey(eType v) {return v;}
-  intT hash(kType v) {return prandgen::hashu(v);}
-  int cmp(kType v, kType b) {return (v > b) ? 1 : ((v == b) ? 0 : -1);}
-  bool replaceQ(eType v, eType b) {return 0;}
+
+  eType empty() {
+    return -1;
+  }
+
+  kType get_key(eType v) {
+    return v;
+  }
+
+  intT hash(kType v) {
+    return prandgen::hashu(v);
+  }
+
+  int cmp(kType v, kType b) {
+    return (v > b) ? 1 : ((v == b) ? 0 : -1);
+  }
+
+  bool replaceQ(eType v, eType b) {
+    return 0;
+  }
 };
 
 // works for non-negative integers (uses -1 to mark cell as empty)
 
-static parray<intT> removeDuplicates(parray<intT>& A) {
-  return removeDuplicates(A,hashInt<intT>());
+static parray<intT> remove_duplicates(parray<intT>& a) {
+  return remove_duplicates(a, hash_int<intT>());
 }
 
 //typedef Table<hashInt> IntTable;
 //static IntTable makeIntTable(int m) {return IntTable(m,hashInt());}
 template <class intT>
-static Table<hashInt<intT>,intT > makeIntTable(intT m) {
-  return Table<hashInt<intT>,intT >(m,hashInt<intT>());}
+static Table<hash_int<intT>, intT> make_int_table(intT m) {
+  return Table<hash_int<intT>, intT>(m, hash_int<intT>());
+}
 
-struct hashStr {
+struct string_hash {
   typedef char* eType;
   typedef char* kType;
   
-  eType empty() {return NULL;}
-  kType getKey(eType v) {
-    return v;}
+  eType empty() {
+    return NULL;
+  }
+
+  kType get_key(eType v) {
+    return v;
+  }
   
   uintT hash(kType s) {
     uintT hash = 0;
-    while (*s) hash = *s++ + (hash << 6) + (hash << 16) - hash;
+    int len = strlen(s);
+    for (int i = 0; i < len; ++i) {
+      hash = s[i] + (hash << 6) + (hash << 16) - hash;
+    }
     return hash;
   }
   
   int cmp(kType s, kType s2) {
-    while (*s && *s==*s2) {s++; s2++;};
-    return (*s > *s2) ? 1 : ((*s == *s2) ? 0 : -1);
+    return strcmp(s, s2);
   }
   
-  bool replaceQ(eType s, eType s2) {return 0;}
+  bool replaceQ(eType s, eType s2) {
+    return 0;
+  }
 };
 
-static parray<char*> removeDuplicates(parray<char*>& S) {
-  return removeDuplicates(S,hashStr());}
+static parray<char*> remove_duplicates(parray<char*>& a) {
+  return remove_duplicates(a, string_hash());
+}
 
 template <class intT>
-static Table<hashStr,intT> makeStrTable(intT m) {
-  return Table<hashStr,intT>(m,hashStr());}
+static Table<string_hash,intT> make_str_table(intT m) {
+  return Table<string_hash,intT>(m, string_hash());
+}
 
 template <class KEYHASH, class DTYPE>
-struct hashPair {
-  KEYHASH keyHash;
+struct pair_hash {
+  KEYHASH key_hash;
   typedef typename KEYHASH::kType kType;
-  typedef pair<kType,DTYPE>* eType;
-  eType empty() {return NULL;}
+  typedef pair<kType, DTYPE>* eType;
+
+  eType empty() {
+    return NULL;
+  }
   
-  hashPair(KEYHASH _k) : keyHash(_k) {}
+  pair_hash(KEYHASH _k) : key_hash(_k) {}
   
-  kType getKey(eType v) { return v->first; }
+  kType get_key(eType v) {
+    return v->first;
+  }
   
-  uintT hash(kType s) { return keyHash.hash(s);}
-  int cmp(kType s, kType s2) { return keyHash.cmp(s, s2);}
+  uintT hash(kType s) {
+    return key_hash.hash(s);
+  }
+
+  int cmp(kType s, kType s2) {
+    return key_hash.cmp(s, s2);
+  }
   
   bool replaceQ(eType s, eType s2) {
-    return s->second > s2->second;}
+    return s->second > s2->second;
+  }
 };
 
-static parray<pair<char*,intT>*> removeDuplicates(parray<pair<char*,intT>*>& S) {
-  return removeDuplicates(S,hashPair<hashStr,intT>(hashStr()));}
+static parray<pair<char*, intT>*> remove_duplicates(parray<pair<char*, intT>*>& a) {
+  return remove_duplicates(a, pair_hash<string_hash, intT>(string_hash()));}
     
 } // end namespace
 } // end namespace
