@@ -305,23 +305,23 @@ struct hash_int {
   typedef intT eType;
   typedef intT kType;
 
-  eType empty() {
+  eType empty() const {
     return -1;
   }
 
-  kType get_key(eType v) {
+  kType get_key(eType v) const {
     return v;
   }
 
-  intT hash(kType v) {
+  intT hash(kType v) const {
     return prandgen::hashu(v);
   }
 
-  int cmp(kType v, kType b) {
+  int cmp(kType v, kType b) const {
     return (v > b) ? 1 : ((v == b) ? 0 : -1);
   }
 
-  bool replaceQ(eType v, eType b) {
+  bool replaceQ(eType v, eType b) const {
     return 0;
   }
 };
@@ -339,19 +339,19 @@ static Table<hash_int<intT>, intT> make_int_table(intT m) {
   return Table<hash_int<intT>, intT>(m, hash_int<intT>());
 }
 
-struct string_hash {
+struct hash_string {
   typedef char* eType;
   typedef char* kType;
   
-  eType empty() {
+  eType empty() const {
     return NULL;
   }
 
-  kType get_key(eType v) {
+  kType get_key(eType v) const {
     return v;
   }
   
-  uintT hash(kType s) {
+  uintT hash(kType s) const {
     uintT hash = 0;
     int len = strlen(s);
     for (int i = 0; i < len; ++i) {
@@ -360,56 +360,84 @@ struct string_hash {
     return hash;
   }
   
-  int cmp(kType s, kType s2) {
+  int cmp(kType s, kType s2) const {
     return strcmp(s, s2);
   }
   
-  bool replaceQ(eType s, eType s2) {
+  bool replaceQ(eType s, eType s2) const {
     return 0;
   }
 };
 
 static parray<char*> remove_duplicates(parray<char*>& a) {
-  return remove_duplicates(a, string_hash());
+  return remove_duplicates(a, hash_string());
 }
 
 template <class intT>
-static Table<string_hash,intT> make_str_table(intT m) {
-  return Table<string_hash,intT>(m, string_hash());
+static Table<hash_string,intT> make_str_table(intT m) {
+  return Table<hash_string,intT>(m, hash_string());
 }
 
 template <class KEYHASH, class DTYPE>
-struct pair_hash {
+struct hash_pair {
   KEYHASH key_hash;
   typedef typename KEYHASH::kType kType;
   typedef pair<kType, DTYPE>* eType;
 
-  eType empty() {
+  eType empty() const {
     return NULL;
   }
   
-  pair_hash(KEYHASH _k) : key_hash(_k) {}
+  hash_pair(KEYHASH _k) : key_hash(_k) {}
   
-  kType get_key(eType v) {
+  kType get_key(eType v) const {
     return v->first;
   }
   
-  uintT hash(kType s) {
+  uintT hash(kType s) const {
     return key_hash.hash(s);
   }
 
-  int cmp(kType s, kType s2) {
+  int cmp(kType s, kType s2) const {
     return key_hash.cmp(s, s2);
   }
   
-  bool replaceQ(eType s, eType s2) {
+  bool replaceQ(eType s, eType s2) const {
     return s->second > s2->second;
   }
 };
 
 static parray<pair<char*, intT>*> remove_duplicates(parray<pair<char*, intT>*>& a) {
-  return remove_duplicates(a, pair_hash<string_hash, intT>(string_hash()));}
+  return remove_duplicates(a, hash_pair<hash_string, intT>(hash_string()));
+}
     
+template <class ET, class Hash>
+parray<ET> run_dict(const parray<ET>& insert, const parray<ET>& remove, const parray<ET>& find, const Hash& hash) {
+  Table<Hash, intT> table(insert.size(), hash);
+  parallel_for(insert.begin(), insert.end(), [&] (ET* it) {
+    table.insert(*it);
+  });
+/*  for (auto it : insert) {
+    table.insert(it);
+  }*/
+  std::cerr << "Insert: " << table.count() << std::endl;
+  parallel_for(remove.begin(), remove.end(), [&] (ET* it) {
+    table.remove(hash.get_key(*it));
+  });
+/*  for (auto it : remove) {
+    table.remove(hash.get_key(it));
+  }*/
+  std::cerr << "Remove: " << table.count() << std::endl;
+  parray<ET> result(find.size());
+  parallel_for((intT)0, (intT)find.size(), [&] (int i) {
+    result[i] = table.find(hash.get_key(find[i]));
+  });
+/*  for (int i = 0; i < find.size(); i++) {
+    result[i] = table.find(hash.get_key(find[i]));
+  }*/
+  return result;
+}
+
 } // end namespace
 } // end namespace
 
