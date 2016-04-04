@@ -44,7 +44,7 @@ point2d randInUnitSphere2d(intT i) {
   do {
     intT o = prandgen::hash<intT>(j++);
     v = vect2d(rand2d(o+i));
-  } while (v.Length() > 1.0);
+  } while (v.length() > 1.0);
   return point2d(v);
 }
 
@@ -55,20 +55,20 @@ point3d randInUnitSphere3d(intT i) {
   do {
     intT o = prandgen::hash<intT>(j++);
     v = vect3d(rand3d<intT, uintT>(o+i));
-  } while (v.Length() > 1.0);
+  } while (v.length() > 1.0);
   return point3d(v);
 }
 
 template <class intT>
 point2d randOnUnitSphere2d(intT i) {
   vect2d v = vect2d(randInUnitSphere2d(i));
-  return point2d(v/v.Length());
+  return point2d(v / v.length());
 }
 
 template <class intT,class uintT>
 point3d randOnUnitSphere3d(intT i) {
   vect3d v = vect3d(randInUnitSphere3d<intT, uintT>(i));
-  return point3d(v/v.Length());
+  return point3d(v / v.length());
 }
 
 template <class intT>

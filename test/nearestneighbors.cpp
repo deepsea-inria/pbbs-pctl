@@ -15,6 +15,7 @@
 #include "prandgen.hpp"
 #include "geometrydata.hpp"
 #include "nearestneighbors.hpp"
+#include "samplesort.hpp"
 
 /***********************************************************************/
 
@@ -36,7 +37,8 @@ std::ostream& operator<<(std::ostream& out, const container_wrapper<Container>& 
 using intT = int;
 
 void generate(size_t _nb, parray<point2d>& dst) {
-  intT nb = (intT)_nb;
+  intT nb = (intT)_nb * 10;
+  std::cerr << "Problem size: " << nb << std::endl;
   if (quickcheck::generateInRange(0, 1) == 0) {
     dst = plummer2d(nb);
   } else {
@@ -55,76 +57,57 @@ void generate(size_t nb, container_wrapper<parray<point2d>>& c) {
 /* Quickcheck properties */
 
 template <class pointT>
-int checkNeighbors(parray<intT>& neighbors, pointT* P, intT n, intT k, intT r) {
-  if (neighbors.size() != k * n) {
-    cout << "error in neighborsCheck: wrong length, n = " << n
-    << " k = " << k << " neighbors = " << neighbors.size() << endl;
+int check_neighbours(parray<intT>& neighbours, pointT* p, intT n, intT k) {
+  if (neighbours.size() != k * n) {
+    cout << "error in neighboursCheck: wrong length, n = " << n
+    << " k = " << k << " neighbours = " << neighbours.size() << endl;
     return 1;
   }
   
-  for (intT j = 0; j < r; j++) {
-    intT jj = prandgen::hashi(j) % n;
-    
-    double* distances = newA(double,n);
-    parallel_for (intT(0), n, [&] (intT i) {
-      if (i == jj) distances[i] = DBL_MAX;
-      else distances[i] = (P[jj] - P[i]).Length();
+  int result = 0;
+  parallel_for((intT)0, n, [&] (intT j) {
+    double* distances = newA(double, n);
+    parallel_for ((intT)0, n, [&] (intT i) {
+      if (i == j) {
+        distances[i] = std::numeric_limits<double>().max();
+      } else {
+        distances[i] = (p[j] - p[i]).length();
+      }
     });
-    double id = (n == 0) ? 0.0 : distances[0];
-    double minD = reduce(distances, distances+n, id, [&] (double x, double y) {
-      return std::min(x, y);
-    });
+    sample_sort(distances, n, std::less<double>());
     
-    double d = (P[jj] - P[(neighbors.begin())[k*jj]]).Length();
-    
-    double errorTolerance = 1e-6;
-    if ((d - minD) / (d + minD)  > errorTolerance) {
-      cout << "error in neighborsCheck: for point " << jj
-      << " min distance reported is: " << d
-      << " actual is: " << minD << endl;
-      return 1;
+    double error_tolerance = 1e-6;
+    for (int i = 0; i < std::min(k, n - 1); i++) {
+      double d = (p[j] - p[neighbours.begin()[k * j + i]]).length();
+      double curd = distances[i];
+
+      if ((d - curd) / (d + curd)  > error_tolerance) {
+        cout << "error in neighboursCheck: for point " << j
+        << " " << k << "-th min distance reported is: " << d
+        << " actual is: " << curd << endl;
+        result = 1;
+      }
     }
-  }
-  return 0;
+  });
+  return result;
 }
-  
-template <class PT, int KK>
-struct vertex {
-  typedef PT pointT;
-  int identifier;
-  pointT pt;         // the point itself
-  vertex* ngh[KK];    // the list of neighbors
-  vertex(pointT p, int id) : pt(p), identifier(id) {}
-  vertex() { }
-  
-};
   
 using parray_wrapper = container_wrapper<parray<point2d>>;
 
 template <class point, int maxK>
-class nearestneighbors_property : public quickcheck::Property<parray_wrapper> {
+class nearestneighbours_property : public quickcheck::Property<parray_wrapper> {
 public:
   
   bool holdsFor(const parray_wrapper& _in) {
-    using vertex = vertex<point,maxK>;
+    using vertex = vertex<point, maxK>;
     parray_wrapper in(_in);
     intT n = (intT)in.c.size();
     parray<point>& points = in.c;
-    parray<vertex*> v(n);
-    parray<vertex> vv(n);
-    parallel_for(intT(0), n, [&] (intT i) {
-      v[i] = new (&vv[i]) vertex(points[i],i);
-    });
-    int k = 1;
-    ANN<intT,maxK>(v.begin(), n, k);
-    int m = n * k;
-    parray<int> Pout(m);
-    parallel_for(intT(0), n, [&] (intT i) {
-      for (int j=0; j < k; j++)
-        Pout[maxK*i + j] = (v[i]->ngh[j])->identifier;
-    });
+    int k = 10;
+    parray<int> result = ANN<intT, maxK, point>(points, n, k);
+
     int r = 10;
-    return ! checkNeighbors(Pout, points.begin(), n, k, r);
+    return !check_neighbours(result, points.begin(), n, k);
   }
   
 };
@@ -137,7 +120,7 @@ public:
 int main(int argc, char** argv) {
   pbbs::launch(argc, argv, [&] {
     int nb_tests = pasl::util::cmdline::parse_or_default_int("n", 1000);
-    checkit<pasl::pctl::nearestneighbors_property<point2d,1>>(nb_tests, "nearestneighbors is correct");
+    checkit<pasl::pctl::nearestneighbours_property<point2d, 10>>(nb_tests, "nearestneighbours is correct");
   });
   return 0;
 }

@@ -22,25 +22,54 @@ public:
   typedef _vect3d vectT;
   typedef _point3d<floatT> pointT;
   floatT x; floatT y; floatT z;
+
   _vect3d(floatT xx,floatT yy, floatT zz) : x(xx),y(yy),z(zz) {}
-  _vect3d() {x=0;y=0;z=0;}
+
+  _vect3d(): x(0), y(0), z(0) {}
+
   _vect3d(pointT p);
+
   _vect3d(floatT* p) : x(p[0]), y(p[1]), z(p[2]) {};
+
   vectT operator+(vectT op2) {
-    return vectT(x + op2.x, y + op2.y, z + op2.z);}
-  vectT operator-(vectT op2) {
-    return vectT(x - op2.x, y - op2.y, z - op2.z);}
-  pointT operator+(pointT op2);
-  vectT operator*(floatT s) {return vectT(x * s, y * s, z * s);}
-  vectT operator/(floatT s) {return vectT(x / s, y / s, z / s);}
-  floatT& operator[] (int i) {return (i==0) ? x : (i==1) ? y : z;}
-  floatT dot(vectT v) {return x * v.x + y * v.y + z * v.z;}
-  vectT cross(vectT v) {
-    return vectT(y*v.z - z*v.y, z*v.x - x*v.z, x*v.y - y*v.x);
+    return vectT(x + op2.x, y + op2.y, z + op2.z);
   }
-  floatT maxDim() {return max(x,max(y,z));}
-  void print() {cout << std::setprecision(10) << ":(" << x << "," << y << "," << z << "):";}
-  floatT Length(void) { return sqrt(x*x+y*y+z*z);}
+
+  vectT operator-(vectT op2) {
+    return vectT(x - op2.x, y - op2.y, z - op2.z);
+  }
+
+  pointT operator+(pointT op2);
+
+  vectT operator*(floatT s) {
+    return vectT(x * s, y * s, z * s);
+  }
+
+  vectT operator/(floatT s) {
+    return vectT(x / s, y / s, z / s);
+  }
+
+  floatT& operator[] (int i) {
+    return (i == 0) ? x : (i == 1) ? y : z;
+  }
+  floatT dot(vectT v) {return x * v.x + y * v.y + z * v.z;}
+
+  vectT cross(vectT v) {
+    return vectT(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
+  }
+
+  floatT max_dim() {
+    return max(x, max(y, z));
+  }
+
+  void print() {
+    cout << std::setprecision(10) << ":(" << x << "," << y << "," << z << "):";
+  }
+
+  floatT length(void) {
+    return sqrt(x * x + y * y + z * z);
+  }
+
   static const int dim = 3;
 };
 
@@ -60,10 +89,15 @@ public:
     return vectT(x - op2.x, y - op2.y, z - op2.z);}
   pointT operator+(vectT op2) {
     return pointT(x + op2.x, y + op2.y, z + op2.z);}
-  pointT minCoords(pointT b) {
-    return pointT(min(x,b.x),min(y,b.y),min(z,b.z)); }
-  pointT maxCoords(pointT b) {
-    return pointT(max(x,b.x),max(y,b.y),max(z,b.z)); }
+
+  pointT min_coord(pointT b) {
+    return pointT(min(x, b.x), min(y, b.y), min(z, b.z));
+  }
+
+  pointT max_coord(pointT b) {
+    return pointT(max(x, b.x), max(y, b.y), max(z, b.z)); 
+  }
+
   floatT& operator[] (int i) {return (i==0) ? x : (i==1) ? y : z;}
   int quadrant(pointT center) {
     int index = 0;
@@ -74,15 +108,15 @@ public:
   }
   // returns a pointT offset by offset in one of 8 directions
   // depending on dir (an integer from [0..7])
-  pointT offsetPoint(int dir, floatT offset) {
+  pointT offset_point(int dir, floatT offset) {
     floatT xx = x + ((dir & 1) ? offset : -offset);
     floatT yy = y + ((dir & 2) ? offset : -offset);
     floatT zz = z + ((dir & 4) ? offset : -offset);
-    return pointT(xx,yy,zz);
+    return pointT(xx, yy, zz);
   }
   // checks if pt is outside of a box centered at this point with
   // radius hsize
-  bool outOfBox(pointT pt, floatT hsize) {
+  bool out_of_box(pointT pt, floatT hsize) {
     return ((x - hsize > pt.x) || (x + hsize < pt.x) ||
             (y - hsize > pt.y) || (y + hsize < pt.y) ||
             (z - hsize > pt.z) || (z + hsize < pt.z));
@@ -108,22 +142,59 @@ public:
   typedef _floatT floatT;
   typedef _point2d<floatT> pointT;
   typedef _vect2d vectT;
-  floatT x; floatT y;
+  floatT x;
+  floatT y;
+
   _vect2d(floatT xx,floatT yy) : x(xx),y(yy) {}
-  _vect2d() {x=0;y=0;}
+
+  _vect2d(): x(0), y(0) { }
+
   _vect2d(pointT p);
+
   _vect2d(floatT* p) : x(p[0]), y(p[1]) {};
-  vectT operator+(vectT op2) {return vectT(x + op2.x, y + op2.y);}
-  vectT operator-(vectT op2) {return vectT(x - op2.x, y - op2.y);}
+
+  vectT operator+(vectT op2) {
+   return vectT(x + op2.x, y + op2.y);
+  }
+
+  vectT operator-(vectT op2) {
+    return vectT(x - op2.x, y - op2.y);
+  }
+
   pointT operator+(pointT op2);
-  vectT operator*(floatT s) {return vectT(x * s, y * s);}
-  vectT operator/(floatT s) {return vectT(x / s, y / s);}
-  floatT operator[] (int i) {return (i==0) ? x : y;};
-  floatT dot(vectT v) {return x * v.x + y * v.y;}
-  floatT cross(vectT v) { return x*v.y - y*v.x; }
-  floatT maxDim() {return max(x,y);}
-  void print() {cout << ":(" << x << "," << y << "):";}
-  floatT Length(void) { return sqrt(x*x+y*y);}
+
+  vectT operator*(floatT s) {
+    return vectT(x * s, y * s);
+  }
+
+  vectT operator/(floatT s) {
+    return vectT(x / s, y / s);
+  }
+
+  floatT operator[] (int i) {
+    return (i == 0) ? x : y;
+  }
+
+  floatT dot(vectT v) {
+    return x * v.x + y * v.y;
+  }
+
+  floatT cross(vectT v) {
+    return x*v.y - y*v.x; 
+  }
+
+  floatT max_dim() {
+    return max(x, y);
+  }
+
+  void print() {
+    cout << ":(" << x << "," << y << "):";
+  }
+
+  floatT length(void) {
+    return sqrt(x * x + y * y);
+  }
+
   static const int dim = 3;
 };
 
@@ -148,11 +219,27 @@ public:
   _point2d(vectT v) : x(v.x),y(v.y) {};
   _point2d(floatT* p) : x(p[0]), y(p[1]) {};
   void print() {cout << ":(" << x << "," << y << "):";}
-  vectT operator-(pointT op2) {return vectT(x - op2.x, y - op2.y);}
-  pointT operator+(vectT op2) {return pointT(x + op2.x, y + op2.y);}
-  floatT operator[] (int i) {return (i==0) ? x : y;};
-  pointT minCoords(pointT b) { return pointT(min(x,b.x),min(y,b.y)); }
-  pointT maxCoords(pointT b) { return pointT(max(x,b.x),max(y,b.y)); }
+
+  vectT operator-(pointT op2) {
+    return vectT(x - op2.x, y - op2.y);
+  }
+
+  pointT operator+(vectT op2) {
+    return pointT(x + op2.x, y + op2.y);
+  }
+
+  floatT operator[] (int i) {
+    return (i==0) ? x : y;
+  }
+
+  pointT min_coord(pointT b) {
+    return pointT(min(x, b.x), min(y, b.y));
+  }
+
+  pointT max_coord(pointT b) {
+    return pointT(max(x, b.x), max(y, b.y));
+  }
+
   int quadrant(pointT center) {
     int index = 0;
     if (x > center.x) index += 1;
@@ -161,12 +248,12 @@ public:
   }
   // returns a pointT offset by offset in one of 4 directions
   // depending on dir (an integer from [0..3])
-  pointT offsetPoint(int dir, floatT offset) {
+  pointT offset_point(int dir, floatT offset) {
     floatT xx = x + ((dir & 1) ? offset : -offset);
     floatT yy = y + ((dir & 2) ? offset : -offset);
-    return pointT(xx,yy);
+    return pointT(xx, yy);
   }
-  bool outOfBox(pointT pt, floatT hsize) {
+  bool out_of_box(pointT pt, floatT hsize) {
     return ((x - hsize > pt.x) || (x + hsize < pt.x) ||
             (y - hsize > pt.y) || (y + hsize < pt.y));
   }
@@ -208,7 +295,7 @@ inline double triangle_area(point2d a, point2d b, point2d c) {
 }
 
 inline double triAreaNormalized(point2d a, point2d b, point2d c) {
-  return triangle_area(a,b,c)/((b-a).Length()*(c-a).Length());
+  return triangle_area(a, b, c) / ((b - a).length() * (c - a).length());
 }
 
 // Returns TRUE if the points a, b, c are in a counterclockise order
@@ -238,10 +325,10 @@ inline bool inCircle(_point2d<floatT> a, _point2d<floatT> b,
 template <class floatT>
 inline double inCircleNormalized(_point2d<floatT> a, _point2d<floatT> b,
                                  _point2d<floatT> c, _point2d<floatT> d) {
-  _vect3d<floatT> ad = onParabola(a-d);
-  _vect3d<floatT> bd = onParabola(b-d);
-  _vect3d<floatT> cd = onParabola(c-d);
-  return (ad.cross(bd)).dot(cd)/(ad.Length()*bd.Length()*cd.Length());
+  _vect3d<floatT> ad = onParabola(a - d);
+  _vect3d<floatT> bd = onParabola(b - d);
+  _vect3d<floatT> cd = onParabola(c - d);
+  return (ad.cross(bd)).dot(cd) / (ad.length() * bd.length() * cd.length());
 }
 
 // *************************************************************
@@ -277,25 +364,25 @@ struct ray {
 };
 
 inline double angle(point2d a, point2d b, point2d c) {
-  vect2d ba = (b-a);
-  vect2d ca = (c-a);
-  double lba = ba.Length();
-  double lca = ca.Length();
+  vect2d ba = (b - a);
+  vect2d ca = (c - a);
+  double lba = ba.length();
+  double lca = ca.length();
   double pi = 3.14159;
-  return 180/pi*acos(ba.dot(ca)/(lba*lca));
+  return 180. / pi * acos(ba.dot(ca) / (lba * lca));
 }
 
 inline double minAngleCheck(point2d a, point2d b, point2d c, double angle) {
-  vect2d ba = (b-a);
-  vect2d ca = (c-a);
-  vect2d cb = (c-b);
-  double lba = ba.Length();
-  double lca = ca.Length();
-  double lcb = cb.Length();
+  vect2d ba = (b - a);
+  vect2d ca = (c - a);
+  vect2d cb = (c - b);
+  double lba = ba.length();
+  double lca = ca.length();
+  double lcb = cb.length();
   double pi = 3.14159;
-  double co = cos(angle*pi/180.);
-  return (ba.dot(ca)/(lba*lca) > co || ca.dot(cb)/(lca*lcb) > co ||
-          -ba.dot(cb)/(lba*lcb) > co);
+  double co = cos(angle * pi / 180.);
+  return (ba.dot(ca) / (lba * lca) > co || ca.dot(cb) / (lca * lcb) > co ||
+          -ba.dot(cb) / (lba * lcb) > co);
 }
 
 inline point2d triangleCircumcenter(point2d a, point2d b, point2d c) {

@@ -38,19 +38,25 @@ namespace pctl {
   //    QUAD/OCT TREE NODES
   // *************************************************************
   
-#define gMaxLeafSize 16  // number of points stored in each leaf
+#define max_leaf_size 16  // number of points stored in each leaf
   
   template <class intT, class vertex, class point>
-  struct nData {
+  struct ndata {
     intT cnt;
-    nData(intT x) : cnt(x) {}
-    nData(point center) : cnt(0) {}
-    nData& operator+=(const nData op) {cnt += op.cnt; return *this;}
-    nData& operator+=(const vertex* op) {cnt += 1; return *this;}
+    ndata(intT x) : cnt(x) {}
+    ndata(point center) : cnt(0) {}
+    ndata& operator+=(const ndata op) {
+      cnt += op.cnt;
+      return *this;
+    }
+    ndata& operator+=(const vertex* op) {
+      cnt += 1;
+      return *this;
+    }
   };
   
-  template <class intT, class pointT, class vectT, class vertexT, class nodeData = nData<intT,vertexT,pointT> >
-  class gTreeNode {
+  template <class intT, class pointT, class vectT, class vertexT, class node_data = ndata<intT, vertexT, pointT> >
+  class dimtree_node {
     private :
     
     public :
@@ -60,14 +66,14 @@ namespace pctl {
     
     point center; // center of the box
     double size;   // width of each dimension, which have to be the same
-    nodeData data; // total mass of vertices in the box
+    node_data data; // total mass of vertices in the box
     intT count;  // number of vertices in the box
-    gTreeNode *children[8];
-    vertex **vertices;
+    dimtree_node* children[8];
+    vertex** vertices;
     
     // wraps a bounding box around the points and generates
     // a tree.
-    static gTreeNode* gTree(vertex** vv, intT n) {
+    static dimtree_node* dimtree(vertex** vv, intT n) {
       
       // calculate bounding box
       
@@ -79,33 +85,36 @@ namespace pctl {
       assert(n >= 1);  // later: relax this constraint?
       point id = pt[0];
       point minPt = reduce(pt.cbegin(), pt.cend(), id, [&] (point a, point b) {
-        return a.minCoords(b);
+        return a.min_coord(b);
       });
       point maxPt = reduce(pt.cbegin(), pt.cend(), id, [&] (point a, point b) {
-        return a.maxCoords(b);
+        return a.max_coord(b);
       });
 
       //cout << "min "; minPt.print(); cout << endl;
       //cout << "max "; maxPt.print(); cout << endl;
-      fvect box = maxPt-minPt;
-      point center = minPt+(box/2.0);
+      fvect box = maxPt - minPt;
+      point center = minPt + (box / 2.0);
       
       // copy before calling recursive routine since recursive routine is destructive
 
-      parray<vertex*> v(vv, vv+n);
+      parray<vertex*> v(vv, vv + n);
       //cout << "about to build tree" << endl;
       
-      gTreeNode* result = new gTreeNode(v.begin(), n, center, box.maxDim());
+      dimtree_node* result = new dimtree_node(v.begin(), n, center, box.max_dim());
 
       return result;
     }
     
-    int IsLeaf() { return (vertices != NULL); }
+    int is_leaf() {
+      return (vertices != NULL);
+    }
     
     void del() {
-      if (IsLeaf()) delete [] vertices;
-      else {
-        for (int i=0 ; i < (1 << center.dimension()); i++) {
+      if (is_leaf()) {
+        delete [] vertices;
+      } else {
+        for (int i = 0 ; i < (1 << center.dimension()); i++) {
           children[i]->del();
           delete children[i];
         }
@@ -113,86 +122,88 @@ namespace pctl {
     }
     
     // Returns the depth of the tree rooted at this node
-    intT Depth() {
-      intT depth;
-      if (IsLeaf()) depth = 0;
-      else {
-        depth = 0;
-        for (intT i=0 ; i < (1 << center.dimension()); i++)
-          depth = max<intT>(depth,children[i]->Depth());
+    intT depth() {
+      intT res;
+      if (is_leaf()) {
+       res = 0;
+      } else {
+        res = 0;
+        for (intT i = 0; i < (1 << center.dimension()); i++) {
+          res = max(res, children[i]->depth());
+        }
       }
-      return depth+1;
+      return res + 1;
     }
     
     // Returns the size of the tree rooted at this node
-    intT Size() {
+    intT points_count() {
       intT sz;
-      if (IsLeaf()) {
+      if (is_leaf()) {
         sz = count;
-        for (intT i=0; i < count; i++)
-          if (vertices[i] < ((vertex*) NULL)+1000)
+        for (intT i = 0; i < count; i++) {
+          if (vertices[i] < ((vertex*) NULL) + 1000)
             cout << "oops: " << vertices[i] << "," << count << "," << i << endl;
-      }
-      else {
+        }
+      } else {
         sz = 0;
-        for (int i=0 ; i < (1 << center.dimension()); i++)
-          sz += children[i]->Size();
+        for (int i = 0; i < (1 << center.dimension()); i++) {
+          sz += children[i]->points_count();
+        }
       }
       return sz;
     }
     
     template <class F>
-    void applyIndex(intT s, F f) {
-      if (IsLeaf())
-        for (intT i=0; i < count; i++) f(vertices[i],s+i);
-      else {
+    void apply_index(intT s, F f) {
+      if (is_leaf()) {
+        for (intT i = 0; i < count; i++) {
+          f(vertices[i], s + i);
+        }
+      } else {
         intT ss = s;
         int nb = (1 << center.dimension());
         parray<intT> pss(nb);
-        for (int i=0 ; i < nb; i++) {
+        for (int i = 0; i < nb; i++) {
           pss[i] = ss;
           ss += children[i]->count;
         }
         parallel_for(int(0), nb, [&] (int i) {
-          children[i]->applyIndex(pss[i],f);
+          children[i]->apply_index(pss[i], f);
         });
       }
     }
     
-    struct flatten_FA {
-      vertex** _A;
-      flatten_FA(vertex** A) : _A(A) {}
-      void operator() (vertex* p, intT i) {
-        _A[i] = p;}
-    };
-    
     vertex** flatten() {
-      vertex** A = new vertex*[count];
-      applyIndex(0,flatten_FA(A));
-      return A;
+      vertex** a = new vertex*[count];
+      apply_index(0, [&] (vertex* v, intT ind) {
+        a[ind] = v;
+      });
+      return a;
     }
     
     // Returns the child the vertex p appears in
-    int findQuadrant (vertex* p) {
-      return (p->pt).quadrant(center); }
+    int find_quadrant(vertex* p) {
+      return (p->pt).quadrant(center);
+    }
     
     // A hack to get around Cilk shortcomings
-    static gTreeNode *newTree(vertex** S, intT n, point cnt, double sz) {
-      return new gTreeNode(S, n, cnt, sz); }
+    static dimtree_node *new_tree(vertex** v, intT n, point cnt, double sz) {
+      return new dimtree_node(v, n, cnt, sz);
+    }
     
     // Used as a closure in collectD
     struct findChild {
-      gTreeNode *tr;
-      findChild(gTreeNode *t) : tr(t) {}
+      dimtree_node* tr;
+      findChild(dimtree_node *t) : tr(t) {}
       int operator() (vertex* p) {
-        int r = tr->findQuadrant(p);
-        return r;}
+        int r = tr->find_quadrant(p);
+        return r;
+      }
     };
     
     // the recursive routine for generating the tree -- actually mutually recursive
     // due to newTree
-    gTreeNode(vertex** S, intT n, point cnt, double sz) : data(nodeData(cnt))
-    {
+    dimtree_node(vertex** v, intT n, point cnt, double sz) : data(node_data(cnt)) {
       //cout << "n=" << n << endl;
       count = n;
       size = sz;
@@ -200,12 +211,15 @@ namespace pctl {
       vertices = NULL;
       int quadrants = (1 << center.dimension());
       
-      if (count > gMaxLeafSize) {
+      if (count > max_leaf_size) {
         intT offsets[8];
-        intSort::iSort(S, offsets, n, (intT)quadrants, findChild(this));
+        dimtree_node* now = this;
+        intsort::integer_sort(v, offsets, n, (intT)quadrants, [&] (vertex* vertex) {
+          return now->find_quadrant(vertex);
+        });
         if (0) {
-          for (intT i=0; i < n; i++) {
-            cout << "  " << i << ":" << this->findQuadrant(S[i]);
+          for (intT i = 0; i < n; i++) {
+            cout << "  " << i << ":" << this->find_quadrant(v[i]);
           }
         }
         //for (int i=0; i < quadrants; i++)
@@ -214,20 +228,22 @@ namespace pctl {
         // Give each child its appropriate center and size
         // The centers are offset by size/4 in each of the dimensions
         parallel_for(int(0), quadrants, [&] (int i) {
-          point newcenter = center.offsetPoint(i, size/4.0);
-          intT l = ((i == quadrants-1) ? n : offsets[i+1]) - offsets[i];
-          children[i] = newTree(S + offsets[i], l, newcenter, size/2.0);
+          point newcenter = center.offset_point(i, size / 4.0);
+          intT l = ((i == quadrants - 1) ? n : offsets[i + 1]) - offsets[i];
+          children[i] = new_tree(v + offsets[i], l, newcenter, size / 2.0);
         });
         
-        data = nodeData(center);
-        for (int i=0 ; i < quadrants; i++)
-          if (children[i]->count > 0)
+        data = node_data(center);
+        for (int i = 0; i < quadrants; i++) {
+          if (children[i]->count > 0) {
             data += children[i]->data;
+          }
+        }
       } else {
         vertices = new vertex*[count];
-        data = nodeData(center);
-        for (intT i=0; i < count; i++) {
-          vertex* p = S[i];
+        data = node_data(center);
+        for (intT i = 0; i < count; i++) {
+          vertex* p = v[i];
           data += p;
           vertices[i] = p;
         }
