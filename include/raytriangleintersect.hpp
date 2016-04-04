@@ -30,7 +30,7 @@ inline floatT rayTriangleIntersect(ray<_point3d<floatT> > R,
   // if determinant is zero then ray is
   // parallel with the triangle plane
   if (det > -EPSILON && det < EPSILON) return 0;
-  floatT invDet = 1.0/det;
+  floatT det_inverse = 1.0 / det;
   
   // calculate distance from m[0] to origin
   vectT tvec = o - m[0];
@@ -43,13 +43,13 @@ inline floatT rayTriangleIntersect(ray<_point3d<floatT> > R,
   if (u < 0.0 || u > 1.0) return 0;
   
   vectT qvec = tvec.cross(e1);
-  floatT v = d.dot(qvec) * invDet;
+  floatT v = d.dot(qvec) * det_inverse;
   
   // check against other edges
   if (v < 0.0 || u + v > 1.0) return 0;
   
   //distance along the ray, i.e. intersect at o + t * d
-  floatT t = e2.dot(qvec) * invDet;
+  floatT t = e2.dot(qvec) * det_inverse;
   
   return t;
 }

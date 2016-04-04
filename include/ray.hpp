@@ -6,7 +6,7 @@ namespace pasl {
     using intT = int;
     typedef _point3d<double> pointT;
     
-    intT* rayCast(triangles<pointT>, ray<pointT>*, intT);
+    intT* ray_cast(triangles<pointT>, ray<pointT>*, intT);
   }
 }
 

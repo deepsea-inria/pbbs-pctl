@@ -336,22 +336,28 @@ inline double inCircleNormalized(_point2d<floatT> a, _point2d<floatT> b,
 // *************************************************************
 
 struct triangle {
-  int C[3];
+  int vertices[3];
   triangle(int p1, int p2, int p3) {
-    C[0] = p1; C[1] = p2; C[2] = p3;
+    vertices[0] = p1;
+    vertices[1] = p2;
+    vertices[2] = p3;
   }
 };
 
 template <class point>
 struct triangles {
-  long numPoints;
-  long numTriangles;
-  point* P;
-  triangle* T;
+  long num_points;
+  long num_triangles;
+  point* p;
+  triangle* t;
   triangles() {}
-  void del() {free(P); free(T);}
-  triangles(long np, long nt, point* _P, triangle* _T)
-  : numPoints(np), numTriangles(nt), P(_P), T(_T) {}
+  void del() {
+    free(p);
+    free(T);
+  }
+
+  triangles(long np, long nt, point* _p, triangle* _t)
+    : num_points(np), num_triangles(nt), p(_p), t(_t) {}
 };
 
 template <class pointT>
@@ -386,8 +392,8 @@ inline double minAngleCheck(point2d a, point2d b, point2d c, double angle) {
 }
 
 inline point2d triangleCircumcenter(point2d a, point2d b, point2d c) {
-  vect2d v1 = b-a;
-  vect2d v2 = c-a;
+  vect2d v1 = b - a;
+  vect2d v2 = c - a;
   vect2d v11 = v1 * v2.dot(v2);
   vect2d v22 = v2 * v1.dot(v1);
   return  a + vect2d(v22.y - v11.y, v11.x - v22.x)/(2.0 * v1.cross(v2));
