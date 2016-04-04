@@ -201,9 +201,9 @@ void integer_sort(E *a, intT* bucket_offsets, intT n, intT max_value, bool botto
   if (bits <= MAX_RADIX) {
     radix_step(a, b, tmp, raw_buckets, raw_buckets_number, n, (intT) 1 << bits, true, eBits<intT, E, F>(bits, 0, f));
     if (bucket_offsets != NULL) {
-      pmem::copy(bucket_offsets, bucket_offsets + max_value, &(raw_buckets[0][0]));
-      /*
-      parallel_for(intT(0), m, [&] (intT i) {
+      pmem::copy(raw_buckets[0], raw_buckets[0] + max_value, bucket_offsets);
+      
+/*      parallel_for(intT(0), max_value, [&] (intT i) {
         bucket_offsets[i] = raw_buckets[0][i];
       }); */
     }
