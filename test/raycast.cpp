@@ -42,7 +42,7 @@ std::ostream& operator<<(std::ostream& out, const test_case& c) {
 }
 
 void generate(size_t _nb, test_case& dst) {
-  intT nb = (intT)100 * _nb;
+  intT nb = (intT)10 * _nb;
   printf("Test with n = %d\n", nb);
 
   bool onSphere = quickcheck::generateInRange(0, 1) == 0;
@@ -51,8 +51,11 @@ void generate(size_t _nb, test_case& dst) {
   dst.triangles.resize(nb);
   double d = 1.0 / sqrt((double) nb);
   pasl::pctl::parallel_for(0, nb, [&] (int i) {
-    if (onSphere) dst.points[3 * i] = randOnUnitSphere3d<int, unsigned int>(i);
-    else dst.points[3 * i] = rand3d<int, unsigned int>(i);
+    if (onSphere) {
+      dst.points[3 * i] = randOnUnitSphere3d<int, unsigned int>((i + 1) * nb);
+    } else {
+      dst.points[3 * i] = rand3d<int, unsigned int>((i + 1) * nb);
+    }
     dst.points[3 * i + 1] = dst.points[3 * i] + vect3d(d, d, 0);
     dst.points[3 * i + 2] = dst.points[3 * i] + vect3d(d, 0, d);
     dst.triangles[i].vertices[0] = 3 * i;
@@ -100,8 +103,9 @@ public:
     parray<intT> original = pasl::pctl::kdtree::ray_cast(tri, _in.c.rays.begin(), _in.c.rays.size());
     parray<intT> seq = pasl::pctl::kdtree::ray_cast(tri, _in.c.rays.begin(), _in.c.rays.size());
     for (int i = 0; i < original.size(); i++) {
+//      std::cerr << seq << std::endl;
       if (original[i] != seq[i]) {
-        printf("The triangle for ray %d has been found incorrectly\n", i);
+        printf("The triangle for ray %d has been found incorrectly, %d against %d\n", i, original[i], seq[i]);
         return false;
       }
     }
