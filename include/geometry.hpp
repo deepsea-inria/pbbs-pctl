@@ -337,12 +337,19 @@ inline double inCircleNormalized(_point2d<floatT> a, _point2d<floatT> b,
 
 struct triangle {
   int vertices[3];
+
+  triangle() {}
+
   triangle(int p1, int p2, int p3) {
     vertices[0] = p1;
     vertices[1] = p2;
     vertices[2] = p3;
   }
 };
+
+static std::ostream& operator<<(std::ostream& os, const triangle t) {
+  return os << t.vertices[0] << " " << t.vertices[1] << " " << t.vertices[2];
+}
 
 template <class point>
 struct triangles {
@@ -353,7 +360,7 @@ struct triangles {
   triangles() {}
   void del() {
     free(p);
-    free(T);
+    free(t);
   }
 
   triangles(long np, long nt, point* _p, triangle* _t)

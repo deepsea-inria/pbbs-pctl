@@ -34,6 +34,8 @@
 namespace pasl {
 namespace pctl {
 namespace kdtree {
+
+constexpr char kdtree_file[] = "kdtree";
     
 // Stores coordinate of event along with index to its triangle and type
 // Stores type of event (START or END) in lowest bit of index
@@ -79,15 +81,6 @@ struct cut_info {
   cut_info() {}
 };
 
-template <class T>
-class treeNode_contr {
-public:
-  static controller_type contr;
-};
-
-template <class T>
-controller_type tree_node_contr<T>::contr("tree_node_delete");
-
 struct tree_node {
   tree_node *left;
   tree_node *right;
@@ -106,7 +99,9 @@ struct tree_node {
            int _cut_dim, float _cut_off, bounding_box B)
   : left(L), right(R), triangle_indices(NULL), cut_dim(_cut_dim),
   cut_off(_cut_off) {
-    for (int i=0; i < 3; i++) box[i] = B[i];
+    for (int i = 0; i < 3; i++) {
+      box[i] = B[i];
+    }
     n = L->n + R->n;
     leaves = L->leaves + R->leaves;
   }
@@ -125,26 +120,27 @@ struct tree_node {
       }
     }
     
-    n = _n/2;
+    n = _n / 2;
     leaves = 1;
-    for (int i=0; i < 3; i++) {
+    for (int i = 0; i < 3; i++) {
       box[i] = B[i];
-      free(E[i]);
+//      free(E[i]);
     }
   }
   
-  static void del(tree_node *T) {
-    using controller_type = tree_node_contr<int>;
-    par::cstmt(controller_type::contr, [&] { return T->n; }, [&] {
-      if (T->is_leaf())  free(T->triangle_indices);
-      else {
+  static void del(tree_node* t) {
+    using controller_type = pasl::pctl::granularity::controller_holder<kdtree_file, 1, intT>;
+    par::cstmt(controller_type::controller, [&] { return t->n; }, [&] {
+      if (t->is_leaf()) {
+        free(t->triangle_indices);
+      } else {
         par::fork2([&] {
-          del(T->left);
+          del(t->left);
         }, [&] {
-          del(T->right);
+          del(t->right);
         });
       }
-      free(T);
+      delete t;
     });
   }
 };
@@ -161,8 +157,6 @@ float max_expand = 1.6;
 int max_recursion_depth = 25;
 
 // Constant for switching to sequential versions
-//TODO: remove this constant, and switch to cstmt
-int min_parallel_size = 500000;
 
 typedef pointT::floatT floatT;
 typedef _vect3d<floatT> vectT;
@@ -217,7 +211,7 @@ cut_info best_cut_serial(event* e, range r, range r1, range r2, intT n) {
     if (cost < min_cost) {
       rn = in_right;
       ln = in_left;
-      minCost = cost;
+      min_cost = cost;
       k = i;
     }
     if (IS_START(e[i])) in_left++;
@@ -227,46 +221,52 @@ cut_info best_cut_serial(event* e, range r, range r1, range r2, intT n) {
 
 // parallel version of best cut
 cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
-  if (n < min_parallel_size) {
-    return best_cut_serial(e, r, r1, r2, n);
-  }
-  if (r.max - r.min == 0.0) {
-    return cut_info(FLT_MAX, r.min, n, n);
-  }
-  
-  // area of two orthogonal faces
-  float orthog_area = 2 * ((r1.max - r1.min) * (r2.max - r2.min));
-  
-  // length of diameter of orthogonal face
-  float diameter = 2 * ((r1.max - r1.min) + (r2.max - r2.min));
-  
-  // count number that end before i
-  parray<intT> upper(n, [&] (intT i) {
-    return IS_END(e[i]);
+  cut_info result;
+  using controller_type = pasl::pctl::granularity::controller_holder<kdtree_file, 2, intT>;
+  par::cstmt(controller_type::controller, [&] { return n; }, [&] {
+    if (r.max - r.min == 0.0) {
+      result = cut_info(FLT_MAX, r.min, n, n);
+      return;
+    }
+    
+    // area of two orthogonal faces
+    float orthog_area = 2 * ((r1.max - r1.min) * (r2.max - r2.min));
+    
+    // length of diameter of orthogonal face
+    float diameter = 2 * ((r1.max - r1.min) + (r2.max - r2.min));
+    
+    // count number that end before i
+    parray<intT> upper(n, [&] (intT i) {
+      return IS_END(e[i]);
+    });
+    intT u = dps::scan(upper.begin(), upper.end(), (intT)0, [&] (intT x, intT y) {
+      return x + y; }, upper.begin(), forward_exclusive_scan
+    );
+    
+    // calculate cost of each possible split location
+    parray<float> cost(n, [&] (intT i) {
+      intT in_left = i - upper[i];
+      intT in_right = n / 2 - (upper[i] + IS_END(e[i]));
+      float left_length = e[i].v - r.min;
+      float left_area = orthog_area + diameter * left_length;
+      float right_length = r.max - e[i].v;
+      float right_area = orthog_area + diameter * right_length;
+      return (left_area * in_left + right_area * in_right);
+    });
+    
+    // find minimum across all (maxIndex with less is minimum)
+    intT k = (intT)max_index(cost.cbegin(), cost.cend(), cost[0], [&] (float x, float y) {
+      return x < y;
+    });
+      
+    float c = cost[k];
+    intT ln = k - upper[k];
+    intT rn = n / 2 - (upper[k] + IS_END(e[k]));
+    result = cut_info(c, e[k].v, ln, rn);
+  }, [&] {
+    result = best_cut_serial(e, r, r1, r2, n);
   });
-  intT u = dps::scan(upper.begin(), upper.end(), (intT)0, [&] (intT x, intT y) {
-    return x + y; }, upper.begin(), forward_exclusive_scan);
-  
-  // calculate cost of each possible split location
-  parray<float> cost(n, [&] (intT i) {
-    intT in_left = i - upper[i];
-    intT in_right = n / 2 - (upper[i] + IS_END(e[i]));
-    float left_length = e[i].v - r.min;
-    float left_area = orthog_area + diameter * left_length;
-    float right_length = r.max - e[i].v;
-    float right_area = orthog_area + diameter * right_length;
-    return (left_area * in_left + right_area * in_right);
-  });
-  
-  // find minimum across all (maxIndex with less is minimum)
-  intT k = (intT)max_index(cost.cbegin(), cost.cend(), cost[0], [&] (float x, float y) {
-    return x < y;
-  });
-  
-  float c = cost[k];
-  intT ln = k - upper[k];
-  intT rn = n / 2 - (upper[k] + IS_END(e[k]));
-  return cut_info(c, e[k].v, ln, rn);
+  return result;
 }
 
 void split_events_serial(range* boxes, event* events,
@@ -293,37 +293,30 @@ void split_events_serial(range* boxes, event* events,
 
 void split_events(range* boxes, event* events, float cut_off, intT n,
                  parray<event>& left, parray<event>& right) {
-  if (n < min_parallel_size) {
-    return split_events_serial(boxes, events, cut_off, n, left, right);
-  }
-  parray<bool> lower(n, [&] (intT i) {
-    intT b = GET_INDEX(events[i]);
-    return boxes[b].min < cut_off;
+  using controller_type = pasl::pctl::granularity::controller_holder<kdtree_file, 3, intT>;
+  par::cstmt(controller_type::controller, [&] { return n; }, [&] {
+    parray<bool> lower(n, [&] (intT i) {
+      intT b = GET_INDEX(events[i]);
+      return boxes[b].min < cut_off;
+    });
+    parray<bool> upper(n, [&] (intT i) {
+      intT b = GET_INDEX(events[i]);
+      return boxes[b].max > cut_off;
+    });
+    const event* events2 = (const event*)events;
+    left = pack(events2, events2 + n, lower.cbegin());
+    right = pack(events2, events2 + n, upper.cbegin());
+  }, [&] {
+    split_events_serial(boxes, events, cut_off, n, left, right);
   });
-  parray<bool> upper(n, [&] (intT i) {
-    intT b = GET_INDEX(events[i]);
-    return boxes[b].max > cut_off;
-  });
-  const event* events2 = (const event*)events;
-  left = pack(events2, events2+n, lower.cbegin());
-  right = pack(events2, events2+n, upper.cbegin());
 }
   
-template <class T>
-class generate_node_contr {
-public:
-  static controller_type contr;
-};
-
-template <class T>
-controller_type generate_node_contr<T>::contr("generate_node");
-
 // n is the number of events (i.e. twice the number of triangles)
 tree_node* generate_node(boxes bxs, events evts, bounding_box b,
                        intT n, intT max_depth) {
-  using controller_type = generate_node_contr<intT>;
+  using controller_type = pasl::pctl::granularity::controller_holder<kdtree_file, 4, intT>;
   tree_node* result;
-  par::cstmt(controller_type::contr, [&] { return n; }, [&] {
+  par::cstmt(controller_type::controller, [&] { return n; }, [&] {
     //cout << "n=" << n << " max_depth=" << max_depth << endl;
     if (n <= 2 || max_depth == 0) {
       result = new tree_node(evts, n, b);
@@ -352,13 +345,13 @@ tree_node* generate_node(boxes bxs, events evts, bounding_box b,
     // quit recursion early if best cut is not very good
     if (best_cost >= orig_cost ||
         cuts[cut_dim].num_left + cuts[cut_dim].num_right > max_expand * n / 2) {
-      result = new tree_node(evts, n, B);
+      result = new tree_node(evts, n, b);
       return;
     }
     
     // declare structures for recursive calls
     bounding_box bbl;
-    for (int i=0; i < 3; i++) {
+    for (int i = 0; i < 3; i++) {
       bbl[i] = b[i];
     }
     bbl[cut_dim] = range(bbl[cut_dim].min, cut_off);
@@ -366,7 +359,7 @@ tree_node* generate_node(boxes bxs, events evts, bounding_box b,
     intT nl;
     
     bounding_box bbr;
-    for (int i=0; i < 3; i++) {
+    for (int i = 0; i < 3; i++) {
       bbr[i] = b[i];
     }
     bbr[cut_dim] = range(cut_off, bbr[cut_dim].max);
@@ -393,9 +386,9 @@ tree_node* generate_node(boxes bxs, events evts, bounding_box b,
     }
     
     // free old events and make recursive calls
-    for (int i = 0; i < 3; i++) {
+/*    for (int i = 0; i < 3; i++) {
       free(evts[i]);
-    }
+    }*/
     tree_node* l;
     tree_node* r;
     par::fork2([&] {
@@ -502,7 +495,7 @@ void process_rays(trianglesT tri, rayT* rays, intT num_rays,
   });
 }
 
-parray<intT> ray_cast(triangles<pointT> tri, ray<pointT>* rays, intT numRays) {
+parray<intT> ray_cast(triangles<pointT> tri, ray<pointT>* rays, int num_rays) {
   
   // Extract triangles into a separate array for each dimension with
   // the lower and upper bound for each triangle in that dimension.
@@ -532,20 +525,21 @@ parray<intT> ray_cast(triangles<pointT> tri, ray<pointT>* rays, intT numRays) {
       evts[d][2 * i] = event(bxs[d][i].min, i, START);
       evts[d][2 * i + 1] = event(bxs[d][i].max, i, END);
     });
-    sample_sort(evts[d], 2 * n, cmpVal());
+    sample_sort(evts[d], 2 * n, [&] (event& a, event& b) { return a.v < b.v; });
     box[d] = range(evts[d][0].v, evts[d][2 * n - 1].v);
   }
   
   // build the tree
   intT recursion_depth = std::min(max_recursion_depth, utils::log2Up(n) - 1);
-  tree_node* tree = generate_node(bxs, evts, bounding_box, 2 * n,
+  tree_node* tree = generate_node(bxs, evts, box, 2 * n,
                              recursion_depth);
   
   if (STATS)
-    cout << "Triangles across all leaves = " << r->n 
-    << " Leaves = " << r->leaves << endl;
+    cout << "Triangles across all leaves = " << tree->n 
+    << " Leaves = " << tree->leaves << endl;
   for (int d = 0; d < 3; d++) {
     free(bxs[d]);
+    free(evts[d]);
   }
   
   // get the intersections
@@ -560,7 +554,7 @@ parray<intT> ray_cast(triangles<pointT> tri, ray<pointT>* rays, intT numRays) {
     });
     for (int i= 0; i < nr; i++) {
       cout << results[i] << endl;
-      if (find_ray(rays[i], indx.begin(), n, tri, bounding_box) != results[i]) {
+      if (find_ray(rays[i], indx.begin(), n, tri, box) != results[i]) {
         cout << "bad intersect in checking ray intersection" << endl;
         abort();
       }
@@ -572,6 +566,21 @@ parray<intT> ray_cast(triangles<pointT> tri, ray<pointT>* rays, intT numRays) {
   return results;
 }
   
+parray<intT> ray_cast_seq(triangles<pointT> tri, ray<pointT>* rays, int num_rays) {
+  bounding_box box;
+  for (int i = 0; i < 3; i++) {
+    box[i] = range(-std::numeric_limits<double>::max(), std::numeric_limits<double>::max());
+  }
+
+  parray<intT> indices(tri.num_triangles, [&] (int i) { return i; });
+  parray<intT> result(num_rays);
+  for (int i = 0; i < num_rays; i++) {
+    result[i] = find_ray(rays[i], indices.begin(), indices.size(), tri, box);
+  }
+  return result;
+}
+
+
 } // end namespace
 } // end namespace
 } // end namespace

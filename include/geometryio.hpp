@@ -108,17 +108,17 @@ inline void xToString(char* s, point3d a) {
 }
 
 inline int xToStringLen(triangle a) {
-  return xToStringLen(a.C[0]) + xToStringLen(a.C[1]) + xToStringLen(a.C[2]) + 2;
+  return xToStringLen(a.vertices[0]) + xToStringLen(a.vertices[1]) + xToStringLen(a.vertices[2]) + 2;
 }
 
 inline void xToString(char* s, triangle a) {
-  int lx = xToStringLen(a.C[0]);
-  int ly = xToStringLen(a.C[1]);
-  xToString(s, a.C[0]);
+  int lx = xToStringLen(a.vertices[0]);
+  int ly = xToStringLen(a.vertices[1]);
+  xToString(s, a.vertices[0]);
   s[lx] = ' ';
-  xToString(s+lx+1, a.C[1]);
+  xToString(s+lx+1, a.vertices[1]);
   s[lx+ly+1] = ' ';
-  xToString(s+lx+ly+2, a.C[2]);
+  xToString(s+lx+ly+2, a.vertices[2]);
 }
   
 using namespace std;
@@ -167,29 +167,29 @@ triangles<point2d> readTrianglesFromFileNodeEle(char* fname) {
   pstring S = readStringFromFile((char*)nfilename.append(".node").c_str());
   words W = stringToWords(S);
   triangles<point2d> Tr;
-  Tr.numPoints = atol(W.Strings[0]);
-  if (W.Strings.size() < 4*Tr.numPoints + 4) {
+  Tr.num_points = atol(W.Strings[0]);
+  if (W.Strings.size() < 4*Tr.num_points + 4) {
     cout << "readStringFromFileNodeEle inconsistent length" << endl;
     abort();
   }
   
-  Tr.P = newA(point2d, Tr.numPoints);
-  for(intT i=0; i < Tr.numPoints; i++)
-    Tr.P[i] = point2d(atof(W.Strings[4*i+5]), atof(W.Strings[4*i+6]));
+  Tr.p = newA(point2d, Tr.num_points);
+  for(intT i=0; i < Tr.num_points; i++)
+    Tr.p[i] = point2d(atof(W.Strings[4*i+5]), atof(W.Strings[4*i+6]));
   
   string efilename(fname);
   pstring SN = readStringFromFile((char*)efilename.append(".ele").c_str());
   words WE = stringToWords(SN);
-  Tr.numTriangles = atol(WE.Strings[0]);
-  if (WE.Strings.size() < 4*Tr.numTriangles + 3) {
+  Tr.num_triangles = atol(WE.Strings[0]);
+  if (WE.Strings.size() < 4*Tr.num_triangles + 3) {
     cout << "readStringFromFileNodeEle inconsistent length" << endl;
     abort();
   }
   
-  Tr.T = newA(triangle, Tr.numTriangles);
-  for (long i=0; i < Tr.numTriangles; i++)
+  Tr.t = newA(triangle, Tr.num_triangles);
+  for (long i=0; i < Tr.num_triangles; i++)
     for (int j=0; j < 3; j++)
-      Tr.T[i].C[j] = atol(WE.Strings[4*i + 4 + j]);
+      Tr.t[i].vertices[j] = atol(WE.Strings[4*i + 4 + j]);
   
   return Tr;
 }
@@ -206,21 +206,21 @@ triangles<pointT> readTrianglesFromFile(char* fname, intT offset) {
   
   int headerSize = 3;
   triangles<pointT> Tr;
-  Tr.numPoints = atol(W.Strings[1]);
-  Tr.numTriangles = atol(W.Strings[2]);
-  if (W.Strings.size() != headerSize + 3 * Tr.numTriangles + d * Tr.numPoints) {
+  Tr.num_points = atol(W.Strings[1]);
+  Tr.num_triangles = atol(W.Strings[2]);
+  if (W.Strings.size() != headerSize + 3 * Tr.num_triangles + d * Tr.num_points) {
     cout << "readTrianglesFromFile inconsistent length" << endl;
     abort();
   }
   
-  Tr.P = newA(pointT, Tr.numPoints);
-  parsePoints(W.Strings.begin() + headerSize, Tr.P, Tr.numPoints);
+  Tr.p = newA(pointT, Tr.num_points);
+  parsePoints(W.Strings.begin() + headerSize, Tr.p, Tr.num_points);
   
-  Tr.T = newA(triangle, Tr.numTriangles);
-  char** Triangles = W.Strings.begin() + headerSize + d * Tr.numPoints;
-  for (long i=0; i < Tr.numTriangles; i++)
+  Tr.T = newA(triangle, Tr.num_triangles);
+  char** Triangles = W.Strings.begin() + headerSize + d * Tr.num_points;
+  for (long i=0; i < Tr.num_triangles; i++)
     for (int j=0; j < 3; j++)
-      Tr.T[i].C[j] = atol(Triangles[3*i + j])-offset;
+      Tr.t[i].vertices[j] = atol(Triangles[3*i + j])-offset;
   return Tr;
 }
 
@@ -232,10 +232,10 @@ int writeTrianglesToFile(triangles<pointT> Tr, char* fileName) {
     return 1;
   }
   file << HeaderTriangles << endl;
-  file << Tr.numPoints << endl;
-  file << Tr.numTriangles << endl;
-  writeArrayToStream(file, Tr.P, Tr.numPoints);
-  writeArrayToStream(file, Tr.T, Tr.numTriangles);
+  file << Tr.num_points << endl;
+  file << Tr.num_priangles << endl;
+  writeArrayToStream(file, Tr.p, Tr.num_points);
+  writeArrayToStream(file, Tr.t, Tr.num_triangles);
   file.close();
   return 0;
 }

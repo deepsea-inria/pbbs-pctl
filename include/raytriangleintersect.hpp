@@ -15,7 +15,7 @@ namespace pctl {
 // Fast, Minimum Storage Ray/Triangle Intersection
 // Tomas Moller and Ben Trumbore
 template <class floatT>
-inline floatT rayTriangleIntersect(ray<_point3d<floatT> > R,
+inline floatT ray_triangle_intersect(ray<_point3d<floatT> > R,
                                    _point3d<floatT> m[]) {
   typedef _point3d<floatT> pointT;
   typedef _vect3d<floatT> vectT;
@@ -37,7 +37,7 @@ inline floatT rayTriangleIntersect(ray<_point3d<floatT> > R,
   
   // u and v are the barycentric coordinates
   // in triangle if u >= 0, v >= 0 and u + v <= 1
-  floatT u = tvec.dot(pvec) * invDet;
+  floatT u = tvec.dot(pvec) * det_inverse;
   
   // check against one edge and opposite point
   if (u < 0.0 || u > 1.0) return 0;
