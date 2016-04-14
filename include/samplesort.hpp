@@ -28,6 +28,9 @@
 #include "transpose.hpp"
 #include "prandgen.hpp"
 
+#ifndef _PBBS_PCTL_SAMPLESORT_H_
+#define _PBBS_PCTL_SAMPLESORT_H_
+
 namespace pasl {
 namespace pctl {
   
@@ -181,3 +184,4 @@ void sample_sort (E* a, intT n, BinPred compare) {
 #undef compSort
 #define compSort(__A, __n, __f) (sampleSort(__A, __n, __f))
 
+#endif /*! _PBBS_PCTL_SAMPLESORT_H_ !*/

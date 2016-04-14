@@ -6,6 +6,9 @@
 // The third is broken into two parts, where the first only depends
 //   on the triangle (slow) and the second adds the ray
 
+#ifndef _PBBS_PCTL_RAYTRIANGLEINTERSECT_H_
+#define _PBBS_PCTL_RAYTRIANGLEINTERSECT_H_
+
 #define EPSILON 0.00000001
 
 namespace pasl {
@@ -214,3 +217,4 @@ inline floatT ray_triangle_intersect(ray<_point3d<floatT> > R,
  //  return ti.intersectRay(R);
  //}
  */
+#endif /*! _PBBS_PCTL_RAYTRIANGLEINTERSECT_H_ !*/
