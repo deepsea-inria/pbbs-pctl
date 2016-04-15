@@ -34,7 +34,7 @@ using value_type = unsigned int;
 
 void generate(size_t _nb, parray<value_type>& dst) {
   long n = _nb * 10000;
-//  std::cerr << n << "\n";
+  std::cerr << "Size: " << n << "\n";
   int r = quickcheck::generateInRange(0, 2); // currently something is wrong with exp_dist
 //  std::cerr << r << "\n";
   if (r == 0) {

@@ -17,7 +17,7 @@ template <class Generator_fct, class Item = typename std::result_of<Generator_fc
 Item load(std::string file, const Generator_fct& gen, bool regenerate = false) {
   std::ifstream in(file, std::ifstream::binary);
   if (!regenerate && in.good()) {
-    return read_from_file<Item>()(in);
+    return read_from_file<Item>(in);
   } else {
     Item result = gen();
     std::ofstream out(file, std::ofstream::binary);
@@ -60,25 +60,25 @@ parray<Item> load_random_almost_sorted_seq(std::string file, int n, int nb_swaps
 }
 
 template <class Item>
-parray<Item> load_exp_dist_seq(std::string file, int n, int nb_swaps, bool regenerate = false) {
+parray<Item> load_random_exp_dist_seq(std::string file, int n, bool regenerate = false) {
   return load(file, [&] { return pasl::pctl::sequencedata::exp_dist<Item>(0, n); }, regenerate);
 }
 
-parray<std::string> load_trigram_words(std::string file, int n, bool regenerate = false) {
+parray<char*> load_trigram_words(std::string file, int n, bool regenerate = false) {
   return load(file, [&] { return pasl::pctl::trigram_words(0, n); }, regenerate);
 }
 
-parray<std::pair<std::string, int>> load_trigram_words_with_int(std::string file, int n, int range, bool regenerate = false) {
+parray<std::pair<char*, int>> load_trigram_words_with_int(std::string file, int n, int range, bool regenerate = false) {
   return load(file, [&] {
-    parray<std::string> f = pasl::pctl::trigram_words(0, n);
-    return parray<std::pair<std::string, int>>(n, [&] (int i) {
+    parray<char*> f = pasl::pctl::trigram_words(0, n);
+    return parray<std::pair<char*, int>>(n, [&] (int i) {
       int v = pasl::pctl::prandgen::hash<int>(n + i) % range;
       return make_pair(f[i], v);
     });
   }, regenerate);
 }
 
-parray<std::pair<std::string, int>> load_trigram_words_with_int(std::string file, int n, bool regenerate = false) {
+parray<std::pair<char*, int>> load_trigram_words_with_int(std::string file, int n, bool regenerate = false) {
   return load_trigram_words_with_int(file, n, n, regenerate);
 }
 
@@ -152,9 +152,9 @@ ray_cast_test load_ray_cast_test(std::string file, std::string triangles_file, b
   std::ifstream in(file, std::ifstream::binary);
   ray_cast_test test;
   if (!regenerate && in.good()) {
-    test.points = read_from_file<parray<point3d>>()(in);
-    test.triangles = read_from_file<parray<triangle>>()(in);
-    test.rays = read_from_file<parray<ray<point3d>>>()(in);
+    test.points = read_from_file<parray<point3d>>(in);
+    test.triangles = read_from_file<parray<triangle>>(in);
+    test.rays = read_from_file<parray<ray<point3d>>>(in);
   } else {
     auto p = load_triangles_from_txt(triangles_file);
     test.points = p.first;

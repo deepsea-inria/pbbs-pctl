@@ -66,15 +66,19 @@ struct ngram_table {
     while (x > e.probs[j]) {
       j++;
     }
+//    std::cerr << x << " " << c0 << " " << c1 << " " << e.chars[j] << "\n";
     return e.chars[j];
   }
 
-  int word(int i, std::string a, int offset, int max_len) {
+  int word(int i, char* a, int offset, int max_len) {
     a[offset] = next('_', '_', i);
     a[offset + 1] = next('_', a[offset], i + 1);
     int j = 2;
-    while (j < max_len && offset + j < a.length() && a[offset + j] != '_') {
+    while (j < max_len) {
       a[offset + j] = next(a[offset + j - 2], a[offset + j - 1], i + j);
+      if (a[offset + j] == '_') {
+        break;
+      }
       j++;
     }
     return j;
@@ -90,15 +94,15 @@ struct ngram_table {
       a1 = tmp;
       j++;
     }
-    return j;
+    return j - 1;
   }
 
-  std::string word(int i) {
+  char* word(int i) {
     int MAX_LEN = 100;
-    std::string a;
-    a.resize(MAX_LEN);
-    int l = word(i, a, 0, MAX_LEN);
-    a.resize(l);
+    int len = word_length(i, MAX_LEN);
+    char* a = new char[len + 1];
+    a[len] = 0;
+    int l = word(i, a, 0, len);
     return a;
   }
 
@@ -108,7 +112,7 @@ struct ngram_table {
     result.resize(n);
     int j = 0;
     while (j < n) {
-      int l = word(j + s, result, j, n - j);
+      int l = word(j + s, &result[0], j, n - j);
       result[j + l] = ' ';
       j += l + 1;
     }
@@ -128,9 +132,9 @@ void gen_trigram_string(std::string fname, int n) {
   out.close();
 }
 
-parray<std::string> trigram_words(int s, int e) { 
+parray<char*> trigram_words(int s, int e) { 
   int n = e - s;
-  parray<std::string> a(n);
+  parray<char*> a(n);
   ngram_table t = ngram_table();
   pasl::pctl::parallel_for(0, n, [&] (int i) {
     a[i] = t.word(100 * (i + s));
@@ -139,7 +143,7 @@ parray<std::string> trigram_words(int s, int e) {
 }
 
 void gen_trigram_words(std::string fname, int n) {
-  parray<std::string> words = trigram_words(0, n);
+  parray<char*> words = trigram_words(0, n);
   std::ofstream out(fname, std::ofstream::binary);
   io::write_to_file(out, words);
   out.close();

@@ -5,6 +5,11 @@
 #include "io.hpp"
 #include "cmdline.hpp"
 
+#ifdef PCTL_CILK_PLUS
+#include <cilk/cilk.h>
+#include <cilk/cilk_api.h>
+#endif
+
 #ifndef _PBBS_PCTL_BENCH_H_
 #define _PBBS_PCTL_BENCH_H_
 
@@ -48,7 +53,7 @@ namespace pbbs {
 #if defined(USE_PASL_RUNTIME)
     threaddag::init();
 #endif
-#ifdef USE_CILK_RUNTIME
+#ifdef PCTL_CILK_PLUS
   __cilkrts_set_param("nworkers", std::to_string(proc).c_str());
   std::cerr << "Number of workers: " << __cilkrts_get_nworkers() << std::endl;
 #endif
