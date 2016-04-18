@@ -84,7 +84,7 @@ controller_type samplesort_contr<E,BinPred,intT>::contr("samplesort");
 template<class E, class BinPred, class intT>
 void sample_sort (E* a, intT n, BinPred compare) {
   using controller_type = samplesort_contr<E, BinPred, intT>;
-  par::cstmt(controller_type::contr, [&] { return n; }, [&] {
+  par::cstmt(controller_type::contr, [&] { return (int) (n * log(n)); }, [&] {
     if (n <= 1) {
       return;
     }
@@ -109,7 +109,7 @@ void sample_sort (E* a, intT n, BinPred compare) {
     //cout << "n=" << n << " num_segs=" << segments << endl;
       
     // sort the samples
-    comparison_sort(sample_set.begin(), sample_set_size, compare);
+    sample_sort(sample_set.begin(), sample_set_size, compare);
       
     // subselect samples at even stride
     parray<E> pivots(segments - 1, [&] (intT k) {
@@ -129,6 +129,7 @@ void sample_sort (E* a, intT n, BinPred compare) {
       intT offset = r * row_length;
       intT size = (r < rows - 1) ? row_length : n - offset;
       std::sort(a + offset, a + offset + size, compare);
+//      quickSort(a + offset, size, compare);
       split_positions(a + offset, pivots.begin(), segments_sizes.begin() + r * segments, size, (intT)pivots.size(), compare);
     });
     //nextTime("sort and merge");
@@ -150,13 +151,14 @@ void sample_sort (E* a, intT n, BinPred compare) {
     auto complexity_fct = [&] (intT lo, intT hi) {
       if (lo == hi) {
         return 0;
-      } else if (hi < segments - 1) {
-        return offset_b[hi * rows] - offset_b[lo * rows];
+      } else if (hi < pivots.size()) {
+        return offset_b[(2 * hi + 1) * rows] - offset_b[2 * lo * rows];//(int) ((offset_b[(2 * hi + 1) * rows] - offset_b[2 * lo * rows]) * log(offset_b[(2 * hi + 1) * rows] - offset_b[2 * lo * rows]));
       } else {
-        return n - offset_b[lo * rows];
+        return n - offset_b[2 * lo * rows];//(int) ((n - offset_b[2 * lo * rows]) * log(n - offset_b[2 * lo * rows]));
       }
     };
     range::parallel_for((intT)0, (intT)(pivots.size() + 1), complexity_fct, [&] (intT i) {
+//    range::parallel_for((intT)0, (intT)(pivots.size() + 1), [&] (intT i) {
       intT offset = offset_b[(2 * i) * rows];
       if (i == 0) {
           sample_sort(a, offset_b[rows], compare); // first segment

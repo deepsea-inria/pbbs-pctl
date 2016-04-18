@@ -60,6 +60,8 @@ struct read_from_file_struct<parray<Item>> {
 
 template <class Item>
 void write_to_file(std::ofstream& out, parray<Item>& a) {
+//  std::cerr << "Write to file\n";
+//  std::cerr << a.size() << std::endl;
   long size = a.size();
   out.write(reinterpret_cast<char*>(&size), sizeof(long));
   out.write(reinterpret_cast<char*>(a.begin()), sizeof(Item) * size);
