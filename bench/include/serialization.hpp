@@ -3,7 +3,7 @@
 #include <fstream>
 #include "geometrydata.hpp"
 
-#ifndef _PCTL_PBBS_SERIALIZATION_H_
+#ifndef _PCTL_PBBS_SERIALIZATION_H_     
 #define _PCTL_PBBS_SERIALIZATION_H_
 
 namespace pasl {
@@ -33,8 +33,8 @@ struct read_from_file_struct<std::string> {
     int size = 0;
     in.read(reinterpret_cast<char*>(&size), sizeof(int));
     std::string answer;
-    answer.reserve(size);
-    in.read(&answer[0], sizeof(char) * size);
+    answer.resize(size);
+    in.read(&answer[0], size);
     return answer;
   }
 };
@@ -44,7 +44,6 @@ void write_to_file<std::string>(std::ofstream& out, std::string& s) {
   int size = s.size();
   out.write(reinterpret_cast<char*>(&size), sizeof(int));
   out.write(&s[0], sizeof(char) * size);
-//  std::
 }
 
 template <class Item>

@@ -237,6 +237,7 @@ std::string load_trigram_string(std::string file, int n, bool regenerate = false
 }
 
 std::string load_string_from_txt(std::string file, std::string txt_file, bool regenerate = false) {
+//  std::string x = read_string_from_txt(txt_file);
   return load(file, [&] { return read_string_from_txt(txt_file); }, regenerate);
 }
 
