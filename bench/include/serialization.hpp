@@ -102,18 +102,20 @@ void write_to_file<char*>(std::ofstream& out, parray<char*>& a) {
 }
 
 template <>
-struct read_from_file_struct<parray<std::pair<char*, int>>> {
-  parray<std::pair<char*, int>> operator()(std::ifstream& in) const {
+struct read_from_file_struct<parray<std::pair<char*, int>*>> {
+  parray<std::pair<char*, int>*> operator()(std::ifstream& in) const {
     long size = 0;
     in.read(reinterpret_cast<char*>(&size), sizeof(long));
     int* len = new int[size];
     in.read(reinterpret_cast<char*>(len), sizeof(int) * size);
-    parray<std::pair<char*, int>> result(size);
+    parray<std::pair<char*, int>*> result(size);
     for (int i = 0; i < size; i++) {
-      result[i].first = new char[len[i] + 1];
-      result[i].first[len[i]] = 0;
-      in.read(&result[i].first[0], sizeof(char) * len[i]);
-      in.read(reinterpret_cast<char*>(&result[i].second), sizeof(int));
+      char* f = new char[len[i] + 1];
+      f[len[i]] = 0;
+      in.read(f, sizeof(char) * len[i]);
+      int s = 0;
+      in.read(reinterpret_cast<char*>(&s), sizeof(int));
+      result[i] = new std::pair<char*, int>(f, s);
     }
     delete [] len;
     return result;
@@ -121,18 +123,18 @@ struct read_from_file_struct<parray<std::pair<char*, int>>> {
 };
 
 template <>
-void write_to_file<std::pair<char*, int>>(std::ofstream& out, parray<std::pair<char*, int>>& a) {
+void write_to_file<std::pair<char*, int>*>(std::ofstream& out, parray<std::pair<char*, int>*>& a) {
   long size = a.size();
   out.write(reinterpret_cast<char*>(&size), sizeof(long));
   int* len = new int[size];
   int total = 0;
   for (int i = 0; i < size; i++) {
-    len[i] = std::strlen(a[i].first);
+    len[i] = std::strlen(a[i]->first);
   }
   out.write(reinterpret_cast<char*>(len), sizeof(int) * size);
   for (int i = 0; i < size; i++) {
-    out.write(&a[i].first[0], sizeof(char) * len[i]);
-    out.write(reinterpret_cast<char*>(&a[i].second), sizeof(int));
+    out.write(&a[i]->first[0], sizeof(char) * len[i]);
+    out.write(reinterpret_cast<char*>(&a[i]->second), sizeof(int));
   }
   delete [] len;
 }

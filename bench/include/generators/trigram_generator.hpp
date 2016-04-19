@@ -72,6 +72,9 @@ struct ngram_table {
 
   int word(int i, char* a, int offset, int max_len) {
     a[offset] = next('_', '_', i);
+    if (max_len == 1) {
+      return 1;
+    }
     a[offset + 1] = next('_', a[offset], i + 1);
     int j = 2;
     while (j < max_len) {
