@@ -22,6 +22,7 @@ fi
 if [[ $ext == "norm" ]];
 then
 #  cmdline="${cmdline} -DESTIMATOR_LOGGING -DTIMING -DPCTL_CILK_PLUS -fcilkplus"
+#  cmdline="${cmdline} -DTIMING -DPCTL_CILK_PLUS -fcilkplus"
 #  cmdline="${cmdline} -DTIMING -DPCTL_CILK_PLUS -fcilkplus -ltcmalloc -L/home/rainey/Installs/gperftools/lib/"
   cmdline="${cmdline} -DPCTL_CILK_PLUS -fcilkplus -ltcmalloc -L/home/rainey/Installs/gperftools/lib/"
 fi
