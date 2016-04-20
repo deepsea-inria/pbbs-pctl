@@ -22,8 +22,6 @@
 template <class Item>
 using parray = pasl::pctl::parray<Item>;
 
-std::string path_to_data = "/home/akse";
-
 int main(int argc, char** argv) {
   pbbs::launch(argc, argv, [&] (pbbs::measured_type measured) {
     int test = pasl::util::cmdline::parse_or_default_int("test", 0);

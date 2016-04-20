@@ -78,14 +78,19 @@ struct load_item<std::string> {
 template <>
 struct load_item<point2d> {
   point2d operator()(std::vector<std::string>& words, int& p) {
-    return point2d(std::stod(words[p++]), std::stod(words[p++]));
+    double x = std::stod(words[p++]);
+    double y = std::stod(words[p++]);
+    return point2d(x, y);
   }
 };
 
 template <>
 struct load_item<point3d> {
   point3d operator()(std::vector<std::string>& words, int& p) {
-    return point3d(std::stod(words[p++]), std::stod(words[p++]), std::stod(words[p++]));
+    double x = std::stod(words[p++]);
+    double y = std::stod(words[p++]);
+    double z = std::stod(words[p++]);
+    return point3d(x, y, z);
   }
 };
 
@@ -252,16 +257,23 @@ std::pair<parray<point3d>, parray<triangle>> load_triangles_from_txt(std::string
   int p = 1;
   parray<point3d> points(std::stoi(words[p++]));
   parray<triangle> triangles(std::stoi(words[p++]));
+
   for (int i = 0; i < points.size(); i++) {
-    new (&points[i]) point3d(std::stod(words[p++]), std::stod(words[p++]), std::stod(words[p++]));
+    double x = std::stod(words[p++]);
+    double y = std::stod(words[p++]);
+    double z = std::stod(words[p++]);
+    new (&points[i]) point3d(x, y, z);
   }
   for (int i = 0; i < triangles.size(); i++) {
-    new (&triangles[i]) triangle(std::stoi(words[i++]) - 1, std::stoi(words[p++]) - 1, std::stoi(words[p++]) - 1);
+    int a = std::stoi(words[p++]);
+    int b = std::stoi(words[p++]);
+    int c = std::stoi(words[p++]);
+    new (&triangles[i]) triangle(a - 1, b - 1, c - 1);
   }
   return make_pair(points, triangles);
 }
 
-ray_cast_test load_ray_cast_test(std::string file, std::string triangles_file, bool regenerate = false) {
+ray_cast_test load_ray_cast_test(std::string file, std::string triangles_file, std::string rays_file, bool regenerate = false) {
   std::ifstream in(file, std::ifstream::binary);
   ray_cast_test test;
   if (!regenerate && in.good()) {
@@ -272,12 +284,18 @@ ray_cast_test load_ray_cast_test(std::string file, std::string triangles_file, b
     auto p = load_triangles_from_txt(triangles_file);
     test.points = p.first;
     test.triangles = p.second;
-    test.rays = generate_rays(test.triangles.size(), test.points);
+    parray<point3d> ray_ends = read_seq_from_txt<point3d>(rays_file, 2 * test.triangles.size());
+    parray<ray<point3d>> rays(test.triangles.size());
+    for (int i = 0; i < rays.size(); i++) {
+      new (&rays[i]) ray<point3d>(ray_ends[2 * i], ray_ends[2 * i + 1] - point3d(0, 0, 0));
+    }
+    test.rays = rays;
     
     std::ofstream out(file, std::ofstream::binary);
     write_to_file(out, test.points);
     write_to_file(out, test.triangles);
     write_to_file(out, test.rays);
+    return test;
   }
 }
 

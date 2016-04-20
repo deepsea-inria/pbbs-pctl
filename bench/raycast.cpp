@@ -12,7 +12,7 @@
 #include <functional>
 #include <stdlib.h>
 #include "bench.hpp"
-#include "hull.hpp"
+#include "kdtree.hpp"
 #include "loaders.hpp"
 
 /***********************************************************************/
@@ -31,34 +31,22 @@ int main(int argc, char** argv) {
     std::string path_to_data = pasl::util::cmdline::parse_or_default_string("path_to_data", "/home/aksenov/pbbs/geometryData/data/");
     system("mkdir tests");
     if (test == 0) {
-      parray<point2d> a;
-      if (files) {
-        a = pasl::pctl::io::load_seq_from_txt<point2d>(std::string("tests/random_in_sphere_2d_txt_10000000"), path_to_data + std::string("2DinSphere_10M"), 10000000, reload);
-      } else {
-        a = pasl::pctl::io::load_points_uniform_2d(std::string("tests/random_in_sphere_2d_") + std::to_string(n), n, true, false, reload);
-      }
+      pasl::pctl::io::ray_cast_test a = pasl::pctl::io::load_ray_cast_test(std::string("tests/happy_ray_cast_dataset"), path_to_data + std::string("happyTriangles"), path_to_data + std::string("happyRays"), reload);
+      triangles<point3d> tri(a.points.size(), a.triangles.size(), a.points.begin(), a.triangles.begin());
       measured([&] {
-        pasl::pctl::hull(a);
+        pasl::pctl::kdtree::ray_cast(tri, a.rays.begin(), a.rays.size());
       });
     } else if (test == 1) {
-      parray<point2d> a;
-      if (files) {
-        a = pasl::pctl::io::load_seq_from_txt<point2d>(std::string("tests/random_plummer_2d_txt_10000000"), path_to_data + std::string("2Dkuzmin_10M"), 10000000, reload);
-      } else {
-        a = pasl::pctl::io::load_points_plummer_2d(std::string("tests/random_plummer_2d_") + std::to_string(n), n, reload);
-      }
+      pasl::pctl::io::ray_cast_test a = pasl::pctl::io::load_ray_cast_test(std::string("tests/angel_ray_cast_dataset"), path_to_data + std::string("angelTriangles"), path_to_data + std::string("angelRays"), reload);
+      triangles<point3d> tri(a.points.size(), a.triangles.size(), a.points.begin(), a.triangles.begin());
       measured([&] {
-        pasl::pctl::hull(a);
+        pasl::pctl::kdtree::ray_cast(tri, a.rays.begin(), a.rays.size());
       });
     } else if (test == 2) {
-      parray<point2d> a;
-      if (files) {
-        a = pasl::pctl::io::load_seq_from_txt<point2d>(std::string("tests/random_on_sphere_2d_txt_10000000"), path_to_data + std::string("2DonSphere_10M"), 10000000, reload);
-      } else {
-        a = pasl::pctl::io::load_points_uniform_2d(std::string("tests/random_on_sphere_2d_") + std::to_string(n), n, false, true, reload);
-      }
+      pasl::pctl::io::ray_cast_test a = pasl::pctl::io::load_ray_cast_test(std::string("tests/dragon_ray_cast_dataset"), path_to_data + std::string("dragonTriangles"), path_to_data + std::string("dragonRays"), reload);
+      triangles<point3d> tri(a.points.size(), a.triangles.size(), a.points.begin(), a.triangles.begin());
       measured([&] {
-        pasl::pctl::hull(a);
+        pasl::pctl::kdtree::ray_cast(tri, a.rays.begin(), a.rays.size());
       });
     }
   });
