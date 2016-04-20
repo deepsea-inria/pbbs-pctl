@@ -266,6 +266,15 @@ static void integer_sort(uintT* a, intT n) {
   intT max_value = pasl::pctl::max(a, a + n);
   intsort::integer_sort(a, (intT*) nullptr, n, max_value + 1, [&] (uintT x) { return x; });
 }
+
+template <class T, class intT, class uintT>
+static void integer_sort(std::pair<uintT, T>* a, intT n) {
+  intT max_value = pasl::pctl::level1::reduce(a, a + n, 0, [&] (uintT a, uintT b) {
+    return std::max(a, b);
+  }, [&] (std::pair<uintT, T>& x) { return 1; }, [&] (std::pair<uintT, T>& x) { return x.first; });
+  intsort::integer_sort(a, (intT*) nullptr, n, max_value + 1, [&] (std::pair<uintT, T> x) { return x.first; });
+}
+
   
 } // end namespace
 } // end namespace

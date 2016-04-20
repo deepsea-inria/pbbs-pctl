@@ -92,14 +92,18 @@ struct load_item<point3d> {
 template <class Item1, class Item2>
 struct load_item<std::pair<Item1, Item2>> {
   std::pair<Item1, Item2> operator()(std::vector<std::string>& words, int& p) {
-    return make_pair(load_item<Item1>()(words, p), load_item<Item2>()(words, p));
+    Item1 i1 = load_item<Item1>()(words, p);
+    Item2 i2 = load_item<Item2>()(words, p);
+    return make_pair(i1, i2);
   }
 };
 
 template <class Item1, class Item2>
 struct load_item<std::pair<Item1, Item2>*> {
   std::pair<Item1, Item2>* operator()(std::vector<std::string>& words, int& p) {
-    return new std::pair<Item1, Item2>(load_item<Item1>()(words, p), load_item<Item2>()(words, p));
+    Item1 i1 = load_item<Item1>()(words, p);
+    Item2 i2 = load_item<Item2>()(words, p);
+    return new std::pair<Item1, Item2>(i1, i2);
   }
 };
 
@@ -111,6 +115,7 @@ struct load_item<parray<Item>> {
     for (int i = 0; i < size; i++) {
       result[i] = load_item<Item>()(words, p);
     }
+    return result;
   }
 
   parray<Item> operator()(std::vector<std::string>& words, int& p, int n) {
