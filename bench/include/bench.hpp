@@ -56,6 +56,7 @@ namespace pbbs {
 
 #if defined(USE_PASL_RUNTIME)
     pasl::sched::threaddag::init();
+    LOG_BASIC(ENTER_ALGO);
 #endif
 #ifdef PCTL_CILK_PLUS
     int proc = pasl::util::cmdline::parse_or_default_int("proc", 1);
@@ -80,6 +81,10 @@ namespace pbbs {
     printf("number of created threads: %d\n", pasl::pctl::granularity::threads_created());
 #endif
 #if defined(USE_PASL_RUNTIME)
+    STAT_IDLE(sum());
+    STAT(dump(stdout));
+    STAT_IDLE(print_idle(stdout));
+    LOG_BASIC(EXIT_ALGO);
     pasl::sched::threaddag::destroy();
 #endif
   }
