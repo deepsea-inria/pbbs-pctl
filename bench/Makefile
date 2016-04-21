@@ -28,7 +28,8 @@ VERBOSE_MAKE=0
 VERBOSE_DEPENDENCIES=0
 
 PROGRAMS=\
-	psort.cpp
+	psort.cpp \
+	samplesort.cpp
 
 ####################################################################
 # Makefile options

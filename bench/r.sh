@@ -10,7 +10,7 @@ if [[ $ext == "unkh" ]];
 then
 #  cmdline="${cmdline} -DESTIMATOR_LOGGING -DHONEST -DPCTL_CILK_PLUS -fcilkplus"
 #  cmdline="${cmdline} -DESTIMATOR_LOGGING -DHONEST -DTIMING -DPCTL_CILK_PLUS -fcilkplus"
-  cmdline="${cmdline} -DHONEST -DPCTL_CILK_PLUS -fcilkplus"
+  cmdline="${cmdline} -DHONEST -DUSE_CILK_PLUS_RUNTIME -fcilkplus"
 # -nostdlibs -ltcmalloc -L/home/rainey/Installs/gperftools/lib/"
 fi
 
@@ -18,20 +18,20 @@ if [[ $ext == "unko" ]];
 then
 #  cmdline="${cmdline} -DESTIMATOR_LOGGING -DTIMING -DOPTIMISTIC -DPCTL_CILK_PLUS -fcilkplus"
 #  cmdline="${cmdline} -DOPTIMISTIC -DTIMING -DPCTL_CILK_PLUS -fcilkplus"
-  cmdline="${cmdline} -DOPTIMISTIC -DPCTL_CILK_PLUS -fcilkplus -DNDEBUG -ltcmalloc -L/home/rainey/Installs/gperftools/lib/"
+  cmdline="${cmdline} -DOPTIMISTIC -DUSE_CILK_PLUS_RUNTIME -fcilkplus -DNDEBUG -ltcmalloc -L/home/rainey/Installs/gperftools/lib/"
 fi
 
 if [[ $ext == "norm" ]];
 then
 #  cmdline="${cmdline} -DESTIMATOR_LOGGING -DPCTL_CILK_PLUS -fcilkplus"
-  cmdline="${cmdline} -DTIMING -DPCTL_CILK_PLUS -fcilkplus -DNDEBUG -ltcmalloc -L/home/rainey/Installs/gperftools/lib/"
+  cmdline="${cmdline} -DTIMING -DMANUAL_CONTROL -DUSE_CILK_PLUS_RUNTIME -fcilkplus -DNDEBUG -ltcmalloc -L/home/rainey/Installs/gperftools/lib/"
 #  cmdline="${cmdline} -DTIMING -DPCTL_CILK_PLUS -fcilkplus -ltcmalloc -L/home/rainey/Installs/gperftools/lib/"
 #  cmdline="${cmdline} -DESTIMATOR_LOGGING -DPCTL_CILK_PLUS -fcilkplus -ltcmalloc -L/home/rainey/Installs/gperftools/lib/"
 fi
 
 if [[ $ext == "log" ]];
 then
-  cmdline="${cmdline} -DTIMING -DPCTL_CILK_PLUS -fcilkplus -DLOGGING -DNDEBUG -ltcmalloc -L/home/rainey/Installs/gperftools/lib/"
+  cmdline="${cmdline} -DTIMING -DUSE_CILK_PLUS_RUNTIME -DMANUAL_CONTROL -fcilkplus -DPLOGGING -DNDEBUG -ltcmalloc -L/home/rainey/Installs/gperftools/lib/"
 fi
 
 if [[ $ext == "par" ]];

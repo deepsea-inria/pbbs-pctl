@@ -67,7 +67,7 @@ void split_positions(E* a, E* b, intT* c, intT length_a, intT length_b, BinPred 
   c[pos_c] = length_a - pos_a;
 }
 
-#define SSORT_THR 128
+#define SSORT_THR 100000
 #define AVG_SEG_SIZE 2
 #define PIVOT_QUOT 2
 #define comparison_sort(__A, __n, __compare) (quickSort(__A, __n, __compare))
@@ -83,8 +83,15 @@ controller_type samplesort_contr<E,BinPred,intT>::contr("samplesort");
 
 template<class E, class BinPred, class intT>
 void sample_sort (E* a, intT n, BinPred compare) {
+//  std::cerr << "Right here " << n << "\n";
   using controller_type = samplesort_contr<E, BinPred, intT>;
   par::cstmt(controller_type::contr, [&] { return (int) (n * log(n)); }, [&] {
+#ifdef MANUAL_CONTROL
+    if (n <= SSORT_THR) {
+      comparison_sort(a, n, compare);
+      return;
+    }
+#endif
     if (n <= 1) {
       return;
     }
