@@ -109,7 +109,8 @@ void sample_sort (E* a, intT n, BinPred compare) {
     //cout << "n=" << n << " num_segs=" << segments << endl;
       
     // sort the samples
-    sample_sort(sample_set.begin(), sample_set_size, compare);
+//    quickSort(sample_set.begin(), sample_set_size, compare);
+    std::sort(sample_set.begin(), sample_set.end(), compare);
       
     // subselect samples at even stride
     parray<E> pivots(segments - 1, [&] (intT k) {

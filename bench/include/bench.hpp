@@ -67,6 +67,13 @@ namespace pbbs {
     launch([&] {
       body(f);
     });
+#ifdef ESTIMATOR_LOGGING
+    pasl::pctl::granularity::print_reports();
+#endif
+#ifdef LOGGING
+    pasl::pctl::logging::dump();
+    printf("number of created threads: %d\n", pasl::pctl::granularity::threads_created());
+#endif
 #if defined(USE_PASL_RUNTIME)
     threaddag::destroy();
 #endif

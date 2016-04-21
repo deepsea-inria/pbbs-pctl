@@ -75,7 +75,11 @@ void block_transpose(E *A, E *B, intT *OA, intT *OB, intT *L,
         for (intT k=0; k < l; k++) *(pb++) = *(pa++);
       }
   };
-  par::cstmt(controller_type::contr, [&] { return rCount * cCount; }, [&] {
+  int total = cCount * rCount;
+/*  for (intT i = rStart; i < rStart + rCount; i++) {
+    total += OA[i * rLength + (cStart + cCount - 1)] - OA[i * rLength + cStart] + L[i * rLength + (cStart + cCount - 1)];
+  }*/
+  par::cstmt(controller_type::contr, [&] { return total; }, [&] {
     if (cCount < 2 && rCount < 2) {
       seq();
     } else if (cCount > rCount) {
