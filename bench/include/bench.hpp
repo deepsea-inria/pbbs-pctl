@@ -5,6 +5,11 @@
 #include "io.hpp"
 #include "cmdline.hpp"
 
+#ifdef USE_PASL_RUNTIME
+#include "threaddag.hpp"
+#include "native.hpp"
+#endif
+
 #ifdef PCTL_CILK_PLUS
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
@@ -34,7 +39,7 @@ namespace pbbs {
       cilk_sync;
       body();
     #elif defined(USE_PASL_RUNTIME)
-      threaddag::launch(native::new_multishot_by_lambda(body));
+      pasl::sched::threaddag::launch(pasl::sched::native::new_multishot_by_lambda(body));
     #else
       body();
     #endif
@@ -48,12 +53,12 @@ namespace pbbs {
   template <class Body>
   void launch(int argc, char** argv, const Body& body) {
     pasl::util::cmdline::set(argc, argv);
-    int proc = pasl::util::cmdline::parse_or_default_int("proc", 1);
 
 #if defined(USE_PASL_RUNTIME)
-    threaddag::init();
+    pasl::sched::threaddag::init();
 #endif
 #ifdef PCTL_CILK_PLUS
+    int proc = pasl::util::cmdline::parse_or_default_int("proc", 1);
   __cilkrts_set_param("nworkers", std::to_string(proc).c_str());
   std::cerr << "Number of workers: " << __cilkrts_get_nworkers() << std::endl;
 #endif
@@ -68,7 +73,7 @@ namespace pbbs {
       body(f);
     });
 #if defined(USE_PASL_RUNTIME)
-    threaddag::destroy();
+    pasl::sched::threaddag::destroy();
 #endif
   }
   
