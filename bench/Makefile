@@ -29,7 +29,8 @@ VERBOSE_DEPENDENCIES=0
 
 PROGRAMS=\
 	psort.cpp \
-	samplesort.cpp
+	samplesort.cpp \
+	blockradixsort.cpp
 
 ####################################################################
 # Makefile options
@@ -53,7 +54,7 @@ include $(TOOLS_BUILD_FOLDER)/Makefile_options
 # (If extending the list, need to add cases for the definition
 # of COMPILE_OPTIONS_FOR further below, and also for "clean".
 
-MODES=dbg log sta opt seq cilk
+MODES=dbg log sta opt seq cilk norm unko unkh clog
 
 # Compilation options for each mode
 
@@ -64,6 +65,11 @@ COMPILE_OPTIONS_FOR_sta=$(OPTIONS_O2) -DSTATS -DUSE_PASL_RUNTIME
 COMPILE_OPTIONS_FOR_seq=$(OPTIONS_O2) -DSTATS -DSEQUENTIAL_ELISION
 COMPILE_OPTIONS_FOR_opt=$(OPTIONS_O2) -DUSE_PASL_RUNTIME
 COMPILE_OPTIONS_FOR_cilk=$(OPTIONS_cilk) -DUSE_CILK_PLUS_RUNTIME $(OPTIONS_O2)
+
+COMPILE_OPTIONS_FOR_norm=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DMANUAL_ALLOCATION -DMANUAL_CONTROL
+COMPILE_OPTIONS_FOR_unko=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DOPTIMISTIC
+COMPILE_OPTIONS_FOR_unkh=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DHONEST
+COMPILE_OPTIONS_FOR_clog=$(COMPILE_OPTIONS_FOR_cilk) -DPLOGGING
 
 # Folders where to find all the header files and main sources
 

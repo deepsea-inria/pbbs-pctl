@@ -89,7 +89,7 @@ void radix_step(E* a, E* b, bIndexT *tmp, intT (*raw_buckets)[BUCKETS],
   
   //transpose<intT,intT>(cnts, oA).trans(blocks, m);
   transpose(cnts, offsets_a, blocks_number, max_value);
-  
+
 //      intT ss;
   intT id = 0;
   dps::scan(offsets_a, offsets_a + blocks_number * max_value, id, [&] (intT x, intT y) {
@@ -238,8 +238,14 @@ void integer_sort(E *a, intT* bucket_offsets, intT n, intT max_value, bool botto
 template <class E, class F, class intT>
 void integer_sort(E* a, intT* bucket_offsets, intT n, intT max_value, bool bottom_up, F f) {
   long x = integer_sort_space<E, intT>(n);
+#ifdef MANUAL_ALLOCATION
+  char* s = (char*) malloc(x);
+  integer_sort(a, bucket_offsets, n, max_value, bottom_up, s, f);
+  free(s);
+#else
   parray<char> s(x);
   integer_sort(a, bucket_offsets, n, max_value, bottom_up, s.begin(), f);
+#endif
 }
 
 template <class E, class F, class intT>
