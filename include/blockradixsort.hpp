@@ -154,7 +154,10 @@ void radix_loop_top_down(E* a, E* b, bIndexT* tmp, intT (*raw_buckets)[BUCKETS],
     intT* offsets = raw_buckets[0];
     intT remain = raw_buckets_number - BUCKETS - 1;
     float y = remain / (float) n;
-    parallel_for(intT(0), intT(BUCKETS), [&] (intT i) {
+    auto comp = [&] (intT l, intT r) {
+      return (r == BUCKETS ? n : offsets[r]) - offsets[l];
+    };
+    range::parallel_for(intT(0), intT(BUCKETS), comp, [&] (intT i) {
       intT seg_offset = offsets[i];
       intT seg_next_offset = (i == BUCKETS - 1) ? n : offsets[i + 1];
       intT seg_len = seg_next_offset - seg_offset;
