@@ -6,6 +6,10 @@
 
 TOOLS_BUILD_FOLDER=../../pasl/tools/build
 
+PBENCH_PATH=../../pbench
+
+include $(PBENCH_PATH)/Makefile_common
+
 
 ####################################################################
 # Mandatory options
