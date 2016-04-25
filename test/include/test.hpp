@@ -1,4 +1,15 @@
 
+#ifdef USE_PASL_RUNTIME
+#include "threaddag.hpp"
+#include "native.hpp"
+#include "pcmdline.hpp"
+#endif
+
+#ifdef PCTL_CILK_PLUS
+#include <cilk/cilk.h>
+#include <cilk/cilk_api.h>
+#endif
+
 #include "quickcheck.hpp"
 #include "io.hpp"
 #include "cmdline.hpp"
@@ -19,9 +30,10 @@ namespace pbbs {
   
   template <class Body>
   void launch(int argc, char** argv, const Body& body) {
-    pasl::util::cmdline::set(argc, argv);
+    deepsea::cmdline::set(argc, argv);
 #if defined(USE_PASL_RUNTIME)
-    threaddag::init();
+    pasl::util::cmdline::set(argc, argv);
+    pasl::sched::threaddag::init();
 #endif
 #if defined(USE_CILK_RUNTIME)
     // hack that seems to be required to initialize cilk runtime cleanly
@@ -29,12 +41,12 @@ namespace pbbs {
     cilk_sync;
     body();
 #elif defined(USE_PASL_RUNTIME)
-    threaddag::launch(native::new_multishot_by_lambda([&] { body(); }));
+    pasl::sched::threaddag::launch(pasl::sched::native::new_multishot_by_lambda([&] { body(); }));
 #else
     body();
 #endif
 #if defined(USE_PASL_RUNTIME)
-    threaddag::destroy();
+    pasl::sched::threaddag::destroy();
 #endif
   }
   

@@ -25,9 +25,9 @@ using parray = pasl::pctl::parray<Item>;
 
 int main(int argc, char** argv) {
   pbbs::launch(argc, argv, [&] (pbbs::measured_type measured) {
-    long n = pasl::util::cmdline::parse_or_default_long("n", 100000);
-    long m = pasl::util::cmdline::parse_or_default_long("m", 200*n);
-    std::string datastruct = pasl::util::cmdline::parse_or_default_string("datastruct", "pchunkedseq");
+    long n = deepsea::cmdline::parse_or_default_long("n", 100000);
+    long m = deepsea::cmdline::parse_or_default_long("m", 200*n);
+    std::string datastruct = deepsea::cmdline::parse_or_default_string("datastruct", "pchunkedseq");
     if (datastruct == "pchunkedseq") {
       pchunkedseq<int> xs = pasl::pctl::prandgen::gen_integ_pchunkedseq(n, 0, (int)m);
       measured([&] {

@@ -8,6 +8,7 @@
 #ifdef USE_PASL_RUNTIME
 #include "threaddag.hpp"
 #include "native.hpp"
+#include "pcmdline.hpp"
 #endif
 
 #ifdef PCTL_CILK_PLUS
@@ -52,9 +53,10 @@ namespace pbbs {
   
   template <class Body>
   void launch(int argc, char** argv, const Body& body) {
-    pasl::util::cmdline::set(argc, argv);
+    deepsea::cmdline::set(argc, argv);
 
 #if defined(USE_PASL_RUNTIME)
+    pasl::util::cmdline::set(argc, argv);
     pasl::sched::threaddag::init();
     LOG_BASIC(ENTER_ALGO);
 #endif
