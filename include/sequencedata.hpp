@@ -53,8 +53,8 @@ parray<Item> all_same(long n, Item x) {
 }
   
 template <class Item>
-parray<Item> exp_dist(int s, int e) {
-  int n = e - s;
+parray<Item> exp_dist(long s, long e) {
+  long n = e - s;
   int lg = utils::log2Up(n)+1;
   return parray<Item>(n, [&] (long i) {
     int range = (1 << (hash(2*(i+s))%lg));
