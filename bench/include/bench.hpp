@@ -58,7 +58,7 @@ namespace pbbs {
     pasl::sched::threaddag::init();
     LOG_BASIC(ENTER_ALGO);
 #endif
-#ifdef PCTL_CILK_PLUS
+#ifdef USE_CILK_PLUS_RUNTIME
     int proc = pasl::util::cmdline::parse_or_default_int("proc", 1);
   __cilkrts_set_param("nworkers", std::to_string(proc).c_str());
   std::cerr << "Number of workers: " << __cilkrts_get_nworkers() << std::endl;
@@ -73,6 +73,13 @@ namespace pbbs {
     launch([&] {
       body(f);
     });
+#ifdef ESTIMATOR_LOGGING
+    pasl::pctl::granularity::print_reports();
+#endif
+#ifdef PLOGGING
+    pasl::pctl::logging::dump();
+    printf("number of created threads: %d\n", pasl::pctl::granularity::threads_created());
+#endif
 #if defined(USE_PASL_RUNTIME)
     STAT_IDLE(sum());
     STAT(dump(stdout));

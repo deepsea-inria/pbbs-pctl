@@ -76,7 +76,7 @@ controller_type quicksort_contr<E,BinPred,intT>::contr("quicksort");
 template <class E, class BinPred, class intT>
 void quickSort(E* A, intT n, BinPred f) {
   using controller_type = quicksort_contr<E,BinPred,intT>;
-  par::cstmt(controller_type::contr, [&] { return n; }, [&] {
+  par::cstmt(controller_type::contr, [&] { return n * log(n); }, [&] {
     if (n < ISORT) insertionSort(A, n, f);
     else {
       //E p = std::__median(A[n/4],A[n/2],A[(3*n)/4],f);

@@ -89,7 +89,7 @@ void radix_step(E* a, E* b, bIndexT *tmp, intT (*raw_buckets)[BUCKETS],
   
   //transpose<intT,intT>(cnts, oA).trans(blocks, m);
   transpose(cnts, offsets_a, blocks_number, max_value);
-  
+
 //      intT ss;
   intT id = 0;
   dps::scan(offsets_a, offsets_a + blocks_number * max_value, id, [&] (intT x, intT y) {
@@ -154,7 +154,10 @@ void radix_loop_top_down(E* a, E* b, bIndexT* tmp, intT (*raw_buckets)[BUCKETS],
     intT* offsets = raw_buckets[0];
     intT remain = raw_buckets_number - BUCKETS - 1;
     float y = remain / (float) n;
-    parallel_for(intT(0), intT(BUCKETS), [&] (intT i) {
+    auto comp = [&] (intT l, intT r) {
+      return (r == BUCKETS ? n : offsets[r]) - offsets[l];
+    };
+    range::parallel_for(intT(0), intT(BUCKETS), comp, [&] (intT i) {
       intT seg_offset = offsets[i];
       intT seg_next_offset = (i == BUCKETS - 1) ? n : offsets[i + 1];
       intT seg_len = seg_next_offset - seg_offset;
@@ -238,8 +241,14 @@ void integer_sort(E *a, intT* bucket_offsets, intT n, intT max_value, bool botto
 template <class E, class F, class intT>
 void integer_sort(E* a, intT* bucket_offsets, intT n, intT max_value, bool bottom_up, F f) {
   long x = integer_sort_space<E, intT>(n);
+#ifdef MANUAL_ALLOCATION
+  char* s = (char*) malloc(x);
+  integer_sort(a, bucket_offsets, n, max_value, bottom_up, s, f);
+  free(s);
+#else
   parray<char> s(x);
   integer_sort(a, bucket_offsets, n, max_value, bottom_up, s.begin(), f);
+#endif
 }
 
 template <class E, class F, class intT>

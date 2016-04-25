@@ -39,6 +39,12 @@ int main(int argc, char** argv) {
       measured([&] {
         pasl::pctl::sample_sort(a.begin(), (int)a.size(), std::less<double>());
       });
+      for (int i = 1; i < a.size(); i++) {
+        if (a[i] < a[i - 1]) {
+          std::cerr << "ACHTUNG!\n";
+          return;
+        }
+      }
     } else if (test == 1) {
       parray<double> a;
       if (files) {
