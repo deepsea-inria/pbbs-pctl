@@ -24,11 +24,11 @@ using parray = pasl::pctl::parray<Item>;
 
 int main(int argc, char** argv) {
   pbbs::launch(argc, argv, [&] (pbbs::measured_type measured) {
-    int test = pasl::util::cmdline::parse_or_default_int("test", 0);
-    int n = pasl::util::cmdline::parse_or_default_int("n", 10000000);
-    bool files = pasl::util::cmdline::parse_or_default_int("files", 1) == 1;
-    bool reload = pasl::util::cmdline::parse_or_default_int("reload", 0) == 1;
-    std::string path_to_data = pasl::util::cmdline::parse_or_default_string("path_to_data", "/home/aksenov/pbbs/geometryData/data/");
+    int test = deepsea::cmdline::parse_or_default_int("test", 0);
+    int n = deepsea::cmdline::parse_or_default_int("n", 10000000);
+    bool files = deepsea::cmdline::parse_or_default_int("files", 1) == 1;
+    bool reload = deepsea::cmdline::parse_or_default_int("reload", 0) == 1;
+    std::string path_to_data = deepsea::cmdline::parse_or_default_string("path_to_data", "/home/aksenov/pbbs/geometryData/data/");
     system("mkdir tests");
     if (test == 0) {
       pasl::pctl::io::ray_cast_test a = pasl::pctl::io::load_ray_cast_test(std::string("tests/happy_ray_cast_dataset"), path_to_data + std::string("happyTriangles"), path_to_data + std::string("happyRays"), reload);

@@ -24,10 +24,10 @@ using parray = pasl::pctl::parray<Item>;
 
 int main(int argc, char** argv) {
   pbbs::launch(argc, argv, [&] (pbbs::measured_type measured) {
-    int test = pasl::util::cmdline::parse_or_default_int("test", 0);
-    int n = pasl::util::cmdline::parse_or_default_int("n", 10000000);
-    bool files = pasl::util::cmdline::parse_or_default_int("files", 1) == 1;
-    std::string path_to_data = pasl::util::cmdline::parse_or_default_string("path_to_data", "/home/aksenov/pbbs/sequenceData/data/");
+    int test = deepsea::cmdline::parse_or_default_int("test", 0);
+    int n = deepsea::cmdline::parse_or_default_int("n", 10000000);
+    bool files = deepsea::cmdline::parse_or_default_int("files", 1) == 1;
+    std::string path_to_data = deepsea::cmdline::parse_or_default_string("path_to_data", "/home/aksenov/pbbs/sequenceData/data/");
     system("mkdir tests");
     if (test == 0) {
       parray<double> a;

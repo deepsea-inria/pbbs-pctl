@@ -61,7 +61,7 @@ namespace pbbs {
     LOG_BASIC(ENTER_ALGO);
 #endif
 #ifdef USE_CILK_PLUS_RUNTIME
-    int proc = pasl::util::cmdline::parse_or_default_int("proc", 1);
+    int proc = deepsea::cmdline::parse_or_default_int("proc", 1);
   __cilkrts_set_param("nworkers", std::to_string(proc).c_str());
   std::cerr << "Number of workers: " << __cilkrts_get_nworkers() << std::endl;
 #endif
