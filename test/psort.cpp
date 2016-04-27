@@ -161,8 +161,8 @@ void checkit(std::string msg) {
 
 int main(int argc, char** argv) {
   pbbs::launch(argc, argv, [&] {
-    int nb_tests = pasl::util::cmdline::parse_or_default_int("n", 1000);
-    pasl::util::cmdline::dispatcher d;
+    int nb_tests = deepsea::cmdline::parse_or_default_int("n", 1000);
+    deepsea::cmdline::dispatcher d;
     d.add("parray_mergesort", [&] {
       checkit<pasl::pctl::parray_mergesort_property>(nb_tests, "parray mergesort is correct");
     });
