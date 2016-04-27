@@ -20,6 +20,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#include <chrono>
 #include <float.h>
 
 #include "geometry.hpp"
@@ -155,7 +156,7 @@ float CT = 6.0;
 float CL = 1.25;
 float max_expand = 1.6;
 int max_recursion_depth = 25;
-
+int min_parallel_size = 500000;
 // Constant for switching to sequential versions
 
 typedef pointT::floatT floatT;
@@ -221,6 +222,11 @@ cut_info best_cut_serial(event* e, range r, range r1, range r2, intT n) {
 
 // parallel version of best cut
 cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
+#ifdef MANUAL_CONTROL
+  if (n < min_parallel_size) {
+    return best_cut_serial(e, r, r1, r2, n);
+  }
+#endif
   cut_info result;
   using controller_type = pasl::pctl::granularity::controller_holder<kdtree_file, 2, intT>;
   par::cstmt(controller_type::controller, [&] { return n; }, [&] {
@@ -236,12 +242,41 @@ cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
     float diameter = 2 * ((r1.max - r1.min) + (r2.max - r2.min));
     
     // count number that end before i
+#ifdef MANUAL_ALLOCATION
+   intT* upper = newA(intT, n);
+   parallel_for((intT)0, n, [&] (intT i) {
+     upper[i] = IS_END(e[i]);
+   });
+   intT u = dps::scan(upper, upper + n, (intT)0, [&] (intT x, intT y) {
+     return x + y; }, upper, forward_exclusive_scan
+   );
+   float* cost = newA(float, n);
+   parallel_for((intT)0, n, [&] (intT i) {
+      intT in_left = i - upper[i];
+      intT in_right = n / 2 - (upper[i] + IS_END(e[i]));
+      float left_length = e[i].v - r.min;
+      float left_area = orthog_area + diameter * left_length;
+      float right_length = r.max - e[i].v;
+      float right_area = orthog_area + diameter * right_length;
+      cost[i] = left_area * in_left + right_area * in_right;
+   });
+
+   intT k = (intT)max_index(cost, cost + n, cost[0], [&] (float x, float y) {
+     return x < y;
+   });
+#else
     parray<intT> upper(n, [&] (intT i) {
       return IS_END(e[i]);
     });
     intT u = dps::scan(upper.begin(), upper.end(), (intT)0, [&] (intT x, intT y) {
       return x + y; }, upper.begin(), forward_exclusive_scan
     );
+/*    intT current = 0;
+    for (int i = 0; i < n; i++) {
+      int x = upper[i];
+      upper[i] = current;
+      current += x;
+    }*/
     
     // calculate cost of each possible split location
     parray<float> cost(n, [&] (intT i) {
@@ -258,10 +293,21 @@ cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
     intT k = (intT)max_index(cost.cbegin(), cost.cend(), cost[0], [&] (float x, float y) {
       return x < y;
     });
+/*    intT k = 0;
+    for (int i = 0; i < cost.size(); i++) {
+      if (cost[k] > cost[i]) {
+        k = i;
+      }
+    }*/
+#endif
       
     float c = cost[k];
     intT ln = k - upper[k];
     intT rn = n / 2 - (upper[k] + IS_END(e[k]));
+#ifdef MANUAL_ALLOCATION
+    free(upper);
+    free(cost);
+#endif
     result = cut_info(c, e[k].v, ln, rn);
   }, [&] {
     result = best_cut_serial(e, r, r1, r2, n);
@@ -269,32 +315,51 @@ cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
   return result;
 }
 
-void split_events_serial(range* boxes, event* events,
+std::pair<intT, intT> split_events_serial(range* boxes, event* events,
                        float cut_off, intT n,
                        parray<event>& left, parray<event>& right) {
   intT l = 0;
   intT r = 0;
-  parray<event> events_left(n);
-  parray<event> events_right(n);
+  new (&left) parray<event>(n);
+  new (&right) parray<event>(n);
   for (intT i = 0; i < n; i++) {
     intT b = GET_INDEX(events[i]);
     if (boxes[b].min < cut_off) {
-      events_left[l++] = events[i];
+      left[l++] = events[i];
       if (boxes[b].max > cut_off) {
-        events_right[r++] = events[i];
+        right[r++] = events[i];
       }
     } else {
-      events_right[r++] = events[i];
+      right[r++] = events[i];
     }
   }
-  new (&left)  parray<event>(events_left.begin(), events_left.begin() + l);
-  new (&right) parray<event>(events_right.begin(), events_right.begin() + r);
+  return make_pair(l, r);
 }
 
-void split_events(range* boxes, event* events, float cut_off, intT n,
+std::pair<intT, intT> split_events(range* boxes, event* events, float cut_off, intT n,
                  parray<event>& left, parray<event>& right) {
+#ifdef MANUAL_CONTROL
+  if (n < min_parallel_size) {
+    return split_events_serial(boxes, events, cut_off, n, left, right);
+  }
+#endif
+  std::pair<intT, intT> result;
   using controller_type = pasl::pctl::granularity::controller_holder<kdtree_file, 3, intT>;
   par::cstmt(controller_type::controller, [&] { return n; }, [&] {
+#ifdef MANUAL_ALLOCATION
+    bool* lower = newA(bool, n);
+    bool* upper = newA(bool, n);
+    parallel_for((intT)0, n, [&] (intT i) {
+      intT b = GET_INDEX(events[i]);
+      lower[i] = boxes[b].min < cut_off;
+      upper[i] = boxes[b].max > cut_off;
+    });
+    const event* events2 = (const event*)events;
+    left = pack(events2, events2 + n, lower);
+    right = pack(events2, events2 + n, upper);
+    free(lower);
+    free(upper);
+#else
     parray<bool> lower(n, [&] (intT i) {
       intT b = GET_INDEX(events[i]);
       return boxes[b].min < cut_off;
@@ -306,9 +371,13 @@ void split_events(range* boxes, event* events, float cut_off, intT n,
     const event* events2 = (const event*)events;
     left = pack(events2, events2 + n, lower.cbegin());
     right = pack(events2, events2 + n, upper.cbegin());
+#endif
+
+    result = make_pair(left.size(), right.size());
   }, [&] {
-    split_events_serial(boxes, events, cut_off, n, left, right);
+    result = split_events_serial(boxes, events, cut_off, n, left, right);
   });
+  return result;
 }
   
 // n is the number of events (i.e. twice the number of triangles)
@@ -369,17 +438,18 @@ tree_node* generate_node(boxes bxs, events evts, bounding_box b,
     // now split each event array to the two sides
     parray<event> xl[3];
     parray<event> xr[3];
+    std::pair<intT, intT> sizes[3];
     parallel_for(0, 3, [&] (int) { return n; }, [&] (int d) {
-      split_events(cut_dim_ranges, evts[d], cut_off, n, xl[d], xr[d]);
+      sizes[d] = split_events(cut_dim_ranges, evts[d], cut_off, n, xl[d], xr[d]);
     });
     
     for (int d = 0; d < 3; d++) {
       left_events[d] = xl[d].begin();
       right_events[d] = xr[d].begin();
       if (d == 0) {
-        nl = xl[d].size();
-        nr = xr[d].size();
-      } else if (xl[d].size() != nl || xr[d].size() != nr) {
+        nl = sizes[d].first;
+        nr = sizes[d].second;
+      } else if (sizes[d].first != nl || sizes[d].second != nr) {
         cout << "kdTree: mismatched lengths, something wrong" << endl;
         abort();
       }
@@ -496,6 +566,12 @@ void process_rays(trianglesT tri, rayT* rays, intT num_rays,
 }
 
 parray<intT> ray_cast(triangles<pointT> tri, ray<pointT>* rays, int num_rays) {
+
+//  st
+
+#ifdef TIME_MEASURE
+      auto start = std::chrono::system_clock::now();
+#endif
   
   // Extract triangles into a separate array for each dimension with
   // the lower and upper bound for each triangle in that dimension.
@@ -513,7 +589,13 @@ parray<intT> ray_cast(triangles<pointT> tri, ray<pointT>* rays, int num_rays) {
     bxs[1][i] = fix_range(std::min(p0.y, std::min(p1.y, p2.y)), std::max(p0.y, std::max(p1.y, p2.y)));
     bxs[2][i] = fix_range(std::min(p0.z, std::min(p1.z, p2.z)), std::max(p0.z, std::max(p1.z, p2.z)));
   });
-  
+#ifdef TIME_MEASURE
+      auto end = std::chrono::system_clock::now();
+      std::chrono::duration<float> diff = end - start;
+//      printf ("exectime generate boxes %.3lf\n", diff.count());
+
+      start = std::chrono::system_clock::now();
+#endif
   // Loop over the dimensions creating an array of events for each
   // dimension, sorting each one, and extracting the bounding box
   // from the first and last elements in the sorted events in each dim.
@@ -528,11 +610,24 @@ parray<intT> ray_cast(triangles<pointT> tri, ray<pointT>* rays, int num_rays) {
     sample_sort(evts[d], 2 * n, [&] (event& a, event& b) { return a.v < b.v; });
     box[d] = range(evts[d][0].v, evts[d][2 * n - 1].v);
   }
+
+#ifdef TIME_MEASURE
+      end = std::chrono::system_clock::now();
+      diff = end - start;
+//      printf ("exectime generate and sort events %.3lf\n", diff.count());
+
+      start = std::chrono::system_clock::now();
+#endif
   
   // build the tree
   intT recursion_depth = std::min(max_recursion_depth, utils::log2Up(n) - 1);
   tree_node* tree = generate_node(bxs, evts, box, 2 * n,
                              recursion_depth);
+#ifdef TIME_MEASURE
+      end = std::chrono::system_clock::now();
+      diff = end - start;
+      printf ("exectime build tree %.3lf\n", diff.count());
+#endif
   
   if (STATS)
     cout << "Triangles across all leaves = " << tree->n 
@@ -542,10 +637,27 @@ parray<intT> ray_cast(triangles<pointT> tri, ray<pointT>* rays, int num_rays) {
     free(evts[d]);
   }
   
+#ifdef TIME_MEASURE
+      start = std::chrono::system_clock::now();
+#endif
   // get the intersections
   parray<intT> results(num_rays);
   process_rays(tri, rays, num_rays, tree, results.begin());
+
+#ifdef TIME_MEASURE
+      end = std::chrono::system_clock::now();
+      diff = end - start;
+      printf ("exectime intersect rays %.3lf\n", diff.count());
+
+      start = std::chrono::system_clock::now();
+#endif
+
   tree_node::del(tree);
+#ifdef TIME_MEASURE
+      end = std::chrono::system_clock::now();
+      diff = end - start;
+      printf("exectime delete tree %.3lf\n", diff.count());
+#endif
   
   if (CHECK12) {
     int nr = 10;

@@ -97,10 +97,8 @@ namespace pctl {
       point center = minPt + (box / 2.0);
       
       // copy before calling recursive routine since recursive routine is destructive
-
       parray<vertex*> v(vv, vv + n);
       //cout << "about to build tree" << endl;
-      
       dimtree_node* result = new dimtree_node(v.begin(), n, center, box.max_dim());
 
       return result;
@@ -167,7 +165,9 @@ namespace pctl {
           pss[i] = ss;
           ss += children[i]->count;
         }
-        parallel_for(int(0), nb, [&] (int i) {
+        parallel_for(int(0), nb, [&] (int l, int r) {
+          return (r == nb ? ss : pss[r]) - pss[l];
+        }, [&] (int i) {
           children[i]->apply_index(pss[i], f);
         });
       }

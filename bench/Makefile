@@ -29,8 +29,9 @@ VERBOSE_DEPENDENCIES=0
 
 PROGRAMS=\
 	psort.cpp \
+	blockradixsort.cpp \
 	samplesort.cpp \
-	blockradixsort.cpp
+	deterministichash.cpp \
 
 ####################################################################
 # Makefile options

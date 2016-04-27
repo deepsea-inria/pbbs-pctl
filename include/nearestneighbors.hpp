@@ -201,7 +201,7 @@ namespace pctl {
   };
 
   template <class intT, int maxK, class Point>
-  parray<intT> ANN(parray<Point> points, int n, int k) {
+  parray<intT> ANN(parray<Point>& points, int n, int k) {
     parray<intT> result(n * k);
 
     parray<vertex<Point, maxK>*> vertices(points.size());
@@ -212,7 +212,7 @@ namespace pctl {
 
     ANN<intT, maxK, vertex<Point, maxK>>(vertices.begin(), n, k);
     parallel_for(0, n, [&] (int i) {
-      for (int j = 0; j < std::min(n - 1, maxK); j++) {
+      for (int j = 0; j < std::min(n - 1, k); j++) {
         result[i * maxK + j] = vertices[i]->ngh[j]->identifier;
       }
     });

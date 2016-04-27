@@ -16,7 +16,8 @@ public:
 template <class E, class intT>
 controller_type transpose_contr<E,intT>::contr("transpose");
 
-#define _TRANS_THRESHHOLD 64
+#define _TRANS_THRESHHOLD 2000000000
+// 64
   
 template <class E, class intT>
 void transpose(E* A, E* B,
@@ -28,12 +29,15 @@ void transpose(E* A, E* B,
       for (intT j=cStart; j < cStart + cCount; j++)
         B[j*cLength + i] = A[i*rLength + j];
   };
-  par::cstmt(controller_type::contr, [&] { return rCount * cCount; }, [&] {
+
 #ifdef MANUAL_CONTROL
-    if (cCount < _TRANS_THRESHHOLD && rCount < _TRANS_THRESHHOLD) {
-#else
-    if (cCount < 2 && rCount < 2) {
+  if (cCount < _TRANS_THRESHHOLD && rCount < _TRANS_THRESHHOLD) {
+    seq();
+    return;
+  }
 #endif
+  par::cstmt(controller_type::contr, [&] { return rCount * cCount; }, [&] {
+    if (cCount < 2 && rCount < 2) {
       seq();
     } else if (cCount > rCount) {
       intT l1 = cCount/2;
@@ -85,12 +89,14 @@ void block_transpose(E *A, E *B, intT *OA, intT *OB, intT *L,
 /*  for (intT i = rStart; i < rStart + rCount; i++) {
     total += OA[i * rLength + (cStart + cCount - 1)] - OA[i * rLength + cStart] + L[i * rLength + (cStart + cCount - 1)];
   }*/
-  par::cstmt(controller_type::contr, [&] { return total; }, [&] {
 #ifdef MANUAL_CONTROL
-    if (cCount < _TRANS_THRESHHOLD && rCount < _TRANS_THRESHHOLD) {
-#else
-    if (cCount < 2 && rCount < 2) {
+  if (cCount < _TRANS_THRESHHOLD && rCount < _TRANS_THRESHHOLD) {
+    seq();
+    return;
+  }
 #endif
+  par::cstmt(controller_type::contr, [&] { return total; }, [&] {
+    if (cCount < 2 && rCount < 2) {
       seq();
     } else if (cCount > rCount) {
       intT l1 = cCount/2;

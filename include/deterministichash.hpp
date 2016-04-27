@@ -286,11 +286,34 @@ public:
 
 template <class Hash, class ET, class intT>
 parray<ET> remove_duplicates(parray<ET>& a, intT m, Hash hash) {
+#ifdef TIME_MEASURE
+      auto start = std::chrono::system_clock::now();
+#endif
   Table<Hash, intT> t(m, hash);
+#ifdef TIME_MEASURE
+      auto end = std::chrono::system_clock::now();
+      std::chrono::duration<float> diff = end - start;
+      printf ("exectime creation %.3lf\n", diff.count());
+
+      start = std::chrono::system_clock::now();
+#endif
   parallel_for(a.begin(), a.end(), [&] (ET* it) {
     t.insert(*it);
   });
+#ifdef TIME_MEASURE
+      end = std::chrono::system_clock::now();
+      diff = end - start;
+      printf ("exectime insertion %.3lf\n", diff.count());
+
+      start = std::chrono::system_clock::now();
+#endif
   parray<ET> r = t.entries();
+#ifdef TIME_MEASURE
+      end = std::chrono::system_clock::now();
+      diff = end - start;
+      printf ("exectime entries %.3lf\n", diff.count());
+#endif
+
   t.del();
   return r;
 }

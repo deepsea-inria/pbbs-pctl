@@ -222,7 +222,7 @@ void suffix_array_rec(intT* s, intT n, intT K, bool find_LCP,
   merge(suffixes0beg, suffixes0beg + (n0 - o), suffixes12beg, suffixes12beg + (n12 + o - 1), suffixes.begin(), comp);
   
   //get LCP from LCP12
-  if(find_LCP) {
+  if (find_LCP) {
     LCP.resize(n);
     LCP[n - 1] = LCP[n - 2] = 0;
     myRMQ RMQ(LCP12.begin(), n12 + 3); //simple rmq

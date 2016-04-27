@@ -27,6 +27,10 @@
 #ifndef _PCTL_PBBS_HULL_H_
 #define _PCTL_PBBS_HULL_H_
 
+#ifdef MANUAL_ALLOCATION
+#define newA(__E,__n) (__E*) malloc((__n)*sizeof(__E))
+#endif
+
 namespace pasl {
 namespace pctl {
 
@@ -109,12 +113,15 @@ intT quick_hull(iter<intT> indices, iter<intT> tmp, iter<point2d> p, intT n, int
         return x > y;
       };
 
+#ifdef TIME_MEASURE
+      auto start = std::chrono::system_clock::now();
+#endif
       // Finding some point on the convex hull between l and r
 /*      intT idx = (intT)max_index(indices, indices + n, (double)0.0, greater, [&] (intT j, double) {
-          std::cerr << j << std::endl;
         return triangle_area(p[l], p[r], p[indices[j]]);
       });
       intT split = indices[idx];*/
+
       intT split = (intT)reduce(indices, indices + n, indices[0], [&] (intT x, intT y) {
         if (triangle_area(p[l], p[r], p[x]) > triangle_area(p[l], p[r], p[y])) {
           return x;
@@ -123,11 +130,30 @@ intT quick_hull(iter<intT> indices, iter<intT> tmp, iter<point2d> p, intT n, int
         }
       });
 
+/*      intT split = indices[0];
+      double max_area = triangle_area(p[l], p[r], p[split]);
+      for (intT i = 1; i < n; i++) {
+        intT j = indices[i];
+        double a = triangle_area(p[l], p[r], p[j]);
+        if (a > max_area) {
+          max_area = a;
+          split = j;
+        }
+      }*/
+
+#ifdef TIME_MEASURE  
+      auto end = std::chrono::system_clock::now();
+      std::chrono::duration<float> diff = end - start;
+      printf ("exectime reduce quickhull %.3lf\n", diff.count());
+#endif
+
 /*      if (split_point != split) {
         std::cerr << "Fuck off! " << max_area << " " << triangle_area(p[l], p[r], p[split]) << " " << split_point << " " << split << " " << n << std::endl;
       }*/
 
-      
+#ifdef TIME_MEASURE
+      start = std::chrono::system_clock::now();
+#endif      
       // vertices on the convex hull between l and split
       intT n1 = (intT)dps::filter(indices, indices + n, tmp, [&] (intT i) {
         return triangle_area(p[l], p[split], p[i]) > EPS;
@@ -136,7 +162,12 @@ intT quick_hull(iter<intT> indices, iter<intT> tmp, iter<point2d> p, intT n, int
       intT n2 = (intT)dps::filter(indices, indices + n, tmp + n1, [&] (intT i) {
         return triangle_area(p[split], p[r], p[i]) > EPS;
       });
-      
+#ifdef TIME_MEASURE  
+      end = std::chrono::system_clock::now();
+      diff = end - start;
+      printf ("exectime filters quickhull %.3lf\n", diff.count());
+#endif      
+
       intT m1, m2;
       par::fork2([&] {
         m1 = quick_hull(tmp, indices, p, n1, l, split);
@@ -156,6 +187,9 @@ intT quick_hull(iter<intT> indices, iter<intT> tmp, iter<point2d> p, intT n, int
 }
 
 parray<intT> hull(parray<point2d>& p) {
+#ifdef TIME_MEASURE
+      auto start = std::chrono::system_clock::now();
+#endif
   intT n = (intT)p.size();
   auto combine = [&] (pair<intT, intT> l, pair<intT, intT> r) {
     intT min_index =
@@ -169,21 +203,66 @@ parray<intT> hull(parray<point2d>& p) {
   auto min_max = level1::reducei(p.cbegin(), p.cend(), id, combine, [&] (long i, point2d) {
     return make_pair(i, i);
   });
+#ifdef TIME_MEASURE  
+      auto end = std::chrono::system_clock::now();
+      std::chrono::duration<float> diff = end - start;
+      printf ("exectime reduce hull %.3lf\n", diff.count());
+#endif
+
   intT l = min_max.first;
   intT r = min_max.second;
+#ifdef TIME_MEASURE
+      start = std::chrono::system_clock::now();
+#endif
+
+#ifdef MANUAL_ALLOCATION
+  bool* is_top_hull = newA(bool, n);
+  bool* is_bottom_hull = newA(bool, n);
+  intT* indices = newA(intT, n);
+  intT* tmp = newA(intT, n);
+#else
   parray<bool> is_top_hull(n);
   parray<bool> is_bottom_hull(n);
   parray<intT> indices(n);
   parray<intT> tmp(n);
+#endif
+
+#ifdef TIME_MEASURE  
+      end = std::chrono::system_clock::now();
+      diff = end - start;
+      printf ("exectime init hull %.3lf\n", diff.count());
+#endif
+#ifdef TIME_MEASURE
+      start = std::chrono::system_clock::now();
+#endif
   parallel_for((intT)0, n, [&] (intT i) {
     tmp[i] = i;
     double a = triangle_area(p[l], p[r], p[i]);
-    is_top_hull[i] = a > EPS;
-    is_bottom_hull[i] = a < -EPS;
+    is_top_hull[i] = a > 0;//EPS;
+    is_bottom_hull[i] = a < 0;//-EPS;
   });
-  
+#ifdef TIME_MEASURE  
+      end = std::chrono::system_clock::now();
+      diff = end - start;
+      printf ("exectime for hull %.3lf\n", diff.count());
+
+      start = std::chrono::system_clock::now();
+#endif
+#ifdef MANUAL_ALLOCATION
+  intT n1 = (intT)dps::pack(is_top_hull, tmp, tmp + n, indices);
+  intT n2 = (intT)dps::pack(is_bottom_hull, tmp, tmp + n, indices + n1);
+  free(is_top_hull);
+  free(is_bottom_hull);
+#else
   intT n1 = (intT)dps::pack(is_top_hull.cbegin(), tmp.cbegin(), tmp.cend(), indices.begin());
   intT n2 = (intT)dps::pack(is_bottom_hull.cbegin(), tmp.cbegin(), tmp.cend(), indices.begin() + n1);
+#endif
+
+#ifdef TIME_MEASURE
+      end = std::chrono::system_clock::now();
+      diff = end - start;
+      printf ("exectime packs hull %.3lf\n", diff.count());
+#endif
 /*  cout << n1 << " " << n2 << " " << l << " " << r << endl;
   if (n2 == 2) {
     for (int i = 0; i < n1; i++) {
@@ -199,20 +278,38 @@ parray<intT> hull(parray<point2d>& p) {
 
   intT m1; intT m2;
   par::fork2([&] {
+#ifdef MANUAL_ALLOCATION
+    m1 = quick_hull(indices, tmp, p.begin(), n1, l, r);
+#else
     m1 = quick_hull(indices.begin(), tmp.begin(), p.begin(), n1, l, r);
+#endif
 //    m1 = quick_hull_seq(indices.begin(), p.begin(), n1, l, r);
   }, [&] {
+#ifdef MANUAL_ALLOCATION
+    m2 = quick_hull(indices + n1, tmp + n1, p.begin(), n2, r, l);
+#else
     m2 = quick_hull(indices.begin() + n1, tmp.begin() + n1, p.begin(), n2, r, l);
+#endif
 //    m2 = quick_hull_seq(indices.begin() + n1, p.begin(), n2, r, l);
   });
   
+#ifdef MANUAL_ALLOCATION
+  pmem::copy(indices, indices + m1, tmp + 1);
+  pmem::copy(indices + n1, indices + n1 + m2, tmp + m1 + 2);
+#else
   pmem::copy(indices.cbegin(), indices.cbegin() + m1, tmp.begin() + 1);
   pmem::copy(indices.cbegin() + n1, indices.cbegin() + n1 + m2, tmp.begin() + m1 + 2);
+#endif
   
   tmp[0] = l;
   tmp[m1 + 1] = r;
+#ifdef MANUAL_ALLOCATION
+  free(indices);
+  return parray<int>(0);
+#else
   tmp.resize(m1 + 2 + m2);
   return tmp;
+#endif
 }
 
 } // end namespace
