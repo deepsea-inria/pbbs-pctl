@@ -165,7 +165,7 @@ namespace pctl {
           pss[i] = ss;
           ss += children[i]->count;
         }
-        parallel_for(int(0), nb, [&] (int l, int r) {
+        range::parallel_for(int(0), nb, [&] (int l, int r) {
           return (r == nb ? ss : pss[r]) - pss[l];
         }, [&] (int i) {
           children[i]->apply_index(pss[i], f);

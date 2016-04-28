@@ -2,6 +2,7 @@
 #include <cstring>
 #include <fstream>
 #include "geometrydata.hpp"
+#include "teststructs.hpp"
 
 #ifndef _PCTL_PBBS_SERIALIZATION_H_     
 #define _PCTL_PBBS_SERIALIZATION_H_
@@ -138,13 +139,6 @@ void write_to_file<std::pair<char*, int>*>(std::ofstream& out, parray<std::pair<
   delete [] len;
 }
 
-class ray_cast_test {
-public:
-  parray<point3d> points;
-  parray<triangle> triangles;
-  parray<ray<point3d>> rays;
-};
-
 template <>
 struct read_from_file_struct<ray_cast_test> {
   ray_cast_test operator()(std::ifstream& in) {
@@ -168,6 +162,18 @@ void write_to_file<ray_cast_test>(std::ofstream& out, ray_cast_test& test) {
 template <class Item>
 Item read_from_file(std::ifstream& in) {
   return read_from_file_struct<Item>()(in);
+}
+
+template <class Item>
+Item read_from_file(std::string file) {
+  std::ifstream in(file, std::ifstream::binary);
+  return read_from_file<Item>(in);
+}
+
+template <class Item>
+void write_to_file(std::string file, Item& x) {
+  std::ofstream out(file, std::ofstream::binary);
+  write_to_file(out, x);
 }
 
 } //end namespace

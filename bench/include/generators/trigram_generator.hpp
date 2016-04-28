@@ -1,4 +1,8 @@
-#include "serialization.hpp"
+#include <iostream>
+#include <fstream>
+#include "ploop.hpp"
+#include "parray.hpp"
+#include "prandgen.hpp"
 
 #ifndef _PBBS_PCTL_TRIGRAM_GENERATOR_H_
 #define _PBBS_PCTL_TRIGRAM_GENERATOR_H_
@@ -29,9 +33,9 @@ struct ngram_table {
   }
 
   ngram_table() {
-    ifstream ifile(TRIGRAM_FILE);
+    std::ifstream ifile(TRIGRAM_FILE);
     if (!ifile.is_open()) {
-      std::cout << "ngram_table: Unable to open trigram file" << endl;
+      std::cout << "ngram_table: Unable to open trigram file" << std::endl;
       abort();
     } else {
       int i = 0;
@@ -128,12 +132,12 @@ std::string trigram_string(int s, int e) {
   return t.string(s, e);
 }
 
-void gen_trigram_string(std::string fname, int n) {
+/*void gen_trigram_string(std::string fname, int n) {
   std::string s = trigram_string(0, n);
   std::ofstream out(fname, std::ofstream::binary);
   io::write_to_file(out, s);
   out.close();
-}
+}*/
 
 parray<char*> trigram_words(int s, int e) { 
   int n = e - s;
@@ -145,12 +149,12 @@ parray<char*> trigram_words(int s, int e) {
   return a;
 }
 
-void gen_trigram_words(std::string fname, int n) {
+/*void gen_trigram_words(std::string fname, int n) {
   parray<char*> words = trigram_words(0, n);
   std::ofstream out(fname, std::ofstream::binary);
   io::write_to_file(out, words);
   out.close();
-}
+}*/
 
 } //end namespace
 } //end namespace

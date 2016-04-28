@@ -1,7 +1,8 @@
 #include <string>
 #include "trigram_generator.hpp"
 #include "rays_generator.hpp"
-#include "serialization.hpp"
+#include "serializationtxt.hpp"
+#include "serializationbin.hpp"
 #include "sequencedata.hpp"
 #include "geometrydata.hpp"
 #include "kdtree.hpp"
@@ -12,144 +13,6 @@
 namespace pasl {
 namespace pctl {
 namespace io {
-
-std::string read_string_from_txt(std::string file) {
-  ifstream in(file);
-  in.seekg(0, std::ios::end);
-  size_t size = in.tellg();
-  std::string buffer;
-  buffer.resize(size);
-  in.seekg(0);
-  in.read(&buffer[0], size);
-  return buffer;
-}
-
-std::vector<std::string> string_to_words(std::string s) {
-  std::vector<std::string> words;
-  size_t pos = 0;
-  size_t prev = 0;
-  while ((pos = s.find_first_of(" \t\n\r", prev)) != std::string::npos) {
-    if (pos > prev) {
-      words.push_back(s.substr(prev, pos - prev));
-    }
-    prev = pos + 1;
-  }
-  if (prev < s.length()) {
-    words.push_back(s.substr(prev, std::string::npos));
-  }
-  return words;
-}
-
-template <class Item>
-struct load_item {};
-
-template <>
-struct load_item<int> {
-  int operator()(std::vector<std::string>& words, int& p) {
-    return std::stoi(words[p++]);
-  }
-};
-
-template <>
-struct load_item<double> {
-  double operator()(std::vector<std::string>& words, int& p) {
-    return std::stod(words[p++]);
-  }
-};
-
-template <>
-struct load_item<char*> {
-  char* operator()(std::vector<std::string>& words, int& p) {
-    char* result = new char[words[p].length() + 1];
-    result[words[p].length()] = '\0';
-    std::copy(words[p].begin(), words[p].end(), result);
-    p++;
-    return result;
-  }
-};
-
-template <>
-struct load_item<std::string> {
-  std::string operator()(std::vector<std::string>& words, int& p) {
-    return words[p++];
-  }
-};
-
-template <>
-struct load_item<point2d> {
-  point2d operator()(std::vector<std::string>& words, int& p) {
-    double x = std::stod(words[p++]);
-    double y = std::stod(words[p++]);
-    return point2d(x, y);
-  }
-};
-
-template <>
-struct load_item<point3d> {
-  point3d operator()(std::vector<std::string>& words, int& p) {
-    double x = std::stod(words[p++]);
-    double y = std::stod(words[p++]);
-    double z = std::stod(words[p++]);
-    return point3d(x, y, z);
-  }
-};
-
-template <class Item1, class Item2>
-struct load_item<std::pair<Item1, Item2>> {
-  std::pair<Item1, Item2> operator()(std::vector<std::string>& words, int& p) {
-    Item1 i1 = load_item<Item1>()(words, p);
-    Item2 i2 = load_item<Item2>()(words, p);
-    return make_pair(i1, i2);
-  }
-};
-
-template <class Item1, class Item2>
-struct load_item<std::pair<Item1, Item2>*> {
-  std::pair<Item1, Item2>* operator()(std::vector<std::string>& words, int& p) {
-    Item1 i1 = load_item<Item1>()(words, p);
-    Item2 i2 = load_item<Item2>()(words, p);
-    return new std::pair<Item1, Item2>(i1, i2);
-  }
-};
-
-template <class Item>
-struct load_item<parray<Item>> {
-  parray<Item> operator()(std::vector<std::string>& words, int& p) {
-    int size = std::stoi(words[p++]);
-    parray<Item> result(size);
-    for (int i = 0; i < size; i++) {
-      result[i] = load_item<Item>()(words, p);
-    }
-    return result;
-  }
-
-  parray<Item> operator()(std::vector<std::string>& words, int& p, int n) {
-//    std::cerr << words.size() << " " << p << " " << n << std::endl; 
-    parray<Item> result(n);
-    for (int i = 0; i < n; i++) {
-      result[i] = load_item<Item>()(words, p);
-    }
-    std::cerr << "Finished loading\n";
-    return result;
-  }
-};
-
-template <class Item>
-Item read_from_txt(std::string file) {
-  std::vector<std::string> words = string_to_words(read_string_from_txt(file));
-  int p = 1;
-  return load_item<Item>()(words, p);
-}
-
-template <class Item>
-parray<Item> read_seq_from_txt(std::string file, int n) {
-  std::cerr << "Loading from file\n";
-  std::vector<std::string> words = string_to_words(read_string_from_txt(file));
-  int p = 1;
-  parray<Item> result = load_item<parray<Item>>()(words, p, n);
-  std::cerr << "Sequence loaded: " << result.size() << "\n";
-  return result;
-}
 
 template <class Generator_fct, class Item = typename std::result_of<Generator_fct&()>::type>
 Item load(std::string file, const Generator_fct& gen, bool regenerate = false) {
@@ -168,7 +31,7 @@ Item load(std::string file, const Generator_fct& gen, bool regenerate = false) {
 
 template <class Item>
 parray<Item> load_seq_from_txt(std::string file, std::string seq_file, int n, bool regenerate = false) {
-  return load(file, [&] { return read_seq_from_txt<Item>(seq_file, n); }, regenerate);
+  return load(file, [&] { return read_from_txt_file<parray<Item>>(seq_file); }, regenerate);
 }
 
 template <class Item>
@@ -248,29 +111,7 @@ std::string load_trigram_string(std::string file, int n, bool regenerate = false
 
 std::string load_string_from_txt(std::string file, std::string txt_file, bool regenerate = false) {
 //  std::string x = read_string_from_txt(txt_file);
-  return load(file, [&] { return read_string_from_txt(txt_file); }, regenerate);
-}
-
-std::pair<parray<point3d>, parray<triangle>> load_triangles_from_txt(std::string file) {
-  std::string s = read_string_from_txt(file);
-  std::vector<std::string> words = string_to_words(s);
-  int p = 1;
-  parray<point3d> points(std::stoi(words[p++]));
-  parray<triangle> triangles(std::stoi(words[p++]));
-
-  for (int i = 0; i < points.size(); i++) {
-    double x = std::stod(words[p++]);
-    double y = std::stod(words[p++]);
-    double z = std::stod(words[p++]);
-    new (&points[i]) point3d(x, y, z);
-  }
-  for (int i = 0; i < triangles.size(); i++) {
-    int a = std::stoi(words[p++]);
-    int b = std::stoi(words[p++]);
-    int c = std::stoi(words[p++]);
-    new (&triangles[i]) triangle(a - 1, b - 1, c - 1);
-  }
-  return make_pair(points, triangles);
+  return load(file, [&] { return read_from_txt_file<std::string>(txt_file); }, regenerate);
 }
 
 ray_cast_test load_ray_cast_test(std::string file, std::string triangles_file, std::string rays_file, bool regenerate = false) {
@@ -281,15 +122,7 @@ ray_cast_test load_ray_cast_test(std::string file, std::string triangles_file, s
     test.triangles = read_from_file<parray<triangle>>(in);
     test.rays = read_from_file<parray<ray<point3d>>>(in);
   } else {
-    auto p = load_triangles_from_txt(triangles_file);
-    test.points = p.first;
-    test.triangles = p.second;
-    parray<point3d> ray_ends = read_seq_from_txt<point3d>(rays_file, 2 * test.triangles.size());
-    parray<ray<point3d>> rays(test.triangles.size());
-    for (int i = 0; i < rays.size(); i++) {
-      new (&rays[i]) ray<point3d>(ray_ends[2 * i], ray_ends[2 * i + 1] - point3d(0, 0, 0));
-    }
-    test.rays = rays;
+    test = read_from_txt_files<ray_cast_test>(triangles_file, rays_file);
     
     std::ofstream out(file, std::ofstream::binary);
     write_to_file(out, test.points);
