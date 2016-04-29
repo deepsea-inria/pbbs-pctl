@@ -14,6 +14,7 @@
 #include "bench.hpp"
 #include "blockradixsort.hpp"
 #include "loaders.hpp"
+#include "blockRadixSort.h"
 
 /***********************************************************************/
 
@@ -29,6 +30,7 @@ int main(int argc, char** argv) {
     bool files = deepsea::cmdline::parse_or_default_int("files", 1) == 1;
     bool reload = deepsea::cmdline::parse_or_default_int("reload", 0) == 1;
     std::string path_to_data = deepsea::cmdline::parse_or_default_string("path_to_data", "/home/aksenov/pbbs/sequenceData/data/");
+    std:string lib_type = deepsea::cmdline::parse_or_default_string("lib_type", "pctl");
     system("mkdir tests");
     if (test == 0) {
       parray<int> a;
@@ -37,9 +39,15 @@ int main(int argc, char** argv) {
       } else {
         a = pasl::pctl::io::load_random_seq<int>(std::string("tests/random_seq_int_") + std::to_string(n), n, reload);
       }
-      measured([&] {
-        pasl::pctl::integer_sort(a.begin(), (int)a.size());
-      });
+      if (lib_type == "pbbs") {
+        measured([&] {
+          pbbs::integerSort<int>(&a[0], (int)a.size());
+        });
+      } else {
+        measured([&] {
+          pasl::pctl::integer_sort(a.begin(), (int)a.size());
+        });
+      }
     } else if (test == 1) {
       parray<int> a;
       if (files) {
@@ -47,9 +55,15 @@ int main(int argc, char** argv) {
       } else {
         a = pasl::pctl::io::load_random_exp_dist_seq<int>(std::string("tests/random_exp_dist_seq_int_") + std::to_string(n), n, reload);
       }
-      measured([&] {
-        pasl::pctl::integer_sort(a.begin(), (int)a.size());
-      });
+      if (lib_type == "pbbs") {
+        measured([&] {
+          pbbs::integerSort<int>(&a[0], (int)a.size());
+        });
+      } else {
+        measured([&] {
+          pasl::pctl::integer_sort(a.begin(), (int)a.size());
+        });
+      }
     } else if (test == 2) {
       parray<std::pair<int, int>> a;
       if (files) {
@@ -57,9 +71,15 @@ int main(int argc, char** argv) {
       } else {
         a = pasl::pctl::io::load_random_bounded_seq_with_int(std::string("tests/random_seq_int_int_") + std::to_string(n), n, n, n, reload);
       }
-      measured([&] {
-        pasl::pctl::integer_sort(a.begin(), (int)a.size());
-      });
+      if (lib_type == "pbbs") {
+        measured([&] {
+          pbbs::integerSort<int, int>(&a[0], (int)a.size());
+        });
+      } else {
+        measured([&] {
+          pasl::pctl::integer_sort(a.begin(), (int)a.size());
+        });
+      }
     } else if (test == 3) {
       parray<std::pair<int, int>> a;
       if (files) {
@@ -67,9 +87,15 @@ int main(int argc, char** argv) {
       } else {
         a = pasl::pctl::io::load_random_bounded_seq_with_int(std::string("tests/random_seq_int_int_") + std::to_string(n) + "_256", n, 256, n, reload);
       }
-      measured([&] {
-        pasl::pctl::integer_sort(a.begin(), (int)a.size());
-      });
+      if (lib_type == "pbbs") {
+        measured([&] {
+          pbbs::integerSort<int, int>(&a[0], (int)a.size());
+        });
+      } else {
+        measured([&] {
+          pasl::pctl::integer_sort(a.begin(), (int)a.size());
+        });
+      }
     }
   });
   return 0;

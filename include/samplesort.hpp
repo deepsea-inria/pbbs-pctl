@@ -74,7 +74,7 @@ void split_positions(E* a, E* b, intT* c, intT length_a, intT length_b, BinPred 
 #define SSORT_THR 100000
 #define AVG_SEG_SIZE 2
 #define PIVOT_QUOT 2
-#define comparison_sort(__A, __n, __compare) (quickSort(__A, __n, __compare))
+#define comparison_sort(__A, __n, __compare) (quick_sort(__A, __n, __compare))
 
 template <class E, class BinPred, class intT>
 class samplesort_contr {
@@ -129,10 +129,10 @@ void sample_sort (E* a, intT n, BinPred compare) {
       
     // sort the samples
 #ifdef MANUAL_ALLOCATION
-    quickSort(sample_set, sample_set_size, compare);
+    quick_sort(sample_set, sample_set_size, compare);
 //    std::sort(sample_set, sample_set + sample_set_size, compare);
 #else
-    quickSort(sample_set.begin(), sample_set_size, compare);
+    quick_sort(sample_set.begin(), sample_set_size, compare);
 //    std::sort(sample_set.begin(), sample_set.end(), compare);
 #endif
       
@@ -247,7 +247,7 @@ void sample_sort (E* a, intT n, BinPred compare) {
 } // end namespace
 } // end namespace
 
-#undef compSort
-#define compSort(__A, __n, __f) (sampleSort(__A, __n, __f))
+#undef comparison_sort
+#define comparison_sort(__A, __n, __f) (sample_sort(__A, __n, __f))
 
 #endif /*! _PBBS_PCTL_SAMPLESORT_H_ !*/

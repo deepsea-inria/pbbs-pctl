@@ -12,6 +12,7 @@
 #include "bench.hpp"
 #include "suffixarray.hpp"
 #include "loaders.hpp"
+#include "pks.h"
 
 /***********************************************************************/
 
@@ -24,6 +25,7 @@ int main(int argc, char** argv) {
     bool files = deepsea::cmdline::parse_or_default_int("files", 1) == 1;
     bool reload = deepsea::cmdline::parse_or_default_int("reload", 0) == 1;
     std::string path_to_data = deepsea::cmdline::parse_or_default_string("path_to_data", "/home/aksenov/pbbs/sequenceData/data/");
+    std::string lib_type = deepsea::cmdline::parse_or_default_string("lib_type", "pctl");
     system("mkdir tests");
     if (test == 0) {
       std::string a;
@@ -32,27 +34,51 @@ int main(int argc, char** argv) {
       } else {
         a = pasl::pctl::io::load_trigram_string("tests/trigram_string_" + std::to_string(n), n, reload);
       }
-      measured([&] {
-        pasl::pctl::suffix_array(&a[0], a.length());
-      });
+      if (lib_type == "pbbs") {
+        measured([&] {
+          pbbs::suffixArray(&a[0], (int)a.length());
+        });
+      } else {
+        measured([&] {
+          pasl::pctl::suffix_array(&a[0], a.length());
+        });
+      }
     } else if (test == 1) {
       std::string a;
       a = pasl::pctl::io::load_string_from_txt("tests/chr22.dna.bin", path_to_data + "chr22.dna", reload);
-      measured([&] {
-        pasl::pctl::suffix_array(&a[0], a.length());
-      });
+      if (lib_type == "pbbs") {
+        measured([&] {
+          pbbs::suffixArray(&a[0], (int)a.length());
+        });
+      } else {
+        measured([&] {
+          pasl::pctl::suffix_array(&a[0], a.length());
+        });
+      }
     } else if (test == 2) {
       std::string a;
       a = pasl::pctl::io::load_string_from_txt("tests/etext99.bin", path_to_data + "etext99", reload);
-      measured([&] {
-        pasl::pctl::suffix_array(&a[0], a.length());
-      });
+      if (lib_type == "pbbs") {
+        measured([&] {
+          pbbs::suffixArray(&a[0], (int)a.length());
+        });
+      } else {
+        measured([&] {
+          pasl::pctl::suffix_array(&a[0], a.length());
+        });
+      }
     } else if (test == 3) {
       std::string a;
       a = pasl::pctl::io::load_string_from_txt("tests/wikisamp.xml.bin", path_to_data + "wikisamp.xml", reload);
-      measured([&] {
-        pasl::pctl::suffix_array(&a[0], a.length());
-      });
+      if (lib_type == "pbbs") {
+        measured([&] {
+          pbbs::suffixArray(&a[0], (int)a.length());
+        });                     
+      } else {
+        measured([&] {
+          pasl::pctl::suffix_array(&a[0], a.length());
+        });
+      }
     }
   });
   return 0;

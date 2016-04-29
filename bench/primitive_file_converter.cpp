@@ -3,18 +3,10 @@
 #include "sequencedata.hpp"
 #include "trigram_generator.hpp"
 #include "rays_generator.hpp"
-#include "serializationtxt.hpp"
-#include "serializationbin.hpp"
+#include "loaders.hpp"
 
 using namespace pasl::pctl;
 namespace cmdline = deepsea::cmdline;
-
-void parse_filename(std::string fname, std::string& base, std::string& extension) {
-  assert(fname != "");
-  std::stringstream ss(fname);
-  std::getline(ss, base, '.');
-  std::getline(ss, extension);
-}
 
 template <class Item>
 struct generate_struct {};
@@ -164,36 +156,10 @@ Item generate(std::string generator) {
 }
 
 template <class Item>
-Item load(std::string infile) {
-  std::string base;
-  std::string extension;
-  parse_filename(infile, base, extension);
-  if (extension == "txt") {
-    return io::read_from_txt_file<Item>(infile);
-  } else if (extension == "bin") {
-    return io::read_from_file<Item>(infile);
-  } else {
-    assert(false);
-  }
-}
-
-template <class Item>
-Item load(std::string infile, std::string infile2) {
-  std::string base;
-  std::string extension;
-  parse_filename(infile, base, extension);
-  if (extension == "txt") {
-    return io::read_from_txt_files<Item>(infile, infile2);
-  } else {
-    assert(false);
-  }
-}
-
-template <class Item>
 void store(Item& xs, std::string outfile) {
   std::string base;
   std::string extension;
-  parse_filename(outfile, base, extension);
+  io::parse_filename(outfile, base, extension);
   if (extension == "txt") {
     io::write_to_txt_file(outfile, xs);
   } else if (extension == "bin") {
@@ -207,7 +173,7 @@ template <class Item>
 void store(Item& xs, std::string outfile, std::string outfile2) {
   std::string base;
   std::string extension;
-  parse_filename(outfile, base, extension);
+  io::parse_filename(outfile, base, extension);
   if (extension == "txt") {
     io::write_to_txt_files(outfile, outfile2, xs);
   } else {
@@ -226,9 +192,9 @@ void process() {
   } else if (infile != "") {
     std::string infile2 = cmdline::parse_or_default<std::string>("infile2", "");
     if (infile2 != "") {
-      result = load<Item>(infile, infile2);
+      result = io::load<Item>(infile, infile2);
     } else {
-      result = load<Item>(infile);
+      result = io::load<Item>(infile);
     }
   } else {
     assert(false);

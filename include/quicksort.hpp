@@ -20,8 +20,8 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef A_QSORT_INCLUDED
-#define A_QSORT_INCLUDED
+#ifndef _PBBS_PCTL_QSORT_H_
+#define _PBBS_PCTL_QSORT_H_
 #include <algorithm>
 #include "dpsdatapar.hpp"
 
@@ -29,7 +29,7 @@ namespace pasl {
 namespace pctl {
     
 template <class E, class BinPred, class intT>
-void insertionSort(E* A, intT n, BinPred f) {
+void insertion_sort(E* A, intT n, BinPred f) {
   for (intT i=0; i < n; i++) {
     E v = A[i];
     E* B = A + i;
@@ -41,7 +41,7 @@ void insertionSort(E* A, intT n, BinPred f) {
 // Not currently used -- apparently not any faster than insertion sort
 // on small inputs
 template <class E, class BinPred, class intT>
-void shellSort(E* A, intT n, BinPred f) {
+void shell_sort(E* A, intT n, BinPred f) {
   intT stride = n/2;
   while (stride > 0) {
     for (intT i=0; i < n; i++) {
@@ -74,10 +74,10 @@ controller_type quicksort_contr<E,BinPred,intT>::contr("quicksort");
 // Quicksort based on median of three elements as pivot
 //  and uses insertionSort for small inputs
 template <class E, class BinPred, class intT>
-void quickSort(E* A, intT n, BinPred f) {
+void quick_sort(E* A, intT n, BinPred f) {
   using controller_type = quicksort_contr<E,BinPred,intT>;
   par::cstmt(controller_type::contr, [&] { return n * log(n); }, [&] {
-    if (n < ISORT) insertionSort(A, n, f);
+    if (n < ISORT) insertion_sort(A, n, f);
     else {
       //E p = std::__median(A[n/4],A[n/2],A[(3*n)/4],f);
       E p = median(A[n/4],A[n/2],A[(3*n)/4],f);
@@ -97,9 +97,9 @@ void quickSort(E* A, intT n, BinPred f) {
         M++;
       }
       par::fork2([&] {
-        quickSort(A, L-A, f);
+        quick_sort(A, L-A, f);
       }, [&] {
-        quickSort(M, A+n-M, f); // Exclude all elts that equal pivot
+        quick_sort(M, A+n-M, f); // Exclude all elts that equal pivot
       });
     }
   });
@@ -108,6 +108,6 @@ void quickSort(E* A, intT n, BinPred f) {
 } // end namespace
 } // end namespace
 
-#define compSort(__A, __n, __f) (quickSort(__A, __n, __f))
+//#define compSort(__A, __n, __f) (quickSort(__A, __n, __f))
 
-#endif // _A_QSORT_INCLUDED
+#endif // _PBBS_PCTL_QSORT_H_

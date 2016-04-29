@@ -16,7 +16,7 @@ public:
 template <class E, class intT>
 controller_type transpose_contr<E,intT>::contr("transpose");
 
-#define _TRANS_THRESHHOLD 2000000000
+#define TRANS_THRESHHOLD 64
 // 64
   
 template <class E, class intT>
@@ -31,7 +31,7 @@ void transpose(E* A, E* B,
   };
 
 #ifdef MANUAL_CONTROL
-  if (cCount < _TRANS_THRESHHOLD && rCount < _TRANS_THRESHHOLD) {
+  if (cCount < TRANS_THRESHHOLD && rCount < TRANS_THRESHHOLD) {
     seq();
     return;
   }
@@ -90,7 +90,7 @@ void block_transpose(E *A, E *B, intT *OA, intT *OB, intT *L,
     total += OA[i * rLength + (cStart + cCount - 1)] - OA[i * rLength + cStart] + L[i * rLength + (cStart + cCount - 1)];
   }*/
 #ifdef MANUAL_CONTROL
-  if (cCount < _TRANS_THRESHHOLD && rCount < _TRANS_THRESHHOLD) {
+  if (cCount < TRANS_THRESHHOLD && rCount < TRANS_THRESHHOLD) {
     seq();
     return;
   }

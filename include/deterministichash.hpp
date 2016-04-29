@@ -20,8 +20,8 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef A_HASH_INCLUDED
-#define A_HASH_INCLUDED
+#ifndef _PBBS_PCTL_DETERMINISTIC_HASH_H_
+#define _PBBS_PCTL_DETERMINISTIC_HASH_H_
 
 #include "utils.hpp"
 #include "prandgen.hpp"
@@ -464,4 +464,4 @@ parray<ET> run_dict(const parray<ET>& insert, const parray<ET>& remove, const pa
 } // end namespace
 } // end namespace
 
-#endif // _A_HASH_INCLUDED
+#endif // _PBBS_PCTL_DETERMINSTIC_HASH_H_

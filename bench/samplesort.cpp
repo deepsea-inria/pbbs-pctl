@@ -14,6 +14,7 @@
 #include "bench.hpp"
 #include "samplesort.hpp"
 #include "loaders.hpp"
+#include "sampleSort.h"
 
 /***********************************************************************/
 
@@ -28,6 +29,7 @@ int main(int argc, char** argv) {
     int n = deepsea::cmdline::parse_or_default_int("n", 10000000);
     bool files = deepsea::cmdline::parse_or_default_int("files", 1) == 1;
     std::string path_to_data = deepsea::cmdline::parse_or_default_string("path_to_data", "/home/aksenov/pbbs/sequenceData/data/");
+    std::string lib_type = deepsea::cmdline::parse_or_default_string("lib_type", "pctl");
     system("mkdir tests");
     if (test == 0) {
       parray<double> a;
@@ -36,9 +38,15 @@ int main(int argc, char** argv) {
       } else {
         a = pasl::pctl::io::load_seq_from_txt<double>(std::string("tests/random_seq_txt_10000000"), path_to_data + std::string("randomSeq_10M_double"), 10000000);
       }
-      measured([&] {
-        pasl::pctl::sample_sort(a.begin(), (int)a.size(), std::less<double>());
-      });
+      if (lib_type == "pbbs") {
+        measured([&] {
+          pbbs::sampleSort(a.begin(), (int)a.size(), std::less<double>());
+        });
+      } else {
+        measured([&] {
+          pasl::pctl::sample_sort(a.begin(), (int)a.size(), std::less<double>());
+        });
+      }
       for (int i = 1; i < a.size(); i++) {
         if (a[i] < a[i - 1]) {
           std::cerr << "ACHTUNG!\n";
@@ -52,9 +60,15 @@ int main(int argc, char** argv) {
       } else {
         a = pasl::pctl::io::load_random_exp_dist_seq<double>(std::string("tests/random_exp_dist_seq_") + std::to_string(n), n);
       }
-      measured([&] {
-        pasl::pctl::sample_sort(a.begin(), (int)a.size(), std::less<double>());
-      });
+      if (lib_type == "pbbs") {
+        measured([&] {
+          pbbs::sampleSort(a.begin(), (int)a.size(), std::less<double>());
+        });
+      } else {
+        measured([&] {
+          pasl::pctl::sample_sort(a.begin(), (int)a.size(), std::less<double>());
+        });
+      }
     } else if (test == 2) {
       parray<double> a;
       if (files) {
@@ -62,9 +76,15 @@ int main(int argc, char** argv) {
       } else {
         a = pasl::pctl::io::load_random_almost_sorted_seq<double>(std::string("tests/random_almost_sorted_seq_") + std::to_string(n), n, (int)sqrt(n));
       }
-      measured([&] {
-        pasl::pctl::sample_sort(a.begin(), (int)a.size(), std::less<double>());
-      });
+      if (lib_type == "pbbs") {
+        measured([&] {
+          pbbs::sampleSort(a.begin(), (int)a.size(), std::less<double>());
+        });
+      } else {
+        measured([&] {
+          pasl::pctl::sample_sort(a.begin(), (int)a.size(), std::less<double>());
+        });
+      }
     } else if (test == 3) {
       parray<char*> a;
       if (files) {
@@ -72,11 +92,19 @@ int main(int argc, char** argv) {
       } else {
         a = pasl::pctl::io::load_trigram_words(std::string("tests/trigram_words_") + std::to_string(n), n);
       }
-      measured([&] {
-        pasl::pctl::sample_sort(a.begin(), (int)a.size(), [&] (char* a, char* b) {
-          return std::strcmp(a, b) < 0;
+      if (lib_type == "pbbs") {
+        measured([&] {
+          pbbs::sampleSort(a.begin(), (int)a.size(), [&] (char* a, char* b) {
+            return std::strcmp(a, b) < 0;
+          });
         });
-      });
+      } else {
+        measured([&] {
+          pasl::pctl::sample_sort(a.begin(), (int)a.size(), [&] (char* a, char* b) {
+            return std::strcmp(a, b) < 0;
+          });
+        });
+      }
       pasl::pctl::parallel_for(0, n, [&] (int i) {
         delete [] a[i];
       });

@@ -6,6 +6,7 @@
 #include "sequencedata.hpp"
 #include "geometrydata.hpp"
 #include "kdtree.hpp"
+#include "cmdline.hpp"
 
 #ifndef _PCTL_PBBS_LOADERS_H_
 #define _PCTL_PBBS_LOADERS_H_
@@ -129,6 +130,51 @@ ray_cast_test load_ray_cast_test(std::string file, std::string triangles_file, s
     write_to_file(out, test.triangles);
     write_to_file(out, test.rays);
     return test;
+  }
+}
+
+void parse_filename(std::string fname, std::string& base, std::string& extension) {
+  assert(fname != "");
+  std::stringstream ss(fname);
+  std::getline(ss, base, '.');
+  std::getline(ss, extension);
+}
+
+template <class Item>
+Item load(std::string infile) {
+  std::string base;
+  std::string extension;
+  io::parse_filename(infile, base, extension);
+  if (extension == "txt") {
+    return io::read_from_txt_file<Item>(infile);
+  } else if (extension == "bin") {
+    return io::read_from_file<Item>(infile);
+  } else {
+    assert(false);
+  }
+}
+
+
+template <class Item>
+Item load(std::string infile, std::string infile2) {
+  std::string base;
+  std::string extension;
+  io::parse_filename(infile, base, extension);
+  if (extension == "txt") {
+    return io::read_from_txt_files<Item>(infile, infile2);
+  } else {
+    assert(false);
+  }
+}
+
+template <class Item> 
+Item load_from_file(std::string key1, std::string key2 = "") {
+  std::string infile = deepsea::cmdline::parse_string(key1);
+  std::string infile2 = deepsea::cmdline::parse_or_default<std::string>(key2, "");
+  if (infile2 != "") {
+    return load<Item>(infile, infile2);
+  } else {
+    return load<Item>(infile);
   }
 }
 

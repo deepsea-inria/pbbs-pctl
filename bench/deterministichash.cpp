@@ -14,6 +14,7 @@
 #include "bench.hpp"
 #include "deterministichash.hpp"
 #include "loaders.hpp"
+#include "deterministicHash.h"
 
 /***********************************************************************/
 
@@ -32,6 +33,7 @@ int main(int argc, char** argv) {
     bool files = deepsea::cmdline::parse_or_default_int("files", 1) == 1;
     bool reload = deepsea::cmdline::parse_or_default_int("reload", 0) == 1;
     std::string path_to_data = deepsea::cmdline::parse_or_default_string("path_to_data", "/home/aksenov/pbbs/sequenceData/data/");
+    std::string lib_type = deepsea::cmdline::parse_or_default_string("lib_type", "pctl");
     system("mkdir tests");
     if (test == 0) {
       parray<int> a;
@@ -58,9 +60,15 @@ int main(int argc, char** argv) {
         } 
       }*/
 
-      measured([&] {
-        pasl::pctl::remove_duplicates(a);
-      });
+      if (lib_type == "pbbs") {
+        measured([&] {
+          pbbs::removeDuplicates(pbbs::_seq<int>(&a[0], a.size()));
+        });
+      } else {
+        measured([&] {
+          pasl::pctl::remove_duplicates(a);
+        });
+      }
     } else if (test == 1) {
       parray<int> a;
       if (files) {
@@ -68,9 +76,15 @@ int main(int argc, char** argv) {
       } else {
         a = pasl::pctl::io::load_random_bounded_seq(std::string("tests/random_bounded_seq_") + std::to_string(n) + "_" + std::to_string(m), n, m, reload);
       }
-      measured([&] {
-        pasl::pctl::remove_duplicates(a);
-      });
+      if (lib_type == "pbbs") {
+        measured([&] {
+          pbbs::removeDuplicates(pbbs::_seq<int>(&a[0], a.size()));
+        });
+      } else {
+        measured([&] {
+          pasl::pctl::remove_duplicates(a);
+        });
+      }
     } else if (test == 2) {
       parray<int> a;
       if (files) {
@@ -78,9 +92,15 @@ int main(int argc, char** argv) {
       } else {
         a = pasl::pctl::io::load_random_exp_dist_seq<int>(std::string("tests/random_exp_dist_seq_int_") + std::to_string(n), n, reload);
       }
-      measured([&] {
-        pasl::pctl::remove_duplicates(a);
-      });
+      if (lib_type == "pbbs") {
+        measured([&] {
+          pbbs::removeDuplicates(pbbs::_seq<int>(&a[0], a.size()));
+        });
+      } else {
+        measured([&] {
+          pasl::pctl::remove_duplicates(a);
+        });
+      }
     } else if (test == 3) {
       parray<char*> a;
       if (files) {
@@ -88,9 +108,15 @@ int main(int argc, char** argv) {
       } else {
         a = pasl::pctl::io::load_trigram_words(std::string("tests/trigram_words_") + std::to_string(n), n, reload);
       }
-      measured([&] {
-        pasl::pctl::remove_duplicates(a);
-      });
+      if (lib_type == "pbbs") {
+        measured([&] {
+          pbbs::removeDuplicates(pbbs::_seq<char*>(&a[0], a.size()));
+        });
+      } else {
+        measured([&] {
+          pasl::pctl::remove_duplicates(a);
+        });
+      }
       pasl::pctl::parallel_for(0, n, [&] (int i) {
         delete [] a[i];
       });
@@ -117,10 +143,15 @@ int main(int argc, char** argv) {
           return;
         } 
       }*/
-
-      measured([&] {
-        pasl::pctl::remove_duplicates(a);
-      });
+      if (lib_type == "pbbs") {
+        measured([&] {
+          pbbs::removeDuplicates(pbbs::_seq<std::pair<char*, int>*>(&a[0], a.size()));
+        });
+      } else {
+        measured([&] {
+          pasl::pctl::remove_duplicates(a);
+        });
+      }
       pasl::pctl::parallel_for(0, n, [&] (int i) {
         delete [] a[i]->first;
         delete a[i];
