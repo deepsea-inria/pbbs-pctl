@@ -183,7 +183,6 @@ struct read_from_txt_file_struct<parray<Item>> {
 
   parray<Item> operator()(std::vector<std::string>& words, int& p) {
     std::vector<Item> result;
-    std::cerr << words[0] << " " << words[1] << " " << words[2] << std::endl;
     while (p < words.size()) {
       result.push_back(read_from_txt_file_struct<Item>()(words, p));
     }
@@ -267,6 +266,13 @@ void write_to_txt_file(std::string file, Item& x) {
   std::ofstream out(file);
   out << "pbbs-pctl-converted" << std::endl;
   write_to_txt_file_struct<Item>()(out, x);
+  out.close();
+}
+
+template <>
+void write_to_txt_file<std::string>(std::string file, std::string& x) {
+  std::ofstream out(file);
+  write_to_txt_file_struct<std::string>()(out, x);
   out.close();
 }
 

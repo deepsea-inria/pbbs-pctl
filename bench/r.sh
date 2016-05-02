@@ -3,7 +3,7 @@ split=(${1//./ })
 name=${split[0]}
 ext=${split[1]}
 
-cmdline="g++ -std=gnu++11 -O2 -I ~/pctl/include -I ~/chunkedseq/include -I ~/pbbs-pctl/include -I ~/quickcheck/quickcheck -I ~/cmdline/include -I ~/pbbs-pctl/bench/include -I ~/pbbs-pctl/bench/include/generators -I ~/pbbs-include/"
+cmdline="g++ -std=gnu++11 -g -O2 -I ~/pctl/include -I ~/chunkedseq/include -I ~/pbbs-pctl/include -I ~/quickcheck/quickcheck -I ~/cmdline/include -I ~/pbbs-pctl/bench/include -I ~/pbbs-pctl/bench/include/generators -I ~/pbbs-include/"
 #-g
 
 if [[ $ext == "unkh" ]];
@@ -25,7 +25,8 @@ if [[ $ext == "norm" ]];
 then
 #  cmdline="${cmdline} -DESTIMATOR_LOGGING -DPCTL_CILK_PLUS -fcilkplus"
 # -DMANUAL_ALLOCATION -DMANUAL_CONTROL
-  cmdline="${cmdline} -DTIMING -DTIME_MEASURE -DUSE_CILK_PLUS_RUNTIME -fcilkplus -DNDEBUG"
+  cmdline="${cmdline} -DTIMING -DUSE_CILK_PLUS_RUNTIME -fcilkplus -DNDEBUG"
+# -DTIME_MEASURE
 # -ltcmalloc -L/home/rainey/Installs/gperftools/lib/"
 #  cmdline="${cmdline} -DTIMING -DPCTL_CILK_PLUS -fcilkplus -ltcmalloc -L/home/rainey/Installs/gperftools/lib/"
 #  cmdline="${cmdline} -DESTIMATOR_LOGGING -DPCTL_CILK_PLUS -fcilkplus -ltcmalloc -L/home/rainey/Installs/gperftools/lib/"

@@ -48,63 +48,48 @@ parray<Item1> to_pbbs(parray<Item2>& a) {
   return result;
 }
 
+void pbbs_pctl_call(pbbs::measured_type measured, pasl::pctl::io::ray_cast_test& x) {
+  std::string lib_type = deepsea::cmdline::parse_or_default_string("lib_type", "pctl");
+  if (lib_type == "pbbs") {
+    parray<pbbs::_point3d<double>> points = to_pbbs<pbbs::_point3d<double>>(x.points);
+    parray<pbbs::triangle> triangles = to_pbbs<pbbs::triangle>(x.triangles);
+    parray<pbbs::ray<pbbs::_point3d<double>>> rays = to_pbbs<pbbs::ray<pbbs::_point3d<double>>>(x.rays);
+    pbbs::triangles<pbbs::_point3d<double>> tri(points.size(), triangles.size(), points.begin(), triangles.begin());
+    measured([&] {
+      pbbs::rayCast(tri, rays.begin(), rays.size());
+    });
+  } else {  
+    triangles<_point3d<double>> tri(x.points.size(), x.triangles.size(), x.points.begin(), x.triangles.begin());
+    measured([&] {
+      pasl::pctl::kdtree::ray_cast(tri, x.rays.begin(), x.rays.size());
+    });
+  }
+}
+
 int main(int argc, char** argv) {
   pbbs::launch(argc, argv, [&] (pbbs::measured_type measured) {
+    std::string infile = deepsea::cmdline::parse_or_default_string("infile", "");
+    if (infile != "") {
+      std::string infile2 = deepsea::cmdline::parse_string("infile2");
+      pasl::pctl::io::ray_cast_test x = pasl::pctl::io::load<pasl::pctl::io::ray_cast_test>(infile, infile2);
+      pbbs_pctl_call(measured, x);
+      return;
+    }
     int test = deepsea::cmdline::parse_or_default_int("test", 0);
     int n = deepsea::cmdline::parse_or_default_int("n", 10000000);
     bool files = deepsea::cmdline::parse_or_default_int("files", 1) == 1;
     bool reload = deepsea::cmdline::parse_or_default_int("reload", 0) == 1;
     std::string path_to_data = deepsea::cmdline::parse_or_default_string("path_to_data", "/home/aksenov/pbbs/geometryData/data/");
-    std::string lib_type = deepsea::cmdline::parse_or_default_string("lib_type", "pctl");
     system("mkdir tests");
     if (test == 0) {
       pasl::pctl::io::ray_cast_test a = pasl::pctl::io::load_ray_cast_test(std::string("tests/happy_ray_cast_dataset"), path_to_data + std::string("happyTriangles"), path_to_data + std::string("happyRays"), reload);
-      if (lib_type == "pbbs") {
-        parray<pbbs::_point3d<double>> points = to_pbbs<pbbs::_point3d<double>>(a.points);
-        parray<pbbs::triangle> triangles = to_pbbs<pbbs::triangle>(a.triangles);
-        parray<pbbs::ray<pbbs::_point3d<double>>> rays = to_pbbs<pbbs::ray<pbbs::_point3d<double>>>(a.rays);
-        pbbs::triangles<pbbs::_point3d<double>> tri(points.size(), triangles.size(), points.begin(), triangles.begin());
-        measured([&] {
-          pbbs::rayCast(tri, rays.begin(), rays.size());
-        });
-      } else {  
-        triangles<_point3d<double>> tri(a.points.size(), a.triangles.size(), a.points.begin(), a.triangles.begin());
-        measured([&] {
-          pasl::pctl::kdtree::ray_cast(tri, a.rays.begin(), a.rays.size());
-        });
-      }
+      pbbs_pctl_call(measured, a);
     } else if (test == 1) {
       pasl::pctl::io::ray_cast_test a = pasl::pctl::io::load_ray_cast_test(std::string("tests/angel_ray_cast_dataset"), path_to_data + std::string("angelTriangles"), path_to_data + std::string("angelRays"), reload);
-      if (lib_type == "pbbs") {
-        parray<pbbs::_point3d<double>> points = to_pbbs<pbbs::_point3d<double>>(a.points);
-        parray<pbbs::triangle> triangles = to_pbbs<pbbs::triangle>(a.triangles);
-        parray<pbbs::ray<pbbs::_point3d<double>>> rays = to_pbbs<pbbs::ray<pbbs::_point3d<double>>>(a.rays);
-        pbbs::triangles<pbbs::_point3d<double>> tri(points.size(), triangles.size(), points.begin(), triangles.begin());
-        measured([&] {
-          pbbs::rayCast(tri, rays.begin(), rays.size());
-        });
-      } else {
-        triangles<_point3d<double>> tri(a.points.size(), a.triangles.size(), a.points.begin(), a.triangles.begin());
-        measured([&] {
-          pasl::pctl::kdtree::ray_cast(tri, a.rays.begin(), a.rays.size());
-        });
-      }
+      pbbs_pctl_call(measured, a);
     } else if (test == 2) {
       pasl::pctl::io::ray_cast_test a = pasl::pctl::io::load_ray_cast_test(std::string("tests/dragon_ray_cast_dataset"), path_to_data + std::string("dragonTriangles"), path_to_data + std::string("dragonRays"), reload);
-      if (lib_type == "pbbs") {
-        parray<pbbs::_point3d<double>> points = to_pbbs<pbbs::_point3d<double>>(a.points);
-        parray<pbbs::triangle> triangles = to_pbbs<pbbs::triangle>(a.triangles);
-        parray<pbbs::ray<pbbs::_point3d<double>>> rays = to_pbbs<pbbs::ray<pbbs::_point3d<double>>>(a.rays);
-        pbbs::triangles<pbbs::_point3d<double>> tri(points.size(), triangles.size(), points.begin(), triangles.begin());
-        measured([&] {
-          pbbs::rayCast(tri, rays.begin(), rays.size());
-        });
-      } else {
-        triangles<_point3d<double>> tri(a.points.size(), a.triangles.size(), a.points.begin(), a.triangles.begin());
-        measured([&] {
-          pasl::pctl::kdtree::ray_cast(tri, a.rays.begin(), a.rays.size());
-        });
-      }
+      pbbs_pctl_call(measured, a);
     }
   });
   return 0;

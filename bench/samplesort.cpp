@@ -43,15 +43,15 @@ int main(int argc, char** argv) {
     if (infile != "") {
       deepsea::cmdline::dispatcher d;
       d.add("array_double", [&] {
-        parray<double> x = pasl::pctl::io::load_from_file<parray<double>>(infile);
+        parray<double> x = pasl::pctl::io::load<parray<double>>(infile);
         pbbs_pctl_call(measured, x, std::less<double>());
       });
       d.add("array_int", [&] {
-        parray<int> x = pasl::pctl::io::load_from_file<parray<int>>(infile);
+        parray<int> x = pasl::pctl::io::load<parray<int>>(infile);
         pbbs_pctl_call(measured, x, std::less<int>());
       });
       d.add("array_string", [&] {
-        parray<char*> x = pasl::pctl::io::load_from_file<parray<char*>>(infile);
+        parray<char*> x = pasl::pctl::io::load<parray<char*>>(infile);
         pbbs_pctl_call(measured, x, [&] (char* a, char* b) { return std::strcmp(a, b) < 0; });
         for (int i = 0; i < x.size(); i++) {
           delete [] x[i];

@@ -31,14 +31,34 @@ parray<pbbs::_point2d<double>> to_pbbs(parray<_point2d<double>>& points) {
   return result;
 }
 
+void pbbs_pctl_call(pbbs::measured_type measured, parray<_point2d<double>>& x) {
+  std::string lib_type = deepsea::cmdline::parse_or_default_string("lib_type", "pctl");
+  if (lib_type == "pbbs") {
+    parray<pbbs::_point2d<double>> y = to_pbbs(x);
+    measured([&] {
+      pbbs::hull(&y[0], (int)y.size());
+    });
+  } else {
+    measured([&] {
+      pasl::pctl::hull(x);
+    });
+  }
+}
+
 int main(int argc, char** argv) {
   pbbs::launch(argc, argv, [&] (pbbs::measured_type measured) {
+    std::string infile = deepsea::cmdline::parse_or_default_string("infile", "");
+    if (infile != "") {
+      parray<_point2d<double>> x = pasl::pctl::io::load<parray<_point2d<double>>>(infile);
+      pbbs_pctl_call(measured, x);
+      return;
+    }
+
     int test = deepsea::cmdline::parse_or_default_int("test", 0);
     int n = deepsea::cmdline::parse_or_default_int("n", 10000000);
     bool files = deepsea::cmdline::parse_or_default_int("files", 1) == 1;
     bool reload = deepsea::cmdline::parse_or_default_int("reload", 0) == 1;
     std::string path_to_data = deepsea::cmdline::parse_or_default_string("path_to_data", "/home/aksenov/pbbs/geometryData/data/");
-    std::string lib_type = deepsea::cmdline::parse_or_default_string("lib_type", "pctl");
     system("mkdir tests");
     if (test == 0) {
       parray<_point2d<double>> a;
@@ -47,16 +67,7 @@ int main(int argc, char** argv) {
       } else {
         a = pasl::pctl::io::load_points_uniform_2d(std::string("tests/random_in_sphere_2d_") + std::to_string(n), n, true, false, reload);
       }
-      if (lib_type == "pbbs") {
-        parray<pbbs::_point2d<double>> b = to_pbbs(a);
-        measured([&] {
-          pbbs::hull(&b[0], (int)b.size());
-        });
-      } else {
-        measured([&] {
-          pasl::pctl::hull(a);
-        });
-      }
+      pbbs_pctl_call(measured, a);
     } else if (test == 1) {
       parray<_point2d<double>> a;
       if (files) {
@@ -64,16 +75,7 @@ int main(int argc, char** argv) {
       } else {
         a = pasl::pctl::io::load_points_plummer_2d(std::string("tests/random_plummer_2d_") + std::to_string(n), n, reload);
       }
-      if (lib_type == "pbbs") {
-        parray<pbbs::_point2d<double>> b = to_pbbs(a);
-        measured([&] {
-          pbbs::hull(&b[0], (int)b.size());
-        });
-      } else {
-        measured([&] {
-          pasl::pctl::hull(a);
-        });
-      }
+      pbbs_pctl_call(measured, a);
     } else if (test == 2) {
       parray<_point2d<double>> a;
       if (files) {
@@ -81,16 +83,7 @@ int main(int argc, char** argv) {
       } else {
         a = pasl::pctl::io::load_points_uniform_2d(std::string("tests/random_on_sphere_2d_") + std::to_string(n), n, false, true, reload);
       }
-      if (lib_type == "pbbs") {
-        parray<pbbs::_point2d<double>> b = to_pbbs(a);
-        measured([&] {
-          pbbs::hull(&b[0], (int)b.size());
-        });
-      } else {
-        measured([&] {
-          pasl::pctl::hull(a);
-        });
-      }
+      pbbs_pctl_call(measured, a);
     }
   });
   return 0;

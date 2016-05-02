@@ -80,6 +80,9 @@ struct ngram_table {
       return 1;
     }
     a[offset + 1] = next('_', a[offset], i + 1);
+    if (a[offset + 1] == '_') {
+      return 1;
+    }
     int j = 2;
     while (j < max_len) {
       a[offset + j] = next(a[offset + j - 2], a[offset + j - 1], i + j);

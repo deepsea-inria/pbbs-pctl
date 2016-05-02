@@ -43,7 +43,7 @@ point2d randInUnitSphere2d(intT i) {
   vect2d v;
   do {
     intT o = prandgen::hash<intT>(j++);
-    v = vect2d(rand2d(o+i));
+    v = vect2d(rand2d(o + i));
   } while (v.length() > 1.0);
   return point2d(v);
 }

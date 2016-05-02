@@ -213,7 +213,7 @@ namespace pctl {
     ANN<intT, maxK, vertex<Point, maxK>>(vertices.begin(), n, k);
     parallel_for(0, n, [&] (int i) {
       for (int j = 0; j < std::min(n - 1, k); j++) {
-        result[i * maxK + j] = vertices[i]->ngh[j]->identifier;
+        result[i * k + j] = vertices[i]->ngh[j]->identifier;
       }
     });
     return result;
