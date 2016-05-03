@@ -119,7 +119,7 @@ public:
 
 int main(int argc, char** argv) {
   pbbs::launch(argc, argv, [&] {
-    int nb_tests = pasl::util::cmdline::parse_or_default_int("n", 1000);
+    int nb_tests = deepsea::cmdline::parse_or_default_int("n", 1000);
     checkit<pasl::pctl::nearestneighbours_property<point2d, 10>>(nb_tests, "nearestneighbours is correct");
   });
   return 0;
