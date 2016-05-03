@@ -22,6 +22,7 @@
 
 
 #include <iostream>
+#include <chrono>
 #include <cstdlib>
 #include "geometry.hpp"
 #include "blockradixsort.hpp"
@@ -37,11 +38,13 @@ namespace pctl {
   // *************************************************************
   //    QUAD/OCT TREE NODES
   // *************************************************************
+
 constexpr char octtree_file[] = "octtree";
 #define max_leaf_size 16  // number of points stored in each leaf
-#define GTREE_BASE_CASE 65536
-#define GTREE_SUBPROB_POW .92
-  
+#define DIMTREE_BASE_CASE 65536
+#define DIMTREE_SUBPROB_POW .92
+#define DIMTREE_ALLOC_FACTOR 2/max_leaf_size  
+
   template <class intT, class vertex, class point>
   struct ndata {
     intT cnt;
@@ -73,12 +76,16 @@ constexpr char octtree_file[] = "octtree";
     dimtree_node* children[8];
     vertex** vertices;
     bool crazy_leaf;
+    dimtree_node* node_memory;
     
     // wraps a bounding box around the points and generates
     // a tree.
     static dimtree_node* dimtree(vertex** vv, intT n) {
       
       // calculate bounding box
+#ifdef TIME_MEASURE
+      auto start = std::chrono::system_clock::now();
+#endif    
       
       // copying to an array of points to make reduce more efficient
       parray<point> pt(n, [&] (intT i) {
@@ -102,7 +109,12 @@ constexpr char octtree_file[] = "octtree";
       // copy before calling recursive routine since recursive routine is destructive
       parray<vertex*> v(vv, vv + n);
       //cout << "about to build tree" << endl;
-      dimtree_node* result = new dimtree_node(v.begin(), n, center, box.max_dim());
+#ifdef TIME_MEASURE
+      auto end = std::chrono::system_clock::now();
+      std::chrono::duration<float> diff = end - start;
+      printf("exectime dimtree build preparation %.3lf\n", diff.count());
+#endif
+      dimtree_node* result = new dimtree_node(v.begin(), n, center, box.max_dim(), NULL, 0);
 
       return result;
     }
@@ -113,12 +125,15 @@ constexpr char octtree_file[] = "octtree";
     
     void del() {
       if (is_leaf() && !crazy_leaf) {
-        delete [] vertices;
+//        delete [] vertices;
       } else {
         for (int i = 0 ; i < (1 << center.dimension()); i++) {
           children[i]->del();
-          delete children[i];
+//          delete children[i];
         }
+      }
+      if (node_memory != NULL) {
+        free(node_memory);
       }
     }
     
@@ -218,8 +233,8 @@ constexpr char octtree_file[] = "octtree";
     }
     
     // A hack to get around Cilk shortcomings
-    static dimtree_node *new_tree(vertex** v, intT n, point cnt, double sz) {
-      return new dimtree_node(v, n, cnt, sz);
+    static dimtree_node* new_tree(vertex** v, intT n, point cnt, double sz, dimtree_node* new_nodes, int num_nodes) {
+      return new (new_nodes) dimtree_node(v, n, cnt, sz, new_nodes + 1, num_nodes - 1);
     }
     
     // Used as a closure in collectD
@@ -238,9 +253,10 @@ constexpr char octtree_file[] = "octtree";
       center = cnt;
       vertices = NULL;
       crazy_leaf = false;
+      node_memory = NULL;
     }
 
-    void build_recursive_tree(vertex** v, int n, int* offsets, int quadrants, dimtree_node* parent, int nodes_to_left, int height, int depth) {
+    void build_recursive_tree(vertex** v, int n, int* offsets, int quadrants, dimtree_node* new_nodes, dimtree_node* parent, int nodes_to_left, int height, int depth) {
       parent->count = 0;
 
       if (height == 1) {
@@ -251,7 +267,7 @@ constexpr char octtree_file[] = "octtree";
            point new_center = (parent->center).offset_point(i, parent->size / 4.0);
            int q = (nodes_to_left << center.dimension()) + i;
            int l = ((q == quadrants - 1) ? n : offsets[q + 1]) - offsets[q];
-           parent->children[i] = new_tree(v + offsets[q], l, new_center, parent->size / 2.0);
+           parent->children[i] = new_tree(v + offsets[q], l, new_center, parent->size / 2.0, new_nodes + q, 1);
         });
       } else {
         auto comp_fct = [&] (int l, int r) {
@@ -259,10 +275,13 @@ constexpr char octtree_file[] = "octtree";
           int rr = (r + 1) << (center.dimension() * (height - 1)) - 1;
           return (rr >= quadrants ? n : offsets[rr]) - offsets[ll];
         };
-        range::parallel_for(0, (int)(1 << center.dimension()), comp_fct, [&] (int i) {
+//        range::parallel_for(0, (int)(1 << center.dimension()), comp_fct, [&] (int i) {
+        for (int i = 0; i < 1 << center.dimension(); i++) {
           point new_center = (parent->center).offset_point(i, parent->size / 4.0);
-          parent->children[i] = new dimtree_node(new_center, parent->size / 2.0);
-          build_recursive_tree(v, n, offsets, quadrants, parent->children[i], (nodes_to_left << center.dimension()) + i, height - 1, depth + 1);
+          parent->children[i] = new (new_nodes + i + nodes_to_left * (1 << center.dimension())) dimtree_node(new_center, parent->size / 2.0);
+        }
+        range::parallel_for(0, (int)(1 << center.dimension()), comp_fct, [&] (int i) {
+          build_recursive_tree(v, n, offsets, quadrants, new_nodes + (1 << (depth * center.dimension())), parent->children[i], (nodes_to_left << center.dimension()) + i, height - 1, depth + 1);
         });
       }
       for (int i = 0; i < 1 << center.dimension(); i++) {
@@ -278,7 +297,7 @@ constexpr char octtree_file[] = "octtree";
     }
     
     void sort_blocks_big(vertex** v, int cnt, int quadrants, int logdivs, double size, point center, int* offsets) {
-      std::pair<int, vertex*>* blk = new std::pair<int, vertex*>[cnt];
+      std::pair<int, vertex*>* blk = (std::pair<int, vertex*>*)malloc(sizeof(std::pair<int, vertex*>) * cnt);
       double blocksize = size / (double)(1 << logdivs);
       point min_pt = center.offset_point(0, size / 2);
       parallel_for(0, (int)cnt, [&] (int i) {
@@ -288,28 +307,54 @@ constexpr char octtree_file[] = "octtree";
       parallel_for(0, (int)cnt, [&] (int i) {
         v[i] = blk[i].second;
       });
-      delete [] blk;
+      free(blk);
+    }
+
+    void sort_blocks_small(vertex** v, int cnt, point center, int* offsets) {
+      vertex* start = v[0];
+      int quadrants = 1 << center.dimension();
+      std::pair<int, vertex*>* blk = (std::pair<int, vertex*>*)malloc(sizeof(std::pair<int, vertex*>) * cnt);
+      for (int i = 0; i < cnt; i++) {
+        blk[i] = make_pair((v[i]->pt).quadrant(center), v[i]);
+      }
+      std::sort(blk, blk + cnt);
+      int j = -1;
+      for (int i = 0; i < cnt; i++) {
+        v[i] = blk[i].second;
+        while (blk[i].first != j) {
+          offsets[++j] = i;
+        }
+      }
+      while (++j < quadrants) offsets[j] = cnt;
+      free(blk);
     }
 
     // the recursive routine for generating the tree -- actually mutually recursive
     // due to newTree
-    dimtree_node(vertex** v, intT n, point cnt, double sz) : data(node_data(cnt)) {
+    dimtree_node(vertex** v, intT n, point cnt, double sz, dimtree_node* new_nodes, int num_nodes) : data(node_data(cnt)) {
       //cout << "n=" << n << endl;
       count = n;
       size = sz;
       center = cnt;
       vertices = NULL;
       crazy_leaf = false;
-      int quadrants = (1 << center.dimension());
+      node_memory = NULL;
       
-      int logdivs = (int)(log2(count) * GTREE_SUBPROB_POW / (double)center.dimension());
+      int logdivs = (int)(log2(count) * DIMTREE_SUBPROB_POW / (double)center.dimension());
       auto seq = [&] {
+        int quadrants = (1 << center.dimension());
         if (count > max_leaf_size) {
+          if (num_nodes < 1 << center.dimension()) {
+            num_nodes = std::max(DIMTREE_ALLOC_FACTOR * std::max(count / max_leaf_size, 1 << center.dimension()), 1 << center.dimension());
+            node_memory = (dimtree_node*)malloc(sizeof(dimtree_node) * num_nodes);
+            new_nodes = node_memory;
+          }
           intT offsets[8];
           dimtree_node* now = this;
           intsort::integer_sort(v, offsets, n, (intT)quadrants, [&] (vertex* vertex) {
             return now->find_quadrant(vertex);
           });
+//          sort_blocks_small(v, n, cnt, offsets);
           if (0) {
             for (intT i = 0; i < n; i++) {
               cout << "  " << i << ":" << this->find_quadrant(v[i]);
@@ -323,11 +368,14 @@ constexpr char octtree_file[] = "octtree";
           auto comp_fct = [&] (int l, int r) {
             return (r == quadrants ? n : offsets[r]) - offsets[l];
           };
+          int used_nodes = 0;
 //          range::parallel_for(int(0), quadrants, comp_fct, [&] (int i) {
           for (int i = 0; i < quadrants; i++) {
             point newcenter = center.offset_point(i, size / 4.0);
             intT l = ((i == quadrants - 1) ? n : offsets[i + 1]) - offsets[i];
-            children[i] = new_tree(v + offsets[i], l, newcenter, size / 2.0);
+            int ncnt = (num_nodes - (1 << center.dimension())) * l / count + 1;
+            children[i] = new_tree(v + offsets[i], l, newcenter, size / 2.0, new_nodes + used_nodes, num_nodes - ncnt);
+            used_nodes += ncnt;
           }
 //          });
           
@@ -347,25 +395,32 @@ constexpr char octtree_file[] = "octtree";
           }
         }
       };
-#ifdef MANUAL_CONTROL
-      if (logdivs == 1 || count <= GTREE_BASE_CASE) {
+//#ifdef MANUAL_CONTROL
+      if (logdivs <= 1 || count <= DIMTREE_BASE_CASE) {
         seq();
         return;
       }
-#endif
-      if (count < max_leaf_size) {
-        seq();
-        return;
-      }
-      using controller_type = pasl::pctl::granularity::controller_holder<octtree_file, 1, vertex>;
-      pasl::pctl::granularity::cstmt(controller_type::controller, [&] { return n; }, [&] {
+//#endif
+//      if (count < max_leaf_size) {
+//        seq();
+//        return;
+//      }
+//      using controller_type = pasl::pctl::granularity::controller_holder<octtree_file, 1, vertex>;
+//      pasl::pctl::granularity::cstmt(controller_type::controller, [&] { return n; }, [&] {
         int divisions = (1 << logdivs); // number of quadrants in each dimension
         int quadrants = (1 << (center.dimension() * logdivs)); // total number
-        int* offsets = new int[quadrants];
+        int* offsets = (int*)malloc(sizeof(int) * quadrants);
         sort_blocks_big(v, count, quadrants, logdivs, this->size, center, offsets);
-        build_recursive_tree(v, n, offsets, quadrants, this, 0, logdivs, 1);
-        delete [] offsets;
-      }, seq);
+
+        num_nodes = 1 << center.dimension();
+        for (int i = 0; i < logdivs; i++) {
+          num_nodes = (num_nodes << center.dimension()) + (1 << center.dimension());
+        }
+        node_memory = (dimtree_node*)malloc(sizeof(dimtree_node) * num_nodes);
+
+        build_recursive_tree(v, n, offsets, quadrants, node_memory, this, 0, logdivs, 1);
+        free(offsets);
+//      }, seq);
     }
   };
   

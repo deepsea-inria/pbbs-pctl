@@ -170,21 +170,53 @@ namespace pctl {
   template <class intT, int maxK, class vertexT>
   void ANN(vertexT** v, int n, int k) {
     typedef nearest_neighbours_ds<intT, vertexT, maxK> kNNT;
-    
+
+#ifdef TIME_MEASURE
+      auto start = std::chrono::system_clock::now();
+#endif    
+
     kNNT ds = kNNT(v, n);
+
+#ifdef TIME_MEASURE
+      auto end = std::chrono::system_clock::now();
+      std::chrono::duration<float> diff = end - start;
+      printf("exectime ANN build tree %.3lf\n", diff.count());
+
+      start = std::chrono::system_clock::now();
+#endif
     
     //cout << "built tree" << endl;
     
     // this reorders the vertices for locality
     vertexT** vr = ds.vertices();
+#ifdef TIME_MEASURE
+    end = std::chrono::system_clock::now();
+    diff = end - start;
+    printf("exectime ANN flattening %.3lf\n", diff.count());
+    
+    start = std::chrono::system_clock::now();
+#endif
     
     // find nearest k neighbors for each point
     parallel_for(int(0), n, [&] (int i) {
       ds.nearest_k(vr[i], vr[i]->ngh, k);
     });
+
+#ifdef TIME_MEASURE
+    end = std::chrono::system_clock::now();
+    diff = end - start;
+    printf("exectime ANN find nearest %.3lf\n", diff.count());
+
+    start = std::chrono::system_clock::now();
+#endif
     
     delete [] vr;
     ds.del();
+#ifdef TIME_MEASURE
+    end = std::chrono::system_clock::now();
+    diff = end - start;
+    printf("exectime ANN deletion %.3lf\n", diff.count());
+#endif
   }
   
   template <class Point, int maxK>
