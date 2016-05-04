@@ -33,13 +33,13 @@ VERBOSE_DEPENDENCIES=0
 
 PROGRAMS=\
 	psort.cpp \
-	blockradixsort.cpp \
-	samplesort.cpp \
-	deterministichash.cpp \
-	suffixarray.cpp \
-	quickhull.cpp \
-	nearestneighbours.cpp \
-        raycast.cpp \
+	blockradixsort_bench.cpp \
+	samplesort_bench.cpp \
+	deterministichash_bench.cpp \
+	suffixarray_bench.cpp \
+	quickhull_bench.cpp \
+	nearestneighbours_bench.cpp \
+        raycast_bench.cpp \
 
 ####################################################################
 # Makefile options
