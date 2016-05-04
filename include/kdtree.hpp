@@ -36,7 +36,7 @@ namespace pasl {
 namespace pctl {
 namespace kdtree {
 
-constexpr char kdtree_file[] = "kdtree";
+/*constexpr char kdtree_file[] = "kdtree";
     
 // Stores coordinate of event along with index to its triangle and type
 // Stores type of event (START or END) in lowest bit of index
@@ -692,7 +692,7 @@ parray<intT> ray_cast_seq(triangles<pointT> tri, ray<pointT>* rays, int num_rays
   return result;
 }
 
-
+*/
 } // end namespace
 } // end namespace
 } // end namespace

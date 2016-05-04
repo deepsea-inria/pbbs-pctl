@@ -36,6 +36,10 @@ PROGRAMS=\
 	blockradixsort.cpp \
 	samplesort.cpp \
 	deterministichash.cpp \
+	suffixarray.cpp \
+	quickhull.cpp \
+	nearestneighbours.cpp \
+        raycast.cpp \
 
 ####################################################################
 # Makefile options
@@ -83,12 +87,14 @@ PCTL_PBBS_PATH=../include
 CHUNKEDSEQ_PATH=../../chunkedseq/include
 BENCH_PATH=./include/
 GENERATORS_PATH=$(BENCH_PATH)/generators
+PBBS_PATH=../../pbbs-include
+CMDLINE_PATH=../../cmdline/include
 
 PBBS_PCTL_PATHS=$(PCTL_PATH) $(PCTL_PBBS_PATH) $(CHUNKEDSEQ_PATH) $(BENCH_PATH) $(GENERATORS_PATH)
 
-PASL_PATHS=$(SEQUTIL_PATH) $(PARUTIL_PATH) $(SCHED_PATH) 
+PASL_PATHS=$(SEQUTIL_PATH) $(PARUTIL_PATH) $(SCHED_PATH)
 
-INCLUDES=. $(PASL_PATHS) $(PBBS_PCTL_PATHS)
+INCLUDES=. $(PASL_PATHS) $(PBBS_PCTL_PATHS) $(PBBS_PATH) $(CMDLINE_PATH)
 
 # Folders where to find all the source files
 

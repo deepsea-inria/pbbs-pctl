@@ -5,7 +5,7 @@
 #include "serializationbin.hpp"
 #include "sequencedata.hpp"
 #include "geometrydata.hpp"
-#include "kdtree.hpp"
+#include "geometry.hpp"
 #include "cmdline.hpp"
 
 #ifndef _PCTL_PBBS_LOADERS_H_
