@@ -12,7 +12,8 @@ let arg_nb_runs = XCmd.parse_or_default_int "runs" 1
 let arg_mode = "replace"   (* later: document the purpose of "mode" *)
 let arg_skips = XCmd.parse_or_default_list_string "skip" []
 let arg_onlys = XCmd.parse_or_default_list_string "only" []
-
+let arg_sizes = XCmd.parse_or_default_list_string "size" ["all"]
+                                                  
 let run_modes =
   Mk_runs.([
     Mode (mode_of_string arg_mode);
@@ -55,18 +56,81 @@ let file_plots exp_name =
 let eval_exectime = fun env all_results results ->
    Results.get_mean_of "exectime" results
 
+let default_formatter =
+ Env.format (Env.(format_values  [ "size"; ]))
+
 (*****************************************************************************)
-(** Fibonacci experiment *)
+(** Input data **)
+                        
+type size = Small | Medium | Large
+                               
+let string_of_size = function
+   | Small -> "small"
+   | Medium -> "medium"
+   | Large -> "large"
 
-module ExpFib = struct
+let size_of_string = function
+   | "small" -> Small
+   | "medium" -> Medium
+   | "large" -> Large
+   | _ -> Pbench.error "invalid argument for argument size"
 
-let name = "fib"
+let arg_sizes =
+   match arg_sizes with
+   | ["all"] -> ["small"; "medium"; "large"]
+   | _ -> arg_sizes
 
-let prog = "./fib"
+let use_sizes =
+   List.map size_of_string arg_sizes
 
-let mk_algos = mk_list string "algo" ["recursive";"cached"]
+let mk_sizes =
+   mk_list string "size" (List.map string_of_size use_sizes)
+                       
+let mk_generate_sequence_inputs : Params.t =
+  let load = function
+    | Small -> 1000000
+    | Medium -> 10000000
+    | Large -> 100000000
+  in
+  let mk_outfile size typ generator =
+    mk string "outfile" (sprintf "_data/%s_%s_%s.sequence_binary" typ generator size)
+  in
+  let use_types = [ "array_double"; ] in
+  let use_generators = [ "random"; "exponential"; "almost_sorted"; ] in
+  Params.concat (~~ List.map use_sizes (fun size ->
+  Params.concat (~~ List.map use_types (fun typ ->
+  Params.concat (~~ List.map use_generators (fun generator ->
+      mk string "type" typ
+    & mk string "generator" generator
+    & mk int "n" (load size)
+    & (mk string "!size" (string_of_size size))
+    & mk_outfile (string_of_size size) typ generator))))))
 
-let mk_ns = mk_list int "n" [30;35;39]
+let sequence_descriptor_of mk_generatesequence_inputs =
+   ~~ List.map (Params.to_envs mk_generatesequence_inputs) (fun e ->
+      (Env.get_as_string e "type"),
+      (Env.get_as_string e "generator"),
+      (Env.get_as_string e "!size"),
+      (Env.get_as_string e "outfile")
+      )
+
+let mk_sequence_inputs =
+  let mk2 = sequence_descriptor_of mk_generate_sequence_inputs in
+  Params.eval (Params.concat (~~ List.map mk2 (fun (typ,generator,size,outfile) ->
+    mk string "infile" outfile
+  )))                                                            
+
+let mk_lib_types =
+  mk_list string "lib_type" [ "pctl"; "pbbs"; ]
+              
+(*****************************************************************************)
+(** Input-data generator *)
+
+module ExpGenerate = struct
+
+let name = "generate"
+
+let prog = "./input_data.opt"
 
 let make() =
   build "." [prog] arg_virtual_build
@@ -77,25 +141,48 @@ let run() =
     Timeout 400;
     Args (
       mk_prog prog
-    & mk_algos
-    & mk_ns)]))
+    & mk_generate_sequence_inputs)]))
 
 let check = nothing  (* do something here *)
 
-let fib_formatter =
- Env.format (Env.(
-   [ ("n", Format_custom (fun n -> sprintf "fib(%s)" n)); ]
-  ))
+let plot() = ()
+
+let all () = select make run check plot
+
+end
+
+(*****************************************************************************)
+(** Comparison-sort benchmark *)
+
+module ExpComparisonSort = struct
+
+let name = "comparison_sort"
+
+let prog = "./comparison_sort.opt"
+
+let make() =
+  build "." [prog] arg_virtual_build
+
+let run() =
+  Mk_runs.(call (run_modes @ [
+    Output (file_results name);
+    Timeout 400;
+    Args (
+      mk_prog prog
+    & mk_sequence_inputs
+    & mk_lib_types)]))
+
+let check = nothing  (* do something here *)
 
 let plot() =
   Mk_bar_plot.(call ([
       Bar_plot_opt Bar_plot.([
          X_titles_dir Vertical;
          Y_axis [Axis.Lower (Some 0.)] ]);
-      Formatter fib_formatter;
+      Formatter default_formatter;
       Charts mk_unit;
-      Series mk_algos;
-      X mk_ns;
+      Series mk_lib_types;
+      X mk_sequence_inputs;
       Input (file_results name);
       Output (file_plots name);
       Y_label "exectime";
@@ -112,8 +199,10 @@ end
 let _ =
   let arg_actions = XCmd.get_others() in
   let bindings = [
-    "fib", ExpFib.all;
+    "generate", ExpGenerate.all;
+    "comparison_sort", ExpComparisonSort.all;
   ]
   in
+  system("mkdir -p _data") arg_virtual_run;
   Pbench.execute_from_only_skip arg_actions [] bindings;
   ()
