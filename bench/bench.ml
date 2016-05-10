@@ -86,43 +86,106 @@ let use_sizes =
 let mk_sizes =
    mk_list string "size" (List.map string_of_size use_sizes)
                        
-let mk_generate_sequence_inputs : Params.t =
+let mk_generator generator = mk string "generator" generator
+
+let types_list = function
+  | "comparison_sort" -> [ "array_double"; "array_string"; ]
+  | "blockradix_sort" -> [ "array_int"; "array_pair_int_int"; ]
+  | "remove_duplicates" -> [ "array_int"; "array_string"; "array_pair_string_int"; ]
+  | "suffix_array" -> [ "string"; ]
+  | "convex_hull" -> [ "array_point2d"; ]
+  | "nearest_neighbours" -> [ "array_point2d"; "array_point3d"; ]
+  | _ -> Pbench.error "invalid benchmark"
+
+let generators_list = function
+  | "comparison_sort" -> (function n ->
+    let nb_swaps nb = int_of_float (sqrt (float_of_int nb)) in
+    function
+    | "array_double" -> [
+        mk_generator "random";
+        mk_generator "exponential";
+        ((mk_generator "almost_sorted") & (mk int "nb_swaps" (nb_swaps n)));
+      ]
+    | "array_string" -> [
+        mk_generator "trigrams";
+      ]
+    | _ -> Pbench.error "invalid type")
+  | "blockradix_sort" -> (function n ->
+    function
+    | "array_int" -> [
+        mk_generator "random";
+        mk_generator "exponential";
+      ]
+    | "array_pair_int_int" -> [
+(** TODO solve the problem with the output file name **)
+        ((mk_generator "random") & (mk_list int "m2" [ 256; ]));
+      ]
+    | _ -> Pbench.error "invalid type")
+  | "remove_duplicates" -> (function n ->
+    function
+    | "array_int" -> [
+        mk_generator "random";
+        ((mk_generator "random_bounded") & (mk int "m" 100000));
+        mk_generator "exponential";
+      ]
+    | "array_string" -> [
+        mk_generator "trigrams";
+      ]
+    | "array_pair_string_int" -> [
+        mk_generator "trigrams";
+      ]
+    | _ -> Pbench.error "invalid type")
+  | "suffix_array" -> (function n ->
+    function
+    | "string" -> [
+       mk_generator "trigrams";
+     ]
+    | _ -> Pbench.error "invalid type")
+  | "convex_hull" -> (function n ->
+    function
+    | "array_point2d" -> [
+        mk_generator "in_circle";
+        mk_generator "kuzmin";
+        mk_generator "on_circle";
+      ]
+    | _ -> Pbench.error "invalid type")
+  | "nearest_neighbours" -> (function n ->
+    function
+    | "array_point2d" -> [
+        mk_generator "in_square";
+        mk_generator "kuzmin";
+      ]
+    | "array_point3d" -> [
+        mk_generator "in_cube";
+        mk_generator "on_sphere";
+        mk_generator "plummer";
+      ]
+    | _ -> Pbench.error "invalid_type")
+  | _ -> Pbench.error "invalid benchmark"
+
+let mk_generate_sequence_inputs benchmark : Params.t =
   let load = function
     | Small -> 1000000
     | Medium -> 10000000
     | Large -> 100000000
   in
   let mk_outfile size typ generator =
-    mk string "outfile" (sprintf "_data/%s_%s_%s.sequence_binary" typ generator size)
+    mk string "outfile" (sprintf "_data/%s_%s_%s.bin" typ generator size)
   in
-  let mk_generator generator = mk string "generator" generator in
   let mk_type typ = mk string "type" typ in
   let mk_n n = mk int "n" n in
   let mk_size size = (mk_n (load size)) & (mk string "!size" (string_of_size size)) in
-  let nb_swaps nb = int_of_float (sqrt (float_of_int nb)) in
-  let use_types = [ "array_double"; ] in
+  let use_types = types_list benchmark in
+  let mk_generators = generators_list benchmark in
   Params.concat (~~ List.map use_sizes (fun size ->
   Params.concat (~~ List.map use_types (fun typ ->
   let n = load size in
-  let mk_generators = [
-    mk_generator "random";
-    mk_generator "exponential";
-    ((mk_generator "almost_sorted") & (mk int "nb_swaps" (nb_swaps n)));
-  ] in
-  Params.concat (~~ List.map mk_generators (fun mk_generator ->
+  Params.concat (~~ List.map (mk_generators n typ) (fun mk_generator ->
   let generator = Env.get_as_string (Params.to_env mk_generator) "generator" in
   (   mk_type typ
     & mk_size size
     & mk_generator
     & mk_outfile (string_of_size size) typ generator )))))))
-  ++
-  (
-  Params.concat (~~ List.map use_sizes (fun size ->
-      mk_type "array_string"
-    & mk_size size
-    & mk_generator "trigrams"
-    & mk_outfile (string_of_size size) "array_string" "trigrams"
-  )))                                      
 
 let sequence_descriptor_of mk_generatesequence_inputs =
    ~~ List.map (Params.to_envs mk_generatesequence_inputs) (fun e ->
@@ -132,8 +195,8 @@ let sequence_descriptor_of mk_generatesequence_inputs =
       (Env.get_as_string e "outfile")
       )
 
-let mk_sequence_inputs =
-  let mk2 = sequence_descriptor_of mk_generate_sequence_inputs in
+let mk_sequence_inputs benchmark =
+  let mk2 = sequence_descriptor_of (mk_generate_sequence_inputs benchmark) in
   Params.eval (Params.concat (~~ List.map mk2 (fun (typ,generator,size,outfile) ->
     mk string "infile" outfile
   )))                                                            
@@ -159,7 +222,7 @@ let run() =
     Timeout 400;
     Args (
       mk_prog prog
-    & mk_generate_sequence_inputs)]))
+    & (mk_generate_sequence_inputs "nearest_neighbours"))]))
 
 let check = nothing  (* do something here *)
 
@@ -187,7 +250,7 @@ let run() =
     Timeout 400;
     Args (
       mk_prog prog
-    & mk_sequence_inputs
+    & (mk_sequence_inputs "comparison_sort")
     & mk_lib_types)]))
 
 let check = nothing  (* do something here *)
@@ -200,7 +263,7 @@ let plot() =
       Formatter default_formatter;
       Charts mk_unit;
       Series mk_lib_types;
-      X mk_sequence_inputs;
+      X (mk_sequence_inputs "comparison_sort");
       Input (file_results name);
       Output (file_plots name);
       Y_label "exectime";
