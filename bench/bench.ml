@@ -95,16 +95,34 @@ let mk_generate_sequence_inputs : Params.t =
   let mk_outfile size typ generator =
     mk string "outfile" (sprintf "_data/%s_%s_%s.sequence_binary" typ generator size)
   in
+  let mk_generator generator = mk string "generator" generator in
+  let mk_type typ = mk string "type" typ in
+  let mk_n n = mk int "n" n in
+  let mk_size size = (mk_n (load size)) & (mk string "!size" (string_of_size size)) in
+  let nb_swaps nb = int_of_float (sqrt (float_of_int nb)) in
   let use_types = [ "array_double"; ] in
-  let use_generators = [ "random"; "exponential"; "almost_sorted"; ] in
   Params.concat (~~ List.map use_sizes (fun size ->
   Params.concat (~~ List.map use_types (fun typ ->
-  Params.concat (~~ List.map use_generators (fun generator ->
-      mk string "type" typ
-    & mk string "generator" generator
-    & mk int "n" (load size)
-    & (mk string "!size" (string_of_size size))
-    & mk_outfile (string_of_size size) typ generator))))))
+  let n = load size in
+  let mk_generators = [
+    mk_generator "random";
+    mk_generator "exponential";
+    ((mk_generator "almost_sorted") & (mk int "nb_swaps" (nb_swaps n)));
+  ] in
+  Params.concat (~~ List.map mk_generators (fun mk_generator ->
+  let generator = Env.get_as_string (Params.to_env mk_generator) "generator" in
+  (   mk_type typ
+    & mk_size size
+    & mk_generator
+    & mk_outfile (string_of_size size) typ generator )))))))
+  ++
+  (
+  Params.concat (~~ List.map use_sizes (fun size ->
+      mk_type "array_string"
+    & mk_size size
+    & mk_generator "trigrams"
+    & mk_outfile (string_of_size size) "array_string" "trigrams"
+  )))                                      
 
 let sequence_descriptor_of mk_generatesequence_inputs =
    ~~ List.map (Params.to_envs mk_generatesequence_inputs) (fun e ->
