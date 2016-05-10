@@ -451,9 +451,8 @@ parray<ET> run_dict(const parray<ET>& insert, const parray<ET>& remove, const pa
     table.remove(hash.get_key(it));
   }*/
   std::cerr << "Remove: " << table.count() << std::endl;
-  parray<ET> result(find.size());
-  parallel_for((intT)0, (intT)find.size(), [&] (int i) {
-    result[i] = table.find(hash.get_key(find[i]));
+  parray<ET> result(find.size(), [&] (int i) {
+    return table.find(hash.get_key(find[i]));
   });
 /*  for (int i = 0; i < find.size(); i++) {
     result[i] = table.find(hash.get_key(find[i]));

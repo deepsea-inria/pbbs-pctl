@@ -116,7 +116,7 @@ intT quick_hull(iter<intT> indices, iter<intT> tmp, iter<point2d> p, intT n, int
 #ifdef TIME_MEASURE
       auto start = std::chrono::system_clock::now();
 #endif
-      intT split = indices[0];
+/*      intT split = indices[0];
       double max_area = triangle_area(p[l], p[r], p[split]);
       for (intT i = 1; i < n; i++) {
         intT j = indices[i];
@@ -125,7 +125,7 @@ intT quick_hull(iter<intT> indices, iter<intT> tmp, iter<point2d> p, intT n, int
           max_area = a;
           split = j;
         }
-      }
+      }*/
 
       // Finding some point on the convex hull between l and r
       intT idx = (intT)max_index(indices, indices + n, (double)0.0, std::greater<double>(), [&] (intT j, double) {
@@ -221,10 +221,15 @@ parray<intT> hull(parray<point2d>& p) {
   intT* indices = newA(intT, n);
   intT* tmp = newA(intT, n);
 #else
-  parray<bool> is_top_hull(n);
-  parray<bool> is_bottom_hull(n);
-  parray<intT> indices(n);
-  parray<intT> tmp(n);
+  parray<bool> is_top_hull;
+  is_top_hull.prefix_tabulate(n, 0);
+  parray<bool> is_bottom_hull;
+  is_bottom_hull.prefix_tabulate(n, 0);
+  parray<intT> indices;
+  indices.prefix_tabulate(n, 0);
+  parray<intT> tmp(n, [&] (int i) {
+    return i;
+  });
 #endif
 
 #ifdef TIME_MEASURE  
@@ -236,7 +241,6 @@ parray<intT> hull(parray<point2d>& p) {
       start = std::chrono::system_clock::now();
 #endif
   parallel_for((intT)0, n, [&] (intT i) {
-    tmp[i] = i;
     double a = triangle_area(p[l], p[r], p[i]);
     is_top_hull[i] = a > 0;//EPS;
     is_bottom_hull[i] = a < 0;//-EPS;
@@ -312,7 +316,7 @@ parray<intT> hull(parray<point2d>& p) {
   tmp[m1 + 1] = r;
 #ifdef MANUAL_ALLOCATION
   free(indices);
-  return parray<int>(0);
+  return parray<int>(indices, indices + m1 + 2 + m2);
 #else
   tmp.resize(m1 + 2 + m2);
   return tmp;

@@ -105,23 +105,21 @@ void suffix_array_rec(intT* s, intT n, intT K, bool find_LCP,
   intT n1 = (n + 1) / 3; //suffixes with mod 3 = 1 start position
   intT n12 = n - n0; //suffixes with mod 3 = 1,2 start positions
   intT bits = utils::logUp(K);
-  parray<pair<intT, intT>> compressed(n12);
+  parray<pair<intT, intT>> compressed;
   
   // if 3 chars fit into an int then just do one radix sort
   if (bits < 11) {
-    parallel_for((intT)0, n12, [&] (intT i) {
+    compressed.tabulate(n12, [&] (intT i) {
       intT j = 1 + (i + i + i) / 2; // only mod 3 = 1, 2
-      compressed[i].first = (s[j] << 2 * bits) + (s[j + 1] << bits) + s[j + 2];
-      compressed[i].second = j;
+      return make_pair((s[j] << 2 * bits) + (s[j + 1] << bits) + s[j + 2], j);
     });
     radix_sort_pair(compressed.begin(), n12, (intT) 1 << 3 * bits);
     
     // otherwise do 3 radix sorts, one per char
   } else {
-    parallel_for((intT)0, n12, [&] (intT i) {
+    compressed.tabulate(n12, [&] (intT i) {
       intT j = 1 + (i + i + i) / 2;
-      compressed[i].first = s[j + 2];
-      compressed[i].second = j;
+      return make_pair(s[j + 2], j);
     });
     // radix sort based on 3 chars
     radix_sort_pair(compressed.begin(), n12, K);
@@ -160,7 +158,7 @@ void suffix_array_rec(intT* s, intT n, intT K, bool find_LCP,
   parray<intT> LCP12;
   // recurse if names are not yet unique
   if (names < n12) {
-    parray<intT> s12(n12 + 3);
+    parray<intT> s12(n12 + 3, 0);
     s12[n12] = s12[n12 + 1] = s12[n12 + 2] = 0;
     
     // move mod 1 suffixes to bottom half and mod 2 suffixes to top
@@ -188,7 +186,8 @@ void suffix_array_rec(intT* s, intT n, intT K, bool find_LCP,
   
   // place ranks for the mod12 elements in full length array
   // mod0 locations of rank will contain garbage
-  parray<intT> rank(n + 2);
+  parray<intT> rank;
+  rank.prefix_tabulate(n + 2, 0);
   rank[n] = 1;
   rank[n + 1] = 0;
   parallel_for((intT)0, n12, [&] (intT i) {
@@ -201,12 +200,11 @@ void suffix_array_rec(intT* s, intT n, intT K, bool find_LCP,
     return i % 3 == 1;
   });
   intT x = (intT)s0.size();
-  parray<pair<intT, intT>> D(n0);
-  D[0].first = s[n - 1];
-  D[0].second = n - 1;
+  parray<pair<intT, intT>> D;
+  D.prefix_tabulate(n0, 0);
+  D[0] = make_pair(s[n - 1], n - 1);
   parallel_for((intT)0, x, [&] (intT i) {
-    D[i + n0 - x].first = s[s0[i] - 1];
-    D[i + n0 - x].second = s0[i] - 1;
+    D[i + n0 - x] = make_pair(s[s0[i] - 1], s0[i] - 1);
   });
   radix_sort_pair(D.begin(), n0, K);
 //  intT* suffixes0  = s0.begin(); // reuse memory since not overlapping
@@ -254,7 +252,8 @@ void suffix_array_rec(intT* s, intT n, intT K, bool find_LCP,
 template <class CharT>
 void suffix_array(CharT* s, intT n, bool find_LCP,
                  parray<intT>& suffixes, parray<intT>& LCP) {
-  parray<intT> ss(n + 3);
+  parray<intT> ss;
+  ss.prefix_tabulate(n + 3, 0);
   ss[n] = ss[n + 1] = ss[n + 2] = 0;
   parallel_for((intT)0, n, [&] (intT i) {
     ss[i] = s[i] + 1;

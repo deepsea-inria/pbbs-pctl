@@ -246,7 +246,8 @@ void integer_sort(E* a, intT* bucket_offsets, intT n, intT max_value, bool botto
   integer_sort(a, bucket_offsets, n, max_value, bottom_up, s, f);
   free(s);
 #else
-  parray<char> s(x);
+  parray<char> s;
+  s.prefix_tabulate(x, 0);
   integer_sort(a, bucket_offsets, n, max_value, bottom_up, s.begin(), f);
 #endif
 }

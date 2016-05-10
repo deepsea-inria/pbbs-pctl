@@ -178,7 +178,8 @@ constexpr char octtree_file[] = "octtree";
       } else {
         intT ss = s;
         int nb = (1 << center.dimension());
-        parray<intT> pss(nb);
+        parray<intT> pss;
+        pss.prefix_tabulate(nb, 0);
         for (int i = 0; i < nb; i++) {
           pss[i] = ss;
           ss += children[i]->count;

@@ -641,7 +641,8 @@ parray<intT> ray_cast(triangles<pointT> tri, ray<pointT>* rays, int num_rays) {
       start = std::chrono::system_clock::now();
 #endif
   // get the intersections
-  parray<intT> results(num_rays);
+  parray<intT> results;
+  results.prefix_tabulate(num_rays, 0);
   process_rays(tri, rays, num_rays, tree, results.begin());
 
 #ifdef TIME_MEASURE
@@ -685,7 +686,8 @@ parray<intT> ray_cast_seq(triangles<pointT> tri, ray<pointT>* rays, int num_rays
   }
 
   parray<intT> indices(tri.num_triangles, [&] (int i) { return i; });
-  parray<intT> result(num_rays);
+  parray<intT> result;
+  result.prefix_tabulate(num_rays, 0);
   for (int i = 0; i < num_rays; i++) {
     result[i] = find_ray(rays[i], indices.begin(), indices.size(), tri, box);
   }

@@ -162,10 +162,19 @@ void sample_sort (E* a, intT n, BinPred compare) {
     intT* offset_a = newA(intT, rows * segments);
     intT* offset_b = newA(intT, rows * segments);
 #else
-    parray<E> b(rows * row_length);
-    parray<intT> segments_sizes(rows * segments);
-    parray<intT> offset_a(rows * segments);
-    parray<intT> offset_b(rows * segments);
+    parray<E> b;
+    if (std::is_fundamental<E>::value) {
+      b = parray<E>();
+      b.prefix_tabulate(rows * row_length, 0);
+    } else {
+      b = parray<E>(rows * row_length);
+    }                      
+    parray<intT> segments_sizes;
+    segments_sizes.prefix_tabulate(rows * segments, 0);
+    parray<intT> offset_a;
+    offset_a.prefix_tabulate(rows * segments, 0);
+    parray<intT> offset_b;
+    offset_b.prefix_tabulate(rows * segments, 0);
 #endif
     
     // sort each row and merge with samples to get counts

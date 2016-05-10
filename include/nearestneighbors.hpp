@@ -234,12 +234,14 @@ namespace pctl {
 
   template <class intT, int maxK, class Point>
   parray<intT> ANN(parray<Point>& points, int n, int k) {
-    parray<intT> result(n * k);
+    parray<intT> result;
+    result.prefix_tabulate(n * k, 0);
 
-    parray<vertex<Point, maxK>*> vertices(points.size());
-    parray<vertex<Point, maxK>> vv(points.size());
-    parallel_for(0, (int)points.size(), [&] (int i) {
-      vertices[i] = new (&vv[i]) vertex<Point, maxK>(points[i], i);
+    parray<vertex<Point, maxK>> vv;
+    vv.prefix_tabulate(points.size(), 0);
+
+    parray<vertex<Point, maxK>*> vertices(points.size(), [&] (int i) {
+      return new (&vv[i]) vertex<Point, maxK>(points[i], i);
     });
 
     ANN<intT, maxK, vertex<Point, maxK>>(vertices.begin(), n, k);
