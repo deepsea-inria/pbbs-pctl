@@ -116,21 +116,7 @@ intT quick_hull(iter<intT> indices, iter<intT> tmp, iter<point2d> p, intT n, int
 #ifdef TIME_MEASURE
       auto start = std::chrono::system_clock::now();
 #endif
-      // Finding some point on the convex hull between l and r
-/*      intT idx = (intT)max_index(indices, indices + n, (double)0.0, greater, [&] (intT j, double) {
-        return triangle_area(p[l], p[r], p[indices[j]]);
-      });
-      intT split = indices[idx];*/
-
-      intT split = (intT)reduce(indices, indices + n, indices[0], [&] (intT x, intT y) {
-        if (triangle_area(p[l], p[r], p[x]) > triangle_area(p[l], p[r], p[y])) {
-          return x;
-        } else {
-          return y;
-        }
-      });
-
-/*      intT split = indices[0];
+      intT split = indices[0];
       double max_area = triangle_area(p[l], p[r], p[split]);
       for (intT i = 1; i < n; i++) {
         intT j = indices[i];
@@ -139,12 +125,26 @@ intT quick_hull(iter<intT> indices, iter<intT> tmp, iter<point2d> p, intT n, int
           max_area = a;
           split = j;
         }
-      }*/
+      }
+
+      // Finding some point on the convex hull between l and r
+      intT idx = (intT)max_index(indices, indices + n, (double)0.0, std::greater<double>(), [&] (intT j, double) {
+        return triangle_area(p[l], p[r], p[indices[j]]);
+      });
+      intT split = indices[idx];
+
+/*      intT split = (intT)reduce(indices, indices + n, indices[0], [&] (intT x, intT y) {
+        if (triangle_area(p[l], p[r], p[x]) > triangle_area(p[l], p[r], p[y])) {
+          return x;
+        } else {
+          return y;
+        }
+      });*/
 
 #ifdef TIME_MEASURE  
       auto end = std::chrono::system_clock::now();
       std::chrono::duration<float> diff = end - start;
-      printf ("exectime reduce quickhull %.3lf\n", diff.count());
+//      printf ("exectime reduce quickhull %.3lf\n", diff.count());
 #endif
 
 /*      if (split_point != split) {
@@ -165,7 +165,7 @@ intT quick_hull(iter<intT> indices, iter<intT> tmp, iter<point2d> p, intT n, int
 #ifdef TIME_MEASURE  
       end = std::chrono::system_clock::now();
       diff = end - start;
-      printf ("exectime filters quickhull %.3lf\n", diff.count());
+//      printf ("exectime filters quickhull %.3lf\n", diff.count());
 #endif      
 
       intT m1, m2;
@@ -262,6 +262,8 @@ parray<intT> hull(parray<point2d>& p) {
       end = std::chrono::system_clock::now();
       diff = end - start;
       printf ("exectime packs hull %.3lf\n", diff.count());
+
+      start = std::chrono::system_clock::now();
 #endif
 /*  cout << n1 << " " << n2 << " " << l << " " << r << endl;
   if (n2 == 2) {
@@ -292,6 +294,11 @@ parray<intT> hull(parray<point2d>& p) {
 #endif
 //    m2 = quick_hull_seq(indices.begin() + n1, p.begin(), n2, r, l);
   });
+#ifdef TIME_MEASURE
+      end = std::chrono::system_clock::now();
+      diff = end - start;
+      printf ("exectime hull call hull %.3lf\n", diff.count());
+#endif
   
 #ifdef MANUAL_ALLOCATION
   pmem::copy(indices, indices + m1, tmp + 1);

@@ -240,6 +240,7 @@ void sample_sort (E* a, intT n, BinPred compare) {
     free(offset_b);
 #endif
   }, [&] {
+//    quick_sort(a, n, compare);
     std::sort(a, a + n, compare);
   });
 }

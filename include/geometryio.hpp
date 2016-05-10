@@ -23,20 +23,20 @@ namespace pctl {
 template <class intT>
 parray<point2d> load_points2d() {
   parray<point2d> points;
-  intT n = (intT)pasl::util::cmdline::parse_or_default_long("n", 10);
-  pasl::util::cmdline::dispatcher d;
+  intT n = (intT)deepsea::cmdline::parse_or_default_long("n", 10);
+  deepsea::cmdline::dispatcher d;
   d.add("from_file", [&] {
     std::cout << "todo" << std::endl;
     exit(0);
   });
   d.add("by_generator", [&] {
-    pasl::util::cmdline::dispatcher d;
+    deepsea::cmdline::dispatcher d;
     d.add("plummer", [&] {
       points = plummer2d(n);
     });
     d.add("uniform", [&] {
-      bool inSphere = pasl::util::cmdline::parse_or_default_bool("in_sphere", false);
-      bool onSphere = pasl::util::cmdline::parse_or_default_bool("on_sphere", false);
+      bool inSphere = deepsea::cmdline::parse_or_default_bool("in_sphere", false);
+      bool onSphere = deepsea::cmdline::parse_or_default_bool("on_sphere", false);
       points = uniform2d(inSphere, onSphere, n);
     });
     d.dispatch_or_default("generator", "plummer");
@@ -48,20 +48,20 @@ parray<point2d> load_points2d() {
 template <class intT, class uintT>
 parray<point3d> load_points3d() {
   parray<point3d> points;
-  intT n = (intT)pasl::util::cmdline::parse_or_default_long("n", 10);
-  pasl::util::cmdline::dispatcher d;
+  intT n = (intT)deepsea::cmdline::parse_or_default_long("n", 10);
+  deepsea::cmdline::dispatcher d;
   d.add("from_file", [&] {
     std::cout << "todo" << std::endl;
     exit(0);
   });
   d.add("by_generator", [&] {
-    pasl::util::cmdline::dispatcher d;
+    deepsea::cmdline::dispatcher d;
     d.add("plummer", [&] {
       points = plummer3d<intT,uintT>(n);
     });
     d.add("uniform", [&] {
-      bool inSphere = pasl::util::cmdline::parse_or_default_bool("in_sphere", false);
-      bool onSphere = pasl::util::cmdline::parse_or_default_bool("on_sphere", false);
+      bool inSphere = deepsea::cmdline::parse_or_default_bool("in_sphere", false);
+      bool onSphere = deepsea::cmdline::parse_or_default_bool("on_sphere", false);
       points = uniform3d<intT,uintT>(inSphere, onSphere, n);
     });
     d.dispatch_or_default("generator", "plummer");
