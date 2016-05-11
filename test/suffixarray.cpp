@@ -165,7 +165,7 @@ public:
 
 int main(int argc, char** argv) {
   pbbs::launch(argc, argv, [&] {
-    int nb_tests = pasl::util::cmdline::parse_or_default_int("n", 1000);
+    int nb_tests = deepsea::cmdline::parse_or_default_int("n", 1000);
     checkit<pasl::pctl::suffixarray_property>(nb_tests, "suffixarray is correct");
   });
   return 0;
