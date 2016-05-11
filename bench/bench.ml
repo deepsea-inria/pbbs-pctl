@@ -81,7 +81,8 @@ let arg_sizes =
    | ["all"] -> ["small"; "medium"; "large"]
    | _ -> arg_sizes
 
-let sequence_benchmarks = ["comparison_sort"; "block_radix_sort"; "remove_duplicates"; "suffix_array"; "convex_hull"; "nearest_neighbours"; "ray_cast"]
+let sequence_benchmarks = ["comparison_sort"; "blockradix_sort"; "remove_duplicates";
+                      "suffix_array"; "convex_hull"; "nearest_neighbours"; "ray_cast"]
 
 let arg_benchmarks = 
    match arg_benchmarks with
