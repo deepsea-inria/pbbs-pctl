@@ -240,7 +240,7 @@ module ExpGenerate = struct
 
 let name = "generate"
 
-let prog = "./input_data.opt"
+let prog = "./sequence_data.norm"
 
 let make() =
   build "." [prog] arg_virtual_build
@@ -280,7 +280,7 @@ let prog_names = function
   | _ -> Pbench.error "invalid benchmark"
 
 let prog benchmark =
-  sprintf "./%s_bench.opt" (prog_names benchmark)
+  sprintf "./%s_bench.norm" (prog_names benchmark)
 
 let make() =
   List.iter (fun benchmark ->
