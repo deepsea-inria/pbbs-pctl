@@ -15,7 +15,8 @@ let arg_onlys = XCmd.parse_or_default_list_string "only" []
 let arg_sizes = XCmd.parse_or_default_list_string "size" ["all"]
 let arg_benchmarks = XCmd.parse_or_default_list_string "benchmark" ["all"]
 let arg_proc = XCmd.parse_or_default_list_int "proc" [1; 10; 40]
-                                                  
+let arg_extension = XCmd.parse_or_default_string "ext" "norm"
+            
 let run_modes =
   Mk_runs.([
     Mode (mode_of_string arg_mode);
@@ -48,10 +49,10 @@ let build path bs is_virtual =
    system (sprintf "make -C %s -j %s" path (String.concat " " bs)) is_virtual
 
 let file_results exp_name =
-  Printf.sprintf "results_%s.txt" exp_name
+  Printf.sprintf "results_%s_%s.txt" exp_name arg_extension
 
 let file_plots exp_name =
-  Printf.sprintf "_plots/plots_%s.pdf" exp_name
+  Printf.sprintf "_plots/plots_%s_%s.pdf" exp_name arg_extension
 
 (** Evaluation functions *)
 
@@ -285,7 +286,7 @@ let prog_names = function
   | _ -> Pbench.error "invalid benchmark"
 
 let prog benchmark =
-  sprintf "./%s_bench.norm" (prog_names benchmark)
+  sprintf "./%s_bench.%s" (prog_names benchmark) arg_extension
 
 let make() =
   List.iter (fun benchmark ->
@@ -296,7 +297,6 @@ let run() =
   List.iter (fun benchmark ->
     Mk_runs.(call (run_modes @ [
       Output (file_results benchmark);
-      Runs 4;
       Timeout 400;
       Args (
         mk_prog (prog benchmark)
