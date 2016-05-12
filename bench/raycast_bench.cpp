@@ -70,9 +70,18 @@ int main(int argc, char** argv) {
   pbbs::launch(argc, argv, [&] (pbbs::measured_type measured) {
     std::string infile = deepsea::cmdline::parse_or_default_string("infile", "");
     if (infile != "") {
-      std::string infile2 = deepsea::cmdline::parse_string("infile2");
-      pasl::pctl::io::ray_cast_test x = pasl::pctl::io::load<pasl::pctl::io::ray_cast_test>(infile, infile2);
-      pbbs_pctl_call(measured, x);
+      std::string base;
+      std::string extension;
+      pasl::pctl::io::parse_filename(infile, base, extension);
+      if (extension == "txt") {
+        std::string infile2 = deepsea::cmdline::parse_string("infile2");
+        pasl::pctl::io::ray_cast_test x = pasl::pctl::io::load<pasl::pctl::io::ray_cast_test>(infile, infile2);
+        pbbs_pctl_call(measured, x);
+      } else {
+        pasl::pctl::io::ray_cast_test x = pasl::pctl::io::load<pasl::pctl::io::ray_cast_test>(infile);
+        std::cerr << x.points.size() << " " << x.triangles.size() << " " << x.rays.size() << std::endl;
+        pbbs_pctl_call(measured, x);
+      }
       return;
     }
     int test = deepsea::cmdline::parse_or_default_int("test", 0);

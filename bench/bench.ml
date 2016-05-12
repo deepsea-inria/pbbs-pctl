@@ -14,6 +14,7 @@ let arg_skips = XCmd.parse_or_default_list_string "skip" []
 let arg_onlys = XCmd.parse_or_default_list_string "only" []
 let arg_sizes = XCmd.parse_or_default_list_string "size" ["all"]
 let arg_benchmarks = XCmd.parse_or_default_list_string "benchmark" ["all"]
+let arg_proc = XCmd.parse_or_default_list_int "proc" [1; 10; 40]
                                                   
 let run_modes =
   Mk_runs.([
@@ -50,7 +51,7 @@ let file_results exp_name =
   Printf.sprintf "results_%s.txt" exp_name
 
 let file_plots exp_name =
-  Printf.sprintf "plots_%s.pdf" exp_name
+  Printf.sprintf "_plots/plots_%s.pdf" exp_name
 
 (** Evaluation functions *)
 
@@ -101,7 +102,7 @@ let mk_generator generator = mk string "generator" generator
 let types_list = function
   | "comparison_sort" -> [ "array_double"; "array_string"; ]
   | "blockradix_sort" -> [ "array_int"; "array_pair_int_int"; ]
-  | "remove_duplicates" -> [ "array_int"; "array_string"; "array_pair_string_int"; ]
+  | "remove_duplicates" -> [ "array_int"; "array_string"; ] (** "array_pair_string_int"; ]**)
   | "suffix_array" -> [ "string"; ]
   | "convex_hull" -> [ "array_point2d"; ]
   | "nearest_neighbours" -> [ "array_point2d"; "array_point3d"; ]
@@ -143,9 +144,9 @@ let generators_list = function
     | "array_string" -> [
         mk_generator "trigrams";
       ]
-    | "array_pair_string_int" -> [
+(**    | "array_pair_string_int" -> [
         mk_generator "trigrams";
-      ]
+      ]**)
     | _ -> Pbench.error "invalid type")
   | "suffix_array" -> (function n ->
     function
@@ -228,7 +229,8 @@ let sequence_descriptor_of mk_sequence_inputs =
 let mk_sequence_input_names benchmark =
   let mk2 = sequence_descriptor_of (mk_sequence_inputs benchmark) in
   Params.eval (Params.concat (~~ List.map mk2 (fun (typ,outfile) ->
-    mk string "infile" outfile
+    (mk string "type" typ) &
+    (mk string "infile" outfile)
   )))            
 
 let mk_lib_types =
@@ -270,13 +272,15 @@ end
 
 module ExpEvaluate = struct
 
+let mk_proc = mk_list int "proc" arg_proc
+
 let prog_names = function
   | "comparison_sort" -> "samplesort"
   | "blockradix_sort" -> "blockradixsort"
   | "remove_duplicates" -> "deterministichash"
   | "suffix_array" -> "suffixarray"
   | "convex_hull" -> "quickhull"
-  | "nearest_neighbours" -> "nearestneighours"
+  | "nearest_neighbours" -> "nearestneighbours"
   | "ray_cast" -> "raycast"
   | _ -> Pbench.error "invalid benchmark"
 
@@ -292,31 +296,41 @@ let run() =
   List.iter (fun benchmark ->
     Mk_runs.(call (run_modes @ [
       Output (file_results benchmark);
+      Runs 4;
       Timeout 400;
       Args (
         mk_prog (prog benchmark)
       & (
         mk_sequence_input_names benchmark
       )
-      & mk_lib_types)]))
+      & mk_lib_types & mk_proc)]))
   ) arg_benchmarks
 
 let check = nothing  (* do something here *)
 
 let plot() =
   List.iter (fun benchmark ->
+    let eval_relative = fun env all_results results ->
+      let pbbs_results = ~~ Results.filter_by_params all_results (
+        from_env (Env.add (Env.filter_keys ["typ"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))
+      ) in
+      if pbbs_results = [] then Pbench.error ("no results for pbbs library");
+      let v = Results.get_mean_of "exectime" results in
+      let b = Results.get_mean_of "exectime" pbbs_results in
+      v /. b
+      in
     Mk_bar_plot.(call ([
       Bar_plot_opt Bar_plot.([
          X_titles_dir Vertical;
          Y_axis [Axis.Lower (Some 0.)] ]);
       Formatter default_formatter;
-      Charts mk_unit;
+      Charts mk_proc;
       Series mk_lib_types;
       X (mk_sequence_input_names benchmark);
       Input (file_results benchmark);
       Output (file_plots benchmark);
       Y_label "exectime";
-      Y eval_exectime;
+      Y eval_relative;
     ]))
   ) arg_benchmarks
 
@@ -335,5 +349,6 @@ let _ =
   ]
   in
   system("mkdir -p _data") arg_virtual_run;
+  system("mkdir -p _plots") arg_virtual_run;
   Pbench.execute_from_only_skip arg_actions [] bindings;
   ()

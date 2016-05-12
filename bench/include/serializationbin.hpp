@@ -24,9 +24,11 @@ struct read_from_file_struct {
 };
 
 template <class Item>
-void write_to_file(std::ofstream& out, Item& item) {
-  out.write(reinterpret_cast<char*>(&item), sizeof(Item));
-}
+struct write_to_file_struct {
+  void operator()(std::ofstream& out, Item& item) {
+    out.write(reinterpret_cast<char*>(&item), sizeof(Item));
+  }
+};
 
 template <>
 struct read_from_file_struct<std::string> {
@@ -41,17 +43,20 @@ struct read_from_file_struct<std::string> {
 };
 
 template <>
-void write_to_file<std::string>(std::ofstream& out, std::string& s) {
-  int size = s.size();
-  out.write(reinterpret_cast<char*>(&size), sizeof(int));
-  out.write(&s[0], sizeof(char) * size);
-}
+struct write_to_file_struct<std::string> {
+  void operator()(std::ofstream& out, std::string& s) {
+    int size = s.size();
+    out.write(reinterpret_cast<char*>(&size), sizeof(int));
+    out.write(&s[0], sizeof(char) * size);
+  }
+};
 
 template <class Item>
 struct read_from_file_struct<parray<Item>> {
   parray<Item> operator()(std::ifstream& in) const {
     long size = 0;
     in.read(reinterpret_cast<char*>(&size), sizeof(long));
+    std::cerr << "Read size: " << size << std::endl;
     parray<Item> result(size);
     in.read(reinterpret_cast<char*>(result.begin()), sizeof(Item) * size);
     return result;
@@ -59,13 +64,15 @@ struct read_from_file_struct<parray<Item>> {
 };
 
 template <class Item>
-void write_to_file(std::ofstream& out, parray<Item>& a) {
-//  std::cerr << "Write to file\n";
-//  std::cerr << a.size() << std::endl;
-  long size = a.size();
-  out.write(reinterpret_cast<char*>(&size), sizeof(long));
-  out.write(reinterpret_cast<char*>(a.begin()), sizeof(Item) * size);
-}
+struct write_to_file_struct<parray<Item>> {
+  void operator()(std::ofstream& out, parray<Item>& a) {
+//    std::cerr << "Write to file\n";
+//    std::cerr << a.size() << std::endl;
+    long size = a.size();
+    out.write(reinterpret_cast<char*>(&size), sizeof(long));
+    out.write(reinterpret_cast<char*>(a.begin()), sizeof(Item) * size);
+  }
+};
 
 template <>
 struct read_from_file_struct<parray<char*>> {
@@ -86,20 +93,22 @@ struct read_from_file_struct<parray<char*>> {
 };
 
 template <>
-void write_to_file<char*>(std::ofstream& out, parray<char*>& a) {
-  long size = a.size();
-  out.write(reinterpret_cast<char*>(&size), sizeof(long));
-  int* len = new int[size];
-  int total = 0;
-  for (int i = 0; i < size; i++) {
-    len[i] = std::strlen(a[i]);
+struct write_to_file_struct<parray<char*>> {
+  void operator()(std::ofstream& out, parray<char*>& a) {
+    long size = a.size();
+    out.write(reinterpret_cast<char*>(&size), sizeof(long));
+    int* len = new int[size];
+    int total = 0;
+    for (int i = 0; i < size; i++) {
+      len[i] = std::strlen(a[i]);
+    }
+    out.write(reinterpret_cast<char*>(len), sizeof(int) * size);
+    for (int i = 0; i < size; i++) {
+      out.write(&a[i][0], sizeof(char) * len[i]);
+    }
+    delete [] len;
   }
-  out.write(reinterpret_cast<char*>(len), sizeof(int) * size);
-  for (int i = 0; i < size; i++) {
-    out.write(&a[i][0], sizeof(char) * len[i]);
-  }
-  delete [] len;
-}
+};
 
 template <>
 struct read_from_file_struct<parray<std::pair<char*, int>*>> {
@@ -123,21 +132,23 @@ struct read_from_file_struct<parray<std::pair<char*, int>*>> {
 };
 
 template <>
-void write_to_file<std::pair<char*, int>*>(std::ofstream& out, parray<std::pair<char*, int>*>& a) {
-  long size = a.size();
-  out.write(reinterpret_cast<char*>(&size), sizeof(long));
-  int* len = new int[size];
-  int total = 0;
-  for (int i = 0; i < size; i++) {
-    len[i] = std::strlen(a[i]->first);
+struct write_to_file_struct<parray<std::pair<char*, int>*>> {
+  void operator()(std::ofstream& out, parray<std::pair<char*, int>*>& a) {
+    long size = a.size();
+    out.write(reinterpret_cast<char*>(&size), sizeof(long));
+    int* len = new int[size];
+    int total = 0;
+    for (int i = 0; i < size; i++) {
+      len[i] = std::strlen(a[i]->first);
+    }
+    out.write(reinterpret_cast<char*>(len), sizeof(int) * size);
+    for (int i = 0; i < size; i++) {
+      out.write(&a[i]->first[0], sizeof(char) * len[i]);
+      out.write(reinterpret_cast<char*>(&a[i]->second), sizeof(int));
+    }
+    delete [] len;
   }
-  out.write(reinterpret_cast<char*>(len), sizeof(int) * size);
-  for (int i = 0; i < size; i++) {
-    out.write(&a[i]->first[0], sizeof(char) * len[i]);
-    out.write(reinterpret_cast<char*>(&a[i]->second), sizeof(int));
-  }
-  delete [] len;
-}
+};
 
 template <>
 struct read_from_file_struct<ray_cast_test> {
@@ -153,15 +164,23 @@ struct read_from_file_struct<ray_cast_test> {
 };
 
 template <>
-void write_to_file<ray_cast_test>(std::ofstream& out, ray_cast_test& test) {
-  write_to_file<parray<point3d>>(out, test.points);
-  write_to_file<parray<triangle>>(out, test.triangles);
-  write_to_file<parray<ray<point3d>>>(out, test.rays);
-}
+struct write_to_file_struct<ray_cast_test> {
+  void operator()(std::ofstream& out, ray_cast_test& test) {
+//    std::cerr << "Write to file " << test.points.size() << " " << test.triangles.size() << " " << test.rays.size() << std::endl;
+    write_to_file_struct<parray<point3d>>()(out, test.points);
+    write_to_file_struct<parray<triangle>>()(out, test.triangles);
+    write_to_file_struct<parray<ray<point3d>>>()(out, test.rays);
+  }
+};
 
 template <class Item>
 Item read_from_file(std::ifstream& in) {
   return read_from_file_struct<Item>()(in);
+}
+
+template <class Item>
+void write_to_file(std::ofstream& out, Item& item) {
+  write_to_file_struct<Item>()(out, item);
 }
 
 template <class Item>

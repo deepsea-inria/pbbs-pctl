@@ -40,6 +40,7 @@ PROGRAMS=\
 	quickhull_bench.cpp \
 	nearestneighbours_bench.cpp \
         raycast_bench.cpp \
+        sequence_data.cpp \
 
 ####################################################################
 # Makefile options
