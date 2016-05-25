@@ -53,7 +53,7 @@ struct event {
 #define IS_END(_event) ((_event.p & 1))
 #define GET_INDEX(_event) (_event.p >> 1)
 
-struct cmpVal { bool operator() (event a, event b) {return a.v < b.v;}};
+struct cmpVal { bool operator() (event a, event b) {return a.v < b.v || (a.v == b.v && GET_INDEX(a) < GET_INDEX(b));}};
 
 struct range {
   float min;
@@ -217,11 +217,14 @@ cut_info best_cut_serial(event* e, range r, range r1, range r2, intT n) {
     }
     if (IS_START(e[i])) in_left++;
   }
+
+//  std::cerr << "Best k " << k << std::endl;
   return cut_info(min_cost, e[k].v, ln, rn);
 }
 
 // parallel version of best cut
 cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
+  return best_cut_serial(e, r, r1, r2, n);
 #ifdef MANUAL_CONTROL
   if (n < min_parallel_size) {
     return best_cut_serial(e, r, r1, r2, n);
@@ -320,8 +323,9 @@ std::pair<intT, intT> split_events_serial(range* boxes, event* events,
                        parray<event>& left, parray<event>& right) {
   intT l = 0;
   intT r = 0;
-  new (&left) parray<event>(n);
-  new (&right) parray<event>(n);
+  
+  left.prefix_tabulate(n, 0);
+  right.prefix_tabulate(n, 0);
   for (intT i = 0; i < n; i++) {
     intT b = GET_INDEX(events[i]);
     if (boxes[b].min < cut_off) {
@@ -338,6 +342,7 @@ std::pair<intT, intT> split_events_serial(range* boxes, event* events,
 
 std::pair<intT, intT> split_events(range* boxes, event* events, float cut_off, intT n,
                  parray<event>& left, parray<event>& right) {
+  return split_events_serial(boxes, events, cut_off, n, left, right);
 #ifdef MANUAL_CONTROL
   if (n < min_parallel_size) {
     return split_events_serial(boxes, events, cut_off, n, left, right);
@@ -369,6 +374,7 @@ std::pair<intT, intT> split_events(range* boxes, event* events, float cut_off, i
       return boxes[b].max > cut_off;
     });
     const event* events2 = (const event*)events;
+
     left = pack(events2, events2 + n, lower.cbegin());
     right = pack(events2, events2 + n, upper.cbegin());
 #endif
@@ -385,18 +391,23 @@ tree_node* generate_node(boxes bxs, events evts, bounding_box b,
                        intT n, intT max_depth) {
   using controller_type = pasl::pctl::granularity::controller_holder<kdtree_file, 4, intT>;
   tree_node* result;
-  par::cstmt(controller_type::controller, [&] { return n; }, [&] {
+//  par::cstmt(controller_type::controller, [&] { return n; }, [&] {
     //cout << "n=" << n << " max_depth=" << max_depth << endl;
     if (n <= 2 || max_depth == 0) {
       result = new tree_node(evts, n, b);
-      return;
+      return result;
     }
+
+/*#ifdef TIME_MEASURE
+      auto start = std::chrono::system_clock::now();
+#endif*/
     
     // loop over dimensions and find the best cut across all of them
     cut_info cuts[3];
-    parallel_for(0, 3, [&] (int) { return n; }, [&] (int d) {
+//    parallel_for(0, 3, [&] (int) { return n; }, [&] (int d) {
+    for (int d = 0; d < 3; d++)
       cuts[d] = best_cut(evts[d], b[d], b[(d + 1) % 3], b[(d + 2) % 3], n);
-    });
+//    });
     
     int cut_dim = 0;
     for (int d = 1; d < 3; d++) {
@@ -410,12 +421,17 @@ tree_node* generate_node(boxes bxs, events evts, bounding_box b,
     float area = box_surface_area(b);
     float best_cost = CT + CL * cuts[cut_dim].cost / area;
     float orig_cost = (float) (n / 2);
-    
+/*#ifdef TIME_MEASURE
+      auto end = std::chrono::system_clock::now();
+      std::chrono::duration<float> diff = end - start;
+      printf ("exectime best cut find %.3lf\n", diff.count());
+#endif*/
+//    std::cerr << n << " " << cuts[cut_dim].num_left << " " << cuts[cut_dim].num_right << " " << max_expand << std::endl;
     // quit recursion early if best cut is not very good
     if (best_cost >= orig_cost ||
         cuts[cut_dim].num_left + cuts[cut_dim].num_right > max_expand * n / 2) {
       result = new tree_node(evts, n, b);
-      return;
+      return result;
     }
     
     // declare structures for recursive calls
@@ -434,6 +450,10 @@ tree_node* generate_node(boxes bxs, events evts, bounding_box b,
     bbr[cut_dim] = range(cut_off, bbr[cut_dim].max);
     event* right_events[3];
     intT nr;
+
+/*#ifdef TIME_MEASURE
+      start = std::chrono::system_clock::now();
+#endif*/
     
     // now split each event array to the two sides
     parray<event> xl[3];
@@ -454,6 +474,11 @@ tree_node* generate_node(boxes bxs, events evts, bounding_box b,
         abort();
       }
     }
+/*#ifdef TIME_MEASURE
+      end = std::chrono::system_clock::now();
+      diff = end - start;
+      printf ("exectime split find %.3lf\n", diff.count());
+#endif*/
     
     // free old events and make recursive calls
 /*    for (int i = 0; i < 3; i++) {
@@ -468,7 +493,7 @@ tree_node* generate_node(boxes bxs, events evts, bounding_box b,
     });
     
     result = new tree_node(l, r, cut_dim, cut_off, b);
-  });
+//  });
   return result;
 }
 
@@ -592,7 +617,7 @@ parray<intT> ray_cast(triangles<pointT> tri, ray<pointT>* rays, int num_rays) {
 #ifdef TIME_MEASURE
       auto end = std::chrono::system_clock::now();
       std::chrono::duration<float> diff = end - start;
-//      printf ("exectime generate boxes %.3lf\n", diff.count());
+      printf ("exectime generate boxes %.3lf\n", diff.count());
 
       start = std::chrono::system_clock::now();
 #endif
@@ -607,20 +632,23 @@ parray<intT> ray_cast(triangles<pointT> tri, ray<pointT>* rays, int num_rays) {
       evts[d][2 * i] = event(bxs[d][i].min, i, START);
       evts[d][2 * i + 1] = event(bxs[d][i].max, i, END);
     });
-    sample_sort(evts[d], 2 * n, [&] (event& a, event& b) { return a.v < b.v; });
+    sample_sort(evts[d], 2 * n, cmpVal());
+//    quick_sort(evts[d], 2 * n, cmpVal());
+//    std::sort(evts[d], evts[d] + 2 * n, cmpVal());
     box[d] = range(evts[d][0].v, evts[d][2 * n - 1].v);
   }
 
 #ifdef TIME_MEASURE
       end = std::chrono::system_clock::now();
       diff = end - start;
-//      printf ("exectime generate and sort events %.3lf\n", diff.count());
+      printf ("exectime generate and sort events %.3lf\n", diff.count());
 
       start = std::chrono::system_clock::now();
 #endif
   
   // build the tree
   intT recursion_depth = std::min(max_recursion_depth, utils::log2Up(n) - 1);
+//  std::cerr << "Depth: " << recursion_depth << std::endl;
   tree_node* tree = generate_node(bxs, evts, box, 2 * n,
                              recursion_depth);
 #ifdef TIME_MEASURE
