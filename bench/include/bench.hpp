@@ -4,6 +4,7 @@
 
 #include "io.hpp"
 #include "cmdline.hpp"
+#include "granularity.hpp"
 
 #ifdef USE_PASL_RUNTIME
 #include "threaddag.hpp"
@@ -54,6 +55,8 @@ namespace pbbs {
   template <class Body>
   void launch(int argc, char** argv, const Body& body) {
     deepsea::cmdline::set(argc, argv);
+    pasl::pctl::callback::init();
+    pasl::pctl::granularity::try_read_constants_from_file();
 
 #if defined(USE_PASL_RUNTIME)
     pasl::util::cmdline::set(argc, argv);
@@ -89,6 +92,9 @@ namespace pbbs {
     LOG_BASIC(EXIT_ALGO);
     pasl::sched::threaddag::destroy();
 #endif
+    pasl::pctl::callback::output();
+    pasl::pctl::granularity::try_write_constants_to_file();
+    pasl::pctl::callback::destroy();
   }
   
 } // end namespace

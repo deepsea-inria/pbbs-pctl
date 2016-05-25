@@ -49,7 +49,7 @@ let build path bs is_virtual =
    system (sprintf "make -C %s -j %s" path (String.concat " " bs)) is_virtual
 
 let file_results exp_name =
-  Printf.sprintf "results_%s_%s.txt" exp_name arg_extension
+  Printf.sprintf "_results/results_%s_%s.txt" exp_name arg_extension
 
 let file_plots exp_name =
   Printf.sprintf "_plots/plots_%s_%s.pdf" exp_name arg_extension
@@ -317,6 +317,8 @@ let plot() =
       if pbbs_results = [] then Pbench.error ("no results for pbbs library");
       let v = Results.get_mean_of "exectime" results in
       let b = Results.get_mean_of "exectime" pbbs_results in
+(*      print_string (Printf.sprintf "%f %f\n" v b);
+      print_string ((String.concat " " (List.map string_of_float (Results.get Env.as_float "exectime" results))) ^ "\n");*)
       v /. b
       in
     Mk_bar_plot.(call ([
