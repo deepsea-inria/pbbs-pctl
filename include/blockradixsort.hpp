@@ -4,6 +4,9 @@
 #include "utils.hpp"
 #include "dpsdatapar.hpp"
 #include "io.hpp"
+#ifdef PBBS_SEQUENCE
+#include "sequence.h"
+#endif
 
 #ifndef _PCTL_PBBS_BLOCKRADIXSORT_H_
 #define _PCTL_PBBS_BLOCKRADIXSORT_H_
@@ -80,21 +83,33 @@ void radix_step(E* a, E* b, bIndexT *tmp, intT (*raw_buckets)[BUCKETS],
   intT* cnts = (intT*) raw_buckets;
   intT* offsets_a = (intT*) (raw_buckets + blocks_number);
   intT* offsets_b = (intT*) (raw_buckets + 2 * blocks_number);
-  
+
+#ifdef MANUAL_CONTROL
+  _Pragma("cilk grainsize = 1") cilk_for (intT i = 0; i < blocks_number; i++) {
+#else 
   parallel_for(intT(0), blocks_number, [&] (intT i) {
+#endif
     intT offset = i * block_length;
     intT current_block_length = i == blocks_number - 1 ? n - offset : block_length;
     radix_block(a + offset, b, tmp + offset, cnts + max_value * i, offsets_b + max_value * i, offset, current_block_length, max_value, extract);
+#ifdef MANUAL_CONTROL
+  }
+#else
   });
+#endif
   
   //transpose<intT,intT>(cnts, oA).trans(blocks, m);
   transpose(cnts, offsets_a, blocks_number, max_value);
 
 //      intT ss;
+#ifdef PBBS_SEQUENCE
+  pbbs::sequence::scan(offsets_a, offsets_a, blocks_number * max_value, [&] (intT x, intT y) { return x + y; }, (intT)0);
+#else
   intT id = 0;
   dps::scan(offsets_a, offsets_a + blocks_number * max_value, id, [&] (intT x, intT y) {
     return x + y;
   }, offsets_a, forward_exclusive_scan);
+#endif
   /*
   if (top)
     ss = sequence::scan(oA, oA, blocks*m, utils::addF<intT>(),(intT)0);
@@ -230,9 +245,13 @@ void integer_sort(E *a, intT* bucket_offsets, intT n, intT max_value, bool botto
       });
     }
     bucket_offsets[f(a[0])] = 0;
+#ifdef PBBS_SEQUENCE
+    pbbs::sequence::scanIBack(bucket_offsets, bucket_offsets, (intT) max_value, [&] (intT x, intT y) { return std::min(x, y); }, (intT) n);
+#else
     dps::scan(bucket_offsets, bucket_offsets + max_value, n, [&] (intT x, intT y) {
       return std::min(x, y);
     }, bucket_offsets, backward_inclusive_scan);
+#endif
 /*        sequence::scanIBack(bucket_offsets, bucket_offsets, (intT) m,
                         utils::minF<intT>(), (intT) n); */
   }
@@ -279,9 +298,15 @@ static void integer_sort(uintT* a, intT n) {
 
 template <class T, class intT, class uintT>
 static void integer_sort(std::pair<uintT, T>* a, intT n) {
+#ifdef PBBS_SEQUENCE
+  intT max_value = pbbs::sequence::mapReduce<uintT>(a, n, [&] (uintT a, uintT b) {
+    return std::max(a, b);
+  }, [&] (std::pair<uintT, T>& x) { return x.first; });
+#else
   intT max_value = pasl::pctl::level1::reduce(a, a + n, 0, [&] (uintT a, uintT b) {
     return std::max(a, b);
   }, [&] (std::pair<uintT, T>& x) { return 1; }, [&] (std::pair<uintT, T>& x) { return x.first; });
+#endif
   intsort::integer_sort(a, (intT*) nullptr, n, max_value + 1, [&] (std::pair<uintT, T> x) { return x.first; });
 }
 

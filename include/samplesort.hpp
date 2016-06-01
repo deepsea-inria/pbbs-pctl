@@ -27,6 +27,9 @@
 #include "quicksort.hpp"
 #include "transpose.hpp"
 #include "prandgen.hpp"
+#ifdef PBBS_SEQUENCE
+#include "sequence.h"
+#endif
 
 #ifndef _PBBS_PCTL_SAMPLESORT_H_
 #define _PBBS_PCTL_SAMPLESORT_H_
@@ -92,7 +95,8 @@ void sample_sort (E* a, intT n, BinPred compare) {
   par::cstmt(controller_type::contr, [&] { return (int) (n * log(n)); }, [&] {
 #ifdef MANUAL_CONTROL
     if (n <= SSORT_THR) {
-      comparison_sort(a, n, compare);
+//      comparison_sort(a, n, compare);
+      std::sort(a, a + n, compare);
       return;
     }
 #endif
@@ -208,9 +212,17 @@ void sample_sort (E* a, intT n, BinPred compare) {
     free(offset_a);
     free(segments_sizes);
 #else
+#ifdef PBBS_SEQUENCE
+    pbbs::sequence::scan(segments_sizes.begin(), offset_a.begin(), rows * segments, plus, (intT)0);
+#else
     dps::scan(segments_sizes.begin(), segments_sizes.end(), (intT)0, plus, offset_a.begin(), forward_exclusive_scan);
+#endif
     transpose(segments_sizes.begin(), offset_b.begin(), rows, segments);
+#ifdef PBBS_SEQUENCE
+    pbbs::sequence::scan(offset_b.begin(), offset_b.begin(), rows * segments, plus, (intT)0);
+#else
     dps::scan(offset_b.begin(), offset_b.end(), (intT)0, plus, offset_b.begin(), forward_exclusive_scan);
+#endif
     block_transpose(a, b.begin(), offset_a.begin(), offset_b.begin(), segments_sizes.begin(), rows, segments);
     pmem::copy(b.begin(), b.begin() + n, a);
     //nextTime("transpose");

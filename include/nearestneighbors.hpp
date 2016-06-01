@@ -234,6 +234,10 @@ namespace pctl {
 
   template <class intT, int maxK, class Point>
   parray<intT> ANN(parray<Point>& points, int n, int k) {
+#ifdef TIME_MEASURE
+    auto start = std::chrono::system_clock::now();
+#endif
+
     parray<intT> result;
     result.prefix_tabulate(n * k, 0);
 
@@ -242,14 +246,29 @@ namespace pctl {
 
     parray<vertex<Point, maxK>*> vertices(points.size(), [&] (int i) {
       return new (&vv[i]) vertex<Point, maxK>(points[i], i);
+
     });
 
+#ifdef TIME_MEASURE
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<float> diff = end - start;
+    printf("exectime preliminary execution %.3lf\n", diff.count());
+#endif
+
     ANN<intT, maxK, vertex<Point, maxK>>(vertices.begin(), n, k);
+#ifdef TIME_MEASURE
+    start = std::chrono::system_clock::now();
+#endif
     parallel_for(0, n, [&] (int i) {
       for (int j = 0; j < std::min(n - 1, k); j++) {
         result[i * k + j] = vertices[i]->ngh[j]->identifier;
       }
     });
+#ifdef TIME_MEASURE
+    end = std::chrono::system_clock::now();
+    diff = end - start;
+    printf("exectime exit execution %.3lf\n", diff.count());
+#endif
     return result;
   }
 

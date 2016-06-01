@@ -33,6 +33,9 @@
 #include "psort.hpp"
 #include "utils.hpp"
 #include "rangemin.hpp"
+#ifdef PBBS_SEQUENCE
+#include "sequence.h"
+#endif
 
 #ifndef _PCTL_PBBS_SUFFIXARRAY_H_
 #define _PCTL_PBBS_SUFFIXARRAY_H_
@@ -149,9 +152,13 @@ void suffix_array_rec(intT* s, intT n, intT K, bool find_LCP,
     else return 0;
   });
   intT id = 0;
+#ifdef PBBS_SEQUENCE
+  pbbs::sequence::scanI(name_triples.begin(), name_triples.begin(), n12, [&] (intT x, intT y) { return x + y; }, (intT)0);
+#else
   dps::scan(name_triples.begin(), name_triples.end(), id, [&] (intT x, intT y) {
     return x + y;
   }, name_triples.begin(), forward_inclusive_scan);
+#endif
   intT names = name_triples[n12 - 1];
   
   parray<intT> suffixes12;
@@ -258,9 +265,13 @@ void suffix_array(CharT* s, intT n, bool find_LCP,
   parallel_for((intT)0, n, [&] (intT i) {
     ss[i] = s[i] + 1;
   });
+#ifdef PBBS_SEQUENCE
+  intT k = 1 + pbbs::sequence::reduce(ss.cbegin(), n, [&] (intT x, intT y) { return std::max(x, y); });
+#else
   intT k = 1 + reduce(ss.cbegin(), ss.cbegin() + n, ss[0], [&] (intT x, intT y) {
     return std::max(x, y);
   });
+#endif
   
   suffix_array_rec(ss.begin(), n, k, find_LCP, suffixes, LCP);
   suffixes.resize(n);

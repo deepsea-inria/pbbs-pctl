@@ -77,31 +77,39 @@ template <class E, class BinPred, class intT>
 void quick_sort(E* A, intT n, BinPred f) {
   using controller_type = quicksort_contr<E,BinPred,intT>;
   par::cstmt(controller_type::contr, [&] { return n * log(n); }, [&] {
-    if (n < ISORT) insertion_sort(A, n, f);
-    else {
-      //E p = std::__median(A[n/4],A[n/2],A[(3*n)/4],f);
-      E p = median(A[n/4],A[n/2],A[(3*n)/4],f);
-      E* L = A;   // below L are less than pivot
-      E* M = A;   // between L and M are equal to pivot
-      E* R = A+n-1; // above R are greater than pivot
-      while (1) {
-        while (!f(p,*M)) {
-          if (f(*M,p)) std::swap(*M,*(L++));
-          if (M >= R) break;
-          M++;
-        }
-        while (f(p,*R)) R--;
-        if (M >= R) break;
-        std::swap(*M,*R--);
+#ifdef MANUAL_CONTROL
+    if (n < ISORT) {
+      insertion_sort(A, n, f);
+      return;
+    }
+#endif
+    if (n <= 1) {
+      return;
+    }
+    //E p = std::__median(A[n/4],A[n/2],A[(3*n)/4],f);
+    E p = median(A[n/4],A[n/2],A[(3*n)/4],f);
+    E* L = A;   // below L are less than pivot
+    E* M = A;   // between L and M are equal to pivot
+    E* R = A+n-1; // above R are greater than pivot
+    while (1) {
+      while (!f(p,*M)) {
         if (f(*M,p)) std::swap(*M,*(L++));
+        if (M >= R) break;
         M++;
       }
-      par::fork2([&] {
-        quick_sort(A, L-A, f);
-      }, [&] {
-        quick_sort(M, A+n-M, f); // Exclude all elts that equal pivot
-      });
+      while (f(p,*R)) R--;
+      if (M >= R) break;
+      std::swap(*M,*R--);
+      if (f(*M,p)) std::swap(*M,*(L++));
+      M++;
     }
+    par::fork2([&] {
+      quick_sort(A, L-A, f);
+    }, [&] {
+      quick_sort(M, A+n-M, f); // Exclude all elts that equal pivot
+    });
+  }, [&] {
+    std::sort(A, A + n, f);
   });
 }
   

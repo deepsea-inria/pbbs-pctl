@@ -75,9 +75,11 @@ constexpr char octtree_file[] = "octtree";
     intT count;  // number of vertices in the box
     dimtree_node* children[8];
     vertex** vertices;
-    bool crazy_leaf;
-    dimtree_node* node_memory;
     
+    dimtree_node* node_memory;
+
+//    static parray<vertex*> wv;
+    static vertex** wv;
     // wraps a bounding box around the points and generates
     // a tree.
     static dimtree_node* dimtree(vertex** vv, intT n) {
@@ -88,33 +90,43 @@ constexpr char octtree_file[] = "octtree";
 #endif    
       
       // copying to an array of points to make reduce more efficient
-      parray<point> pt(n, [&] (intT i) {
+      // Do really need this? Additional copying? FUUUUUUU!
+/*      parray<point> pt(n, [&] (intT i) {
         return vv[i]->pt;
       });
 
       assert(n >= 1);  // later: relax this constraint?
       point id = pt[0];
-      point minPt = reduce(pt.cbegin(), pt.cend(), id, [&] (point a, point b) {
+      point minPt = reduce(pt.begin(), pt.end(), id, [&] (point a, point b) {
         return a.min_coord(b);
       });
-      point maxPt = reduce(pt.cbegin(), pt.cend(), id, [&] (point a, point b) {
+      point maxPt = reduce(pt.begin(), pt.end(), id, [&] (point a, point b) {
         return a.max_coord(b);
-      });
+      });*/
 
+      std::pair<point, point> id = make_pair(vv[0]->pt, vv[0]->pt);
+      std::pair<point, point> borders = pasl::pctl::level1::reduce(vv, vv + n, id, [&] (std::pair<point, point> x, std::pair<point, point> y) {
+        return make_pair(x.first.min_coord(y.first), x.second.max_coord(y.second));
+      }, [&] (vertex* v) { return make_pair(v->pt, v->pt); });
+      point minPt = borders.first;
+      point maxPt = borders.second;
       //cout << "min "; minPt.print(); cout << endl;
       //cout << "max "; maxPt.print(); cout << endl;
       fvect box = maxPt - minPt;
       point center = minPt + (box / 2.0);
       
       // copy before calling recursive routine since recursive routine is destructive
-      parray<vertex*> v(vv, vv + n);
+//      parray<vertex*> v(vv, vv + n);
+//      wv = parray<vertex*>(vv, vv + n);
+      wv = (vertex**)malloc(n * sizeof(vertex*));
+      pasl::pctl::pmem::copy(vv, vv + n, wv);
       //cout << "about to build tree" << endl;
 #ifdef TIME_MEASURE
       auto end = std::chrono::system_clock::now();
       std::chrono::duration<float> diff = end - start;
       printf("exectime dimtree build preparation %.3lf\n", diff.count());
 #endif
-      dimtree_node* result = new dimtree_node(v.begin(), n, center, box.max_dim(), NULL, 0);
+      dimtree_node* result = new dimtree_node(wv, n, center, box.max_dim(), NULL, 0);
 
       return result;
     }
@@ -124,7 +136,13 @@ constexpr char octtree_file[] = "octtree";
     }
     
     void del() {
-      if (is_leaf() && !crazy_leaf) {
+      free(wv);
+      wv = NULL;
+      del_recursive();
+    }
+
+    void del_recursive() {
+      if (is_leaf()) {
 //        delete [] vertices;
       } else {
         for (int i = 0 ; i < (1 << center.dimension()); i++) {
@@ -253,17 +271,19 @@ constexpr char octtree_file[] = "octtree";
       size = sz;
       center = cnt;
       vertices = NULL;
-      crazy_leaf = false;
       node_memory = NULL;
     }
 
     void build_recursive_tree(vertex** v, int n, int* offsets, int quadrants, dimtree_node* new_nodes, dimtree_node* parent, int nodes_to_left, int height, int depth) {
       parent->count = 0;
 
+      auto comp_fct = [&] (int l, int r) {
+        int lq = ((nodes_to_left << center.dimension()) + l) << (center.dimension() * (height - 1));
+        int rq = ((nodes_to_left << center.dimension()) + r) << (center.dimension() * (height - 1));
+        return (rq == quadrants ? n : offsets[rq]) - offsets[lq];
+      };
+      
       if (height == 1) {
-        auto comp_fct = [&] (int l, int r) {
-          return (r == quadrants ? n : offsets[r]) - offsets[l];
-        };
         range::parallel_for(0, (int)(1 << center.dimension()), comp_fct, [&] (int i) {
            point new_center = (parent->center).offset_point(i, parent->size / 4.0);
            int q = (nodes_to_left << center.dimension()) + i;
@@ -271,13 +291,10 @@ constexpr char octtree_file[] = "octtree";
            parent->children[i] = new_tree(v + offsets[q], l, new_center, parent->size / 2.0, new_nodes + q, 1);
         });
       } else {
-        auto comp_fct = [&] (int l, int r) {
-          int ll = l << (center.dimension() * (height - 1));
-          int rr = (r + 1) << (center.dimension() * (height - 1)) - 1;
-          return (rr >= quadrants ? n : offsets[rr]) - offsets[ll];
-        };
+
 //        range::parallel_for(0, (int)(1 << center.dimension()), comp_fct, [&] (int i) {
         for (int i = 0; i < 1 << center.dimension(); i++) {
+//          std::cerr << "Comp_fct " << comp_fct(i, i + 1) << std::endl;
           point new_center = (parent->center).offset_point(i, parent->size / 4.0);
           parent->children[i] = new (new_nodes + i + nodes_to_left * (1 << center.dimension())) dimtree_node(new_center, parent->size / 2.0);
         }
@@ -292,32 +309,35 @@ constexpr char octtree_file[] = "octtree";
       if (parent->count == 0) {
         parent->vertices = v;
         //TODO: to think about
-        parent->crazy_leaf = true;
+//        parent->crazy_leaf = true;
  //       parent->count = n;
       }
     }
     
     void sort_blocks_big(vertex** v, int cnt, int quadrants, int logdivs, double size, point center, int* offsets) {
-      std::pair<int, vertex*>* blk = (std::pair<int, vertex*>*)malloc(sizeof(std::pair<int, vertex*>) * cnt);
       double blocksize = size / (double)(1 << logdivs);
       point min_pt = center.offset_point(0, size / 2);
-      parallel_for(0, (int)cnt, [&] (int i) {
-        blk[i] = make_pair(find_block(min_pt, blocksize, logdivs, v[i]->pt), v[i]);
+      parray<std::pair<int, vertex*>> blk(cnt, [&] (int i) {
+//        std::cerr << i << " " << find_block(min_pt, blocksize, logdivs, v[i]->pt) << std::endl;
+        return make_pair(find_block(min_pt, blocksize, logdivs, v[i]->pt), v[i]);
       });
-      intsort::integer_sort(blk, offsets, cnt, quadrants, [&] (std::pair<int, vertex*>& x) { return x.first; });
+      
+      intsort::integer_sort(blk.begin(), offsets, cnt, quadrants, [&] (std::pair<int, vertex*>& x) { return x.first; });
+      
       parallel_for(0, (int)cnt, [&] (int i) {
         v[i] = blk[i].second;
       });
-      free(blk);
+
     }
 
     void sort_blocks_small(vertex** v, int cnt, point center, int* offsets) {
       vertex* start = v[0];
       int quadrants = 1 << center.dimension();
-      std::pair<int, vertex*>* blk = (std::pair<int, vertex*>*)malloc(sizeof(std::pair<int, vertex*>) * cnt);
-      for (int i = 0; i < cnt; i++) {
-        blk[i] = make_pair((v[i]->pt).quadrant(center), v[i]);
-      }
+      parray<std::pair<int, vertex*>> blk(cnt, [&] {
+        for (int i = 0; i < cnt; i++) {
+          blk[i] = make_pair((v[i]->pt).quadrant(center), v[i]);
+        }
+      });
       std::sort(blk, blk + cnt);
       int j = -1;
       for (int i = 0; i < cnt; i++) {
@@ -327,7 +347,7 @@ constexpr char octtree_file[] = "octtree";
         }
       }
       while (++j < quadrants) offsets[j] = cnt;
-      free(blk);
+      
     }
 
     // the recursive routine for generating the tree -- actually mutually recursive
@@ -338,7 +358,7 @@ constexpr char octtree_file[] = "octtree";
       size = sz;
       center = cnt;
       vertices = NULL;
-      crazy_leaf = false;
+//      crazy_leaf = false;
       node_memory = NULL;
       
       int logdivs = (int)(log2(count) * DIMTREE_SUBPROB_POW / (double)center.dimension());
@@ -380,19 +400,26 @@ constexpr char octtree_file[] = "octtree";
           }
 //          });
           
-          data = node_data(center);
+/*          data = node_data(center);
           for (int i = 0; i < quadrants; i++) {
             if (children[i]->count > 0) {
               data += children[i]->data;
             }
+          }*/
+          for (int i = 0; i < quadrants; i++) {
+            data += children[i]->data;
           }
         } else {
-          vertices = new vertex*[count];
+/*          vertices = new vertex*[count];
           data = node_data(center);
           for (intT i = 0; i < count; i++) {
             vertex* p = v[i];
             data += p;
             vertices[i] = p;
+          }*/
+          vertices = v;
+          for (int i = 0; i < count; i++) {
+            data += v[i];
           }
         }
       };
@@ -424,7 +451,10 @@ constexpr char octtree_file[] = "octtree";
 //      }, seq);
     }
   };
-  
+
+template <class intT, class pointT, class vectT, class vertexT, class dataT>
+vertexT** dimtree_node<intT, pointT, vectT, vertexT, dataT>::wv = NULL;
+/*parray<vertexT*> dimtree_node<intT, pointT, vectT, vertexT, dataT>::wv;*/
 } // end namespace
 } // end namespace
 

@@ -105,7 +105,7 @@ controller_type quickhull_contr("quickhull");
 
 intT quick_hull(iter<intT> indices, iter<intT> tmp, iter<point2d> p, intT n, intT l, intT r) {
   intT result;
-  par::cstmt(quickhull_contr, [&] { return n; }, [&] {
+  par::cstmt(quickhull_contr, [&] { return n * std::log2(n); }, [&] {
     if (n < 2) {
       result = quick_hull_seq(indices, p, n, l, r);
     } else {
@@ -242,8 +242,8 @@ parray<intT> hull(parray<point2d>& p) {
 #endif
   parallel_for((intT)0, n, [&] (intT i) {
     double a = triangle_area(p[l], p[r], p[i]);
-    is_top_hull[i] = a > 0;//EPS;
-    is_bottom_hull[i] = a < 0;//-EPS;
+    is_top_hull[i] = a > EPS;
+    is_bottom_hull[i] = a < EPS;
   });
 #ifdef TIME_MEASURE  
       end = std::chrono::system_clock::now();
