@@ -40,6 +40,8 @@ PROGRAMS=\
 	quickhull_bench.cpp \
 	nearestneighbours_bench.cpp \
         raycast_bench.cpp \
+        reduce_bench.cpp \
+        scan_bench.cpp \
         sequence_data.cpp \
 
 ####################################################################
@@ -64,7 +66,7 @@ include $(TOOLS_BUILD_FOLDER)/Makefile_options
 # (If extending the list, need to add cases for the definition
 # of COMPILE_OPTIONS_FOR further below, and also for "clean".
 
-MODES=dbg log sta opt seq cilk norm manc unko unkh clog norc
+MODES=dbg log sta opt seq cilk norm manc unko unkh clog norc manb
 
 # Compilation options for each mode
 
@@ -78,7 +80,8 @@ COMPILE_OPTIONS_FOR_cilk=$(OPTIONS_cilk) -DUSE_CILK_PLUS_RUNTIME $(OPTIONS_O2)
 
 COMPILE_OPTIONS_FOR_norm=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING
 COMPILE_OPTIONS_FOR_norc=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DCONSTANTS
-COMPILE_OPTIONS_FOR_manc=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DTIME_MEASURE -DMANUAL_CONTROL
+COMPILE_OPTIONS_FOR_manc=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DMANUAL_CONTROL
+COMPILE_OPTIONS_FOR_manb=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DMANUAL_CONTROL -DPBBS_SEQUENCE
 COMPILE_OPTIONS_FOR_unko=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DOPTIMISTIC
 COMPILE_OPTIONS_FOR_unkh=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DHONEST
 COMPILE_OPTIONS_FOR_clog=$(COMPILE_OPTIONS_FOR_cilk) -DPLOGGING

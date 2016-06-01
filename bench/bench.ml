@@ -14,7 +14,7 @@ let arg_skips = XCmd.parse_or_default_list_string "skip" []
 let arg_onlys = XCmd.parse_or_default_list_string "only" []
 let arg_sizes = XCmd.parse_or_default_list_string "size" ["all"]
 let arg_benchmarks = XCmd.parse_or_default_list_string "benchmark" ["all"]
-let arg_proc = XCmd.parse_or_default_list_int "proc" [1; 10; 40]
+let arg_proc = XCmd.parse_or_default_list_int "proc" [1; 10; 39]
 let arg_extension = XCmd.parse_or_default_string "ext" "norm"
             
 let run_modes =
@@ -84,7 +84,7 @@ let arg_sizes =
    | _ -> arg_sizes
 
 let sequence_benchmarks = ["comparison_sort"; "blockradix_sort"; "remove_duplicates";
-                      "suffix_array"; "convex_hull"; "nearest_neighbours"; "ray_cast"]
+                      "suffix_array"; "convex_hull"; "nearest_neighbours"; "ray_cast"; "reduce"]
 
 let arg_benchmarks = 
    match arg_benchmarks with
@@ -108,6 +108,8 @@ let types_list = function
   | "convex_hull" -> [ "array_point2d"; ]
   | "nearest_neighbours" -> [ "array_point2d"; "array_point3d"; ]
   | "ray_cast" -> []
+  | "reduce" -> [ "array_int"; "array_double"; ]
+  | "scan" -> [ "array_int"; "array_double"; ]
   | _ -> Pbench.error "invalid benchmark"
 
 let generators_list = function
@@ -176,6 +178,24 @@ let generators_list = function
       ]
     | _ -> Pbench.error "invalid_type")
   | "ray_cast" -> (function n -> function typ -> [])
+  | "reduce" -> (function n -> 
+     function
+     | "array_int" -> [
+         mk_generator "random";
+       ]
+     | "array_double" -> [
+         mk_generator "random";
+       ]
+     | _ -> Pbench.error "invalid_type")
+  | "scan" -> (function n ->
+     function
+     | "array_int" -> [
+         mk_generator "random";
+        ]
+     | "array_double" -> [
+          mk_generator "random";
+        ]
+     | _ -> Pbench.error "invalid_type")
   | _ -> Pbench.error "invalid benchmark"
 
 let mk_generate_sequence_inputs benchmark : Params.t =
@@ -283,10 +303,12 @@ let prog_names = function
   | "convex_hull" -> "quickhull"
   | "nearest_neighbours" -> "nearestneighbours"
   | "ray_cast" -> "raycast"
+  | "reduce" -> "reduce"
+  | "scan" -> "scan"
   | _ -> Pbench.error "invalid benchmark"
 
 let prog benchmark =
-  sprintf "./%s_bench.%s" (prog_names benchmark) arg_extension
+  sprintf "numactl --interleave=all ./%s_bench.%s" (prog_names benchmark) arg_extension
 
 let make() =
   List.iter (fun benchmark ->
