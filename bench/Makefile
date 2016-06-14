@@ -42,6 +42,7 @@ PROGRAMS=\
         raycast_bench.cpp \
         reduce_bench.cpp \
         scan_bench.cpp \
+        loop_bench.cpp \
         sequence_data.cpp \
 
 ####################################################################

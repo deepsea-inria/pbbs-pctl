@@ -84,7 +84,7 @@ let arg_sizes =
    | _ -> arg_sizes
 
 let sequence_benchmarks = ["comparison_sort"; "blockradix_sort"; "remove_duplicates";
-                      "suffix_array"; "convex_hull"; "nearest_neighbours"; "ray_cast"; "reduce"]
+                      "suffix_array"; "convex_hull"; "nearest_neighbours"; "ray_cast"; ]
 
 let arg_benchmarks = 
    match arg_benchmarks with
@@ -110,6 +110,7 @@ let types_list = function
   | "ray_cast" -> []
   | "reduce" -> [ "array_int"; "array_double"; ]
   | "scan" -> [ "array_int"; "array_double"; ]
+  | "loop" -> []
   | _ -> Pbench.error "invalid benchmark"
 
 let generators_list = function
@@ -196,6 +197,7 @@ let generators_list = function
           mk_generator "random";
         ]
      | _ -> Pbench.error "invalid_type")
+  | "loop" -> (function n -> function typ -> [])
   | _ -> Pbench.error "invalid benchmark"
 
 let mk_generate_sequence_inputs benchmark : Params.t =
@@ -236,6 +238,13 @@ let mk_files_inputs benchmark : Params.t =
     ((mk_infile "data/happyTriangles.txt" & mk_infile2 "data/happyRays.txt" & mk_outfile "_data/happy_ray_cast_dataset.bin") ++
      (mk_infile "data/angelTriangles.txt" & mk_infile2 "data/angelRays.txt" & mk_outfile "_data/angel_ray_cast_dataset.bin") ++
      (mk_infile "data/dragonTriangles.txt" & mk_infile2 "data/dragonRays.txt" & mk_outfile "_data/dragon_ray_cast_dataset.bin")))
+  | "loop" ->
+    (mk_type "pair_int_int" &
+    ((mk_infile "data/loop_10.txt" & mk_outfile "_data/loop_10.bin") ++
+     (mk_infile "data/loop_1000.txt" & mk_outfile "_data/loop_1000.bin") ++
+     (mk_infile "data/loop_30000.txt" & mk_outfile "_data/loop_30000.bin") ++
+     (mk_infile "data/loop_3000000.txt" & mk_outfile "_data/loop_3000000.bin") ++
+     (mk_infile "data/loop_100000000.txt" & mk_outfile "_data/loop_100000000.bin")))
   | _ -> Params.concat ([])
 
 let mk_sequence_inputs benchmark : Params.t =
@@ -305,10 +314,11 @@ let prog_names = function
   | "ray_cast" -> "raycast"
   | "reduce" -> "reduce"
   | "scan" -> "scan"
+  | "loop" -> "loop"
   | _ -> Pbench.error "invalid benchmark"
 
 let prog benchmark =
-  sprintf "numactl --interleave=all ./%s_bench.%s" (prog_names benchmark) arg_extension
+  sprintf "./%s_bench.%s" (prog_names benchmark) arg_extension
 
 let make() =
   List.iter (fun benchmark ->
@@ -321,7 +331,7 @@ let run() =
       Output (file_results benchmark);
       Timeout 400;
       Args (
-        mk_prog (prog benchmark)
+        mk_prog ("numactl --interleave=all " ^ (prog benchmark))
       & (
         mk_sequence_input_names benchmark
       )
@@ -334,7 +344,7 @@ let plot() =
   List.iter (fun benchmark ->
     let eval_relative = fun env all_results results ->
       let pbbs_results = ~~ Results.filter_by_params all_results (
-        from_env (Env.add (Env.filter_keys ["typ"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))
+        from_env (Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))
       ) in
       if pbbs_results = [] then Pbench.error ("no results for pbbs library");
       let v = Results.get_mean_of "exectime" results in
@@ -362,6 +372,93 @@ let all () = select make run check plot
 
 end
 
+module ExpComparison = struct
+
+let mk_proc = mk_list int "proc" arg_proc
+
+let prog_names = function
+  | "comparison_sort" -> "samplesort"
+  | "blockradix_sort" -> "blockradixsort"
+  | "remove_duplicates" -> "deterministichash"
+  | "suffix_array" -> "suffixarray"
+  | "convex_hull" -> "quickhull"
+  | "nearest_neighbours" -> "nearestneighbours"
+  | "ray_cast" -> "raycast"
+  | "loop" -> "loop"
+  | x -> Pbench.error "invalid benchmark " ^ x
+
+let extensions = XCmd.parse_or_default_list_string "exts" [ "manc"; "norm"; "unko"]
+
+let prog benchmark extension =
+  sprintf "./%s_bench.%s" (prog_names benchmark) extension
+
+let make() =
+  List.iter (fun benchmark ->
+    List.iter (fun extension ->
+      build "." [prog benchmark extension] arg_virtual_build
+    ) extensions
+  ) arg_benchmarks
+
+let mk_progs benchmark = 
+  ((mk_list string "prog" (
+     List.map (fun ext -> "numactl --interleave=all " ^ (prog benchmark ext)) extensions)) & (mk string "lib_type" "pctl")) ++
+  ((mk_prog ("numactl --interleave=all " ^ (prog benchmark "manc"))) & (mk string "lib_type" "pbbs"))
+
+let run() =
+  List.iter (fun benchmark ->
+    Mk_runs.(call (run_modes @ [
+      Output (Printf.sprintf "_results/results_%s.txt" benchmark);
+      Timeout 400;
+      Args (
+        (mk_progs benchmark)
+      & (mk_sequence_input_names benchmark)
+      & mk_proc)]))
+    ) arg_benchmarks
+
+let check = nothing
+
+let plot() =
+  List.iter (fun benchmark ->
+    let eval_relative = fun env all_results results ->
+      let pbbs_results = ~~ Results.filter_by_params all_results (
+        from_env (Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))
+      ) in
+      if pbbs_results = [] then Pbench.error ("no results for pbbs library");
+      let v = Results.get_mean_of "exectime" results in
+      let b = Results.get_mean_of "exectime" pbbs_results in
+      v /. b
+      in
+    let formatter = 
+     Env.format (Env.(
+     [ ("prog", Format_custom (fun prog ->
+         
+         String.sub prog (String.rindex prog '.') ((String.length prog) - (String.rindex prog '.'))
+       ));
+       ("lib_type", Format_custom (fun lib_type ->
+         Printf.sprintf "%s" lib_type
+       ));
+     ])) in
+    system (Printf.sprintf "cp _results/chart-all.r _results/charts-%s.r" benchmark) arg_virtual_run;
+    Mk_bar_plot.(call ([
+      Bar_plot_opt Bar_plot.([
+         X_titles_dir Vertical;
+         Y_axis [Axis.Lower (Some 0.)] ]);
+      Formatter formatter;
+      Charts mk_proc;
+      Series (mk_progs benchmark);
+      X (mk_sequence_input_names benchmark);
+      Input (Printf.sprintf "_results/results_%s.txt" benchmark);
+      Output (Printf.sprintf "_plots/plots_%s.pdf" benchmark);
+      Y_label "exectime";
+      Y eval_relative;
+    ]))
+  ) arg_benchmarks
+
+let all () = select make run check plot
+
+end
+
+
 (*****************************************************************************)
 (** Main *)
 
@@ -370,6 +467,7 @@ let _ =
   let bindings = [
     "generate", ExpGenerate.all;
     "evaluate", ExpEvaluate.all;
+    "compare",  ExpComparison.all;
   ]
   in
   system("mkdir -p _data") arg_virtual_run;
