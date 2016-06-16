@@ -211,6 +211,7 @@ namespace pctl {
 #endif
     
     delete [] vr;
+    
     ds.del();
 #ifdef TIME_MEASURE
     end = std::chrono::system_clock::now();

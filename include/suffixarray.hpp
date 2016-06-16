@@ -33,6 +33,9 @@
 #include "psort.hpp"
 #include "utils.hpp"
 #include "rangemin.hpp"
+#ifdef TIME_MEASURE
+#include "timer.hpp"
+#endif
 #ifdef PBBS_SEQUENCE
 #include "sequence.h"
 #endif
@@ -47,10 +50,19 @@ using namespace std;
 
 bool isSorted(intT *suffixes, intT *s, intT n);
 
+#ifdef TIME_MEASURE
+pasl::pctl::timer radix_sort_timer;
+#endif
 // Radix sort a pair of integers based on first element
 template <class intT>
 void radix_sort_pair(pair<intT,intT>* A, intT n, intT m) {
+#ifdef TIME_MEASURE
+    radix_sort_timer.start();
+#endif
   intsort::integer_sort(A, n, m, [&] (std::pair<intT, intT>& x) { return x.first; });
+#ifdef TIME_MEASURE
+    radix_sort_timer.end();
+#endif
 }
 
 inline bool leq(intT a1, intT a2, intT b1, intT b2) {
@@ -98,7 +110,9 @@ inline intT compute_LCP(intT* LCP12, intT* rank, myRMQ & RMQ,
   }
   return lll;
 }
-
+#ifdef TIME_MEASURE
+pasl::pctl::timer merge_timer;
+#endif
 // This recursive version requires s[n]=s[n+1]=s[n+2] = 0
 // K is the maximum value of any element in s
 void suffix_array_rec(intT* s, intT n, intT K, bool find_LCP,
@@ -165,7 +179,8 @@ void suffix_array_rec(intT* s, intT n, intT K, bool find_LCP,
   parray<intT> LCP12;
   // recurse if names are not yet unique
   if (names < n12) {
-    parray<intT> s12(n12 + 3, 0);
+    parray<intT> s12;
+    s12.prefix_tabulate(n12 + 3, 0);
     s12[n12] = s12[n12 + 1] = s12[n12 + 2] = 0;
     
     // move mod 1 suffixes to bottom half and mod 2 suffixes to top
@@ -178,7 +193,6 @@ void suffix_array_rec(intT* s, intT n, intT K, bool find_LCP,
     });
     
     suffix_array_rec(s12.begin(), n12, names + 1, find_LCP, suffixes12, LCP12);
-    
     // restore proper indices into original array
     parallel_for((intT)0, n12, [&] (intT i) {
       intT l = suffixes12[i];
@@ -189,24 +203,72 @@ void suffix_array_rec(intT* s, intT n, intT K, bool find_LCP,
     if (find_LCP) {
       LCP12.resize(n12 + 3, 0);
     }
+
   }
-  
+
   // place ranks for the mod12 elements in full length array
   // mod0 locations of rank will contain garbage
   parray<intT> rank;
   rank.prefix_tabulate(n + 2, 0);
   rank[n] = 1;
   rank[n + 1] = 0;
+
+#ifdef TIME_MEASURE
+   pasl::pctl::timer main_timer;
+   main_timer.start();
+#endif
+
+//  std::cerr << "Parallel for\n";
+#ifdef ESTIMATOR_LOGGING
+  long long before = pasl::pctl::granularity::threads_created();
+#endif
+//  pasl::pctl::timer loop_timer;
   parallel_for((intT)0, n12, [&] (intT i) {
     rank[suffixes12[i]] = i + 2;
   });
+/*  int miss = 0;
+  for (int i = 0; i < n12; i++) {
+    loop_timer.start();
+    rank[suffixes12[i]] = i + 2;
+    loop_timer.end();
+    if (i == 0)
+      std::cerr << loop_timer.get_time() << std::endl;
+    if (loop_timer.get_time() > 0.00001 && i < 100) {
+      miss++;
+    }
+    loop_timer.clear();
+  }*/
+
+#ifdef ESTIMATOR_LOGGING
+  std::cerr << pasl::pctl::granularity::threads_created() - before << "\n";
+#endif
+/*  for (int i = 0; i < n12; i++) {
+    rank[suffixes12[i]] = i + 2;
+  }*/
+
+#ifdef TIME_MEASURE
+    main_timer.end();
+    printf ("exectime parallel for %.3lf\n", main_timer.get_time());
+    main_timer.start();
+#endif
   
   // stably sort the mod 0 suffixes
   // uses the fact that we already have the tails sorted in suffixes12
+#ifdef PBBS_SEQUENCE
+  intT* s0 = (intT*)malloc(sizeof(intT) * n0);
+  intT x = pbbs::sequence::filter(suffixes12.begin(), s0, n12, [&] (intT i) { return i % 3 == 1; });
+#else
   parray<intT> s0 = filter(suffixes12.cbegin(), suffixes12.cbegin() + n12, [&] (intT i) {
     return i % 3 == 1;
   });
   intT x = (intT)s0.size();
+#endif
+#ifdef TIME_MEASURE
+    main_timer.end();
+    printf ("exectime second part %.3lf\n", main_timer.get_time());
+    main_timer.clear();
+    main_timer.start();
+#endif
   parray<pair<intT, intT>> D;
   D.prefix_tabulate(n0, 0);
   D[0] = make_pair(s[n - 1], n - 1);
@@ -218,17 +280,31 @@ void suffix_array_rec(intT* s, intT n, intT K, bool find_LCP,
   parray<intT> suffixes0(n0, [&] (intT i) {
     return D[i].second;
   });
-  
+#ifdef PBBS_SEQUENCE
+  free(s0);
+#endif
+#ifdef TIME_MEASURE
+    main_timer.end();
+    printf ("exectime third part %.3lf\n", main_timer.get_time());
+    main_timer.clear();
+    main_timer.start();
+#endif
   compS comp(s, rank.begin());
   intT o = (n % 3 == 1) ? 1 : 0;
-  suffixes.resize(n);
+  suffixes.prefix_tabulate(n, 0);
   auto suffixes0beg = suffixes0.begin() + o;
   auto suffixes12beg = suffixes12.begin() + 1 - o;
+#ifdef TIME_MEASURE
+    merge_timer.start();
+#endif
   merge(suffixes0beg, suffixes0beg + (n0 - o), suffixes12beg, suffixes12beg + (n12 + o - 1), suffixes.begin(), comp);
+#ifdef TIME_MEASURE
+    merge_timer.end();
+#endif
   
   //get LCP from LCP12
   if (find_LCP) {
-    LCP.resize(n);
+    LCP.prefix_tabulate(n, 0);
     LCP[n - 1] = LCP[n - 2] = 0;
     myRMQ RMQ(LCP12.begin(), n12 + 3); //simple rmq
     parallel_for((intT)0, n-2, [&] (intT i) {
@@ -254,6 +330,10 @@ void suffix_array_rec(intT* s, intT n, intT K, bool find_LCP,
       }
     });
   }
+#ifdef TIME_MEASURE
+    main_timer.end();
+    printf ("exectime fourth part %.3lf\n", main_timer.get_time());
+#endif
 }
 
 template <class CharT>
@@ -266,7 +346,7 @@ void suffix_array(CharT* s, intT n, bool find_LCP,
     ss[i] = s[i] + 1;
   });
 #ifdef PBBS_SEQUENCE
-  intT k = 1 + pbbs::sequence::reduce(ss.cbegin(), n, [&] (intT x, intT y) { return std::max(x, y); });
+  intT k = 1 + pbbs::sequence::reduce(ss.begin(), n, [&] (intT x, intT y) { return std::max(x, y); });
 #else
   intT k = 1 + reduce(ss.cbegin(), ss.cbegin() + n, ss[0], [&] (intT x, intT y) {
     return std::max(x, y);
@@ -282,6 +362,10 @@ parray<intT> suffix_array(CharT* s, intT n) {
   parray<intT> suffixes;
   parray<intT> LCP;
   suffix_array(s, n, false, suffixes, LCP);
+#ifdef TIME_MEASURE
+  printf ("exectime radix sorts %.3lf\n", radix_sort_timer.get_time());
+  printf ("exectime merges %.3lf\n", merge_timer.get_time());
+#endif
   return suffixes;
 }
     

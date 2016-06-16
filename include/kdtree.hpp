@@ -28,7 +28,8 @@
 #include "raytriangleintersect.hpp"
 #include "samplesort.hpp"
 #include "ray.hpp"
-
+#include "timer.hpp"
+#include "sequence.h"
 #ifndef _PCTL_KDTREE_H_
 #define _PCTL_KDTREE_H_
 
@@ -186,11 +187,15 @@ inline float in_box(pointT p, bounding_box b) {
           p.z >= (b[2].min - epsilon) && p.z <= (b[2].max + epsilon));
 }
 
+pasl::pctl::timer cut_timer;
 // sequential version of best cut
 cut_info best_cut_serial(event* e, range r, range r1, range r2, intT n) {
   if (r.max - r.min == 0.0) {
     return cut_info(FLT_MAX, r.min, n, n);
   }
+#if defined(TIME_MEASURE) && defined(MANUAL_CONTROL)
+  cut_timer.start();
+#endif
   float area = 2 * (r1.max - r1.min) * (r2.max - r2.min);
   float diameter = 2 * ((r1.max - r1.min) + (r2.max - r2.min));
   
@@ -218,21 +223,31 @@ cut_info best_cut_serial(event* e, range r, range r1, range r2, intT n) {
     if (IS_START(e[i])) in_left++;
   }
 
+#if defined(TIME_MEASURE) && defined(MANUAL_CONTROL)
+  cut_timer.end();
+#endif
 //  std::cerr << "Best k " << k << std::endl;
   return cut_info(min_cost, e[k].v, ln, rn);
 }
 
 // parallel version of best cut
 cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
-  return best_cut_serial(e, r, r1, r2, n);
+//  std::cerr << n << "\n";
+//  return best_cut_serial(e, r, r1, r2, n);
 #ifdef MANUAL_CONTROL
-  if (n < min_parallel_size) {
+  if (n < min_parallel_size) {//std::cerr << "Sequential " << n << std::endl;
     return best_cut_serial(e, r, r1, r2, n);
   }
 #endif
+#ifdef TIME_MEASURE
+    cut_timer.start();
+#endif
   cut_info result;
   using controller_type = pasl::pctl::granularity::controller_holder<kdtree_file, 2, intT>;
-  par::cstmt(controller_type::controller, [&] { return n; }, [&] {
+  par::cstmt(controller_type::controller, [&] { return n; }, [&] { //std::cerr << "Parallel " << n << std::endl;
+//    pasl::pctl::granularity::estimator& estimator = controller_type::controller.get_estimator();
+//    std::cerr << pasl::pctl::perworker::get_my_id()() << " " << estimator.privates.mine() << std::endl;
+//    std::cerr << "Parallelize " << n  << std::endl;
     if (r.max - r.min == 0.0) {
       result = cut_info(FLT_MAX, r.min, n, n);
       return;
@@ -250,9 +265,13 @@ cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
    parallel_for((intT)0, n, [&] (intT i) {
      upper[i] = IS_END(e[i]);
    });
+#ifdef PBBS_SEQUENCE
+   intT u = pbbs::sequence::plusScan(upper, upper, n);
+#else
    intT u = dps::scan(upper, upper + n, (intT)0, [&] (intT x, intT y) {
      return x + y; }, upper, forward_exclusive_scan
    );
+#endif
    float* cost = newA(float, n);
    parallel_for((intT)0, n, [&] (intT i) {
       intT in_left = i - upper[i];
@@ -264,16 +283,24 @@ cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
       cost[i] = left_area * in_left + right_area * in_right;
    });
 
+#ifdef PBBS_SEQUENCE
+   intT k = pbbs::sequence::maxIndex(cost, n, std::less<float>());
+#else
    intT k = (intT)max_index(cost, cost + n, cost[0], [&] (float x, float y) {
      return x < y;
    });
+#endif
 #else
     parray<intT> upper(n, [&] (intT i) {
       return IS_END(e[i]);
     });
+#ifdef PBBS_SEQUENCE
+    intT u = pbbs::sequence::plusScan(upper.begin(), upper.begin(), upper.size());
+#else
     intT u = dps::scan(upper.begin(), upper.end(), (intT)0, [&] (intT x, intT y) {
       return x + y; }, upper.begin(), forward_exclusive_scan
     );
+#endif
 /*    intT current = 0;
     for (int i = 0; i < n; i++) {
       int x = upper[i];
@@ -293,9 +320,13 @@ cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
     });
     
     // find minimum across all (maxIndex with less is minimum)
+#ifdef PBBS_SEQUENCE
+    intT k = pbbs::sequence::maxIndex(cost.begin(), cost.size(), std::less<float>());
+#else
     intT k = (intT)max_index(cost.cbegin(), cost.cend(), cost[0], [&] (float x, float y) {
       return x < y;
     });
+#endif
 /*    intT k = 0;
     for (int i = 0; i < cost.size(); i++) {
       if (cost[k] > cost[i]) {
@@ -313,14 +344,22 @@ cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
 #endif
     result = cut_info(c, e[k].v, ln, rn);
   }, [&] {
+//    std::cerr << "Sequentialize\n";
     result = best_cut_serial(e, r, r1, r2, n);
   });
+#ifdef TIME_MEASURE
+    cut_timer.end();
+#endif
   return result;
 }
 
+pasl::pctl::timer split_timer;
 std::pair<intT, intT> split_events_serial(range* boxes, event* events,
                        float cut_off, intT n,
                        parray<event>& left, parray<event>& right) {
+#if defined(TIME_MEASURE) && defined(MANUAL_CONTROL)
+    split_timer.start();
+#endif
   intT l = 0;
   intT r = 0;
   
@@ -337,16 +376,22 @@ std::pair<intT, intT> split_events_serial(range* boxes, event* events,
       right[r++] = events[i];
     }
   }
+#if defined(TIME_MEASURE) && defined(MANUAL_CONTROL)
+    split_timer.end();
+#endif
   return make_pair(l, r);
 }
 
 std::pair<intT, intT> split_events(range* boxes, event* events, float cut_off, intT n,
                  parray<event>& left, parray<event>& right) {
-  return split_events_serial(boxes, events, cut_off, n, left, right);
+//  return split_events_serial(boxes, events, cut_off, n, left, right);
 #ifdef MANUAL_CONTROL
   if (n < min_parallel_size) {
     return split_events_serial(boxes, events, cut_off, n, left, right);
   }
+#endif
+#ifdef TIME_MEASURE
+    split_timer.start();
 #endif
   std::pair<intT, intT> result;
   using controller_type = pasl::pctl::granularity::controller_holder<kdtree_file, 3, intT>;
@@ -383,6 +428,9 @@ std::pair<intT, intT> split_events(range* boxes, event* events, float cut_off, i
   }, [&] {
     result = split_events_serial(boxes, events, cut_off, n, left, right);
   });
+#ifdef TIME_MEASURE
+    split_timer.end();
+#endif
   return result;
 }
   
@@ -404,10 +452,10 @@ tree_node* generate_node(boxes bxs, events evts, bounding_box b,
     
     // loop over dimensions and find the best cut across all of them
     cut_info cuts[3];
-//    parallel_for(0, 3, [&] (int) { return n; }, [&] (int d) {
-    for (int d = 0; d < 3; d++)
+    pasl::pctl::range::parallel_for(0, 3, [&] (int l, int r) { return (r - l) * n; }, [&] (int d) {
+//    for (int d = 0; d < 3; d++)
       cuts[d] = best_cut(evts[d], b[d], b[(d + 1) % 3], b[(d + 2) % 3], n);
-//    });
+    });
     
     int cut_dim = 0;
     for (int d = 1; d < 3; d++) {
@@ -459,7 +507,7 @@ tree_node* generate_node(boxes bxs, events evts, bounding_box b,
     parray<event> xl[3];
     parray<event> xr[3];
     std::pair<intT, intT> sizes[3];
-    parallel_for(0, 3, [&] (int) { return n; }, [&] (int d) {
+    pasl::pctl::range::parallel_for(0, 3, [&] (int l, int r) { return (r - l) * n; }, [&] (int d) {
       sizes[d] = split_events(cut_dim_ranges, evts[d], cut_off, n, xl[d], xr[d]);
     });
     
@@ -686,6 +734,11 @@ parray<intT> ray_cast(triangles<pointT> tri, ray<pointT>* rays, int num_rays) {
       end = std::chrono::system_clock::now();
       diff = end - start;
       printf("exectime delete tree %.3lf\n", diff.count());
+#endif
+
+#ifdef TIME_MEASURE
+     printf("exectime total cut %.3lf\n", cut_timer.get_time());
+     printf("exectime total split %.3lf\n", split_timer.get_time());
 #endif
   
   if (CHECK12) {

@@ -92,7 +92,7 @@ template<class E, class BinPred, class intT>
 void sample_sort (E* a, intT n, BinPred compare) {
 //  std::cerr << "Right here " << n << "\n";
   using controller_type = samplesort_contr<E, BinPred, intT>;
-  par::cstmt(controller_type::contr, [&] { return (int) (n * log(n)); }, [&] {
+  par::cstmt(controller_type::contr, [&] { return (n * log(n)); }, [&] {
 #ifdef MANUAL_CONTROL
     if (n <= SSORT_THR) {
 //      comparison_sort(a, n, compare);
