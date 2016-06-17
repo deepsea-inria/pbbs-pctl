@@ -438,7 +438,7 @@ let plot() =
          Printf.sprintf "%s" lib_type
        ));
      ])) in
-    system (Printf.sprintf "cp _results/chart-all.r _results/charts-%s.r" benchmark) arg_virtual_run;
+
     Mk_bar_plot.(call ([
       Bar_plot_opt Bar_plot.([
          X_titles_dir Vertical;
@@ -451,7 +451,8 @@ let plot() =
       Output (Printf.sprintf "_plots/plots_%s.pdf" benchmark);
       Y_label "exectime";
       Y eval_relative;
-    ]))
+    ]));
+    system (Printf.sprintf "cp _results/chart-all.r _results/charts-%s.r" benchmark) arg_virtual_run;
   ) arg_benchmarks
 
 let all () = select make run check plot
