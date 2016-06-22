@@ -4,7 +4,7 @@
 #include "trigram_generator.hpp"
 #include "rays_generator.hpp"
 #include "loaders.hpp"
-
+#include "delaunay.hpp"
 using namespace pasl::pctl;
 namespace cmdline = deepsea::cmdline;
 
@@ -136,6 +136,22 @@ struct generate_struct<std::string> {
   }
 };
 
+template <class Point>
+struct generate_struct<triangles<Point>> {
+  triangles<Point> operator()(std::string generator) {
+    size_t n = (size_t)cmdline::parse<int>("n");
+    if (generator == "delaunay_in_square") {
+      parray<point2d> points = uniform2d(false, false, n);
+      return delaunay(points);
+    } else if (generator == "delaunay_kuzmin") {
+      parray<point2d> points = plummer2d(n);
+      return delaunay(points);
+    } else {
+      assert(false);
+    }
+  }
+};
+
 template <>
 struct generate_struct<io::ray_cast_test> {
   io::ray_cast_test operator()(std::string generator) {
@@ -150,6 +166,13 @@ struct generate_struct<io::ray_cast_test> {
   }
 };
 
+template <class Item1, class Item2>
+struct generate_struct<std::pair<Item1, Item2>> {
+  std::pair<int, int> operator()(std::string generator) {
+    assert(false);
+  }
+};
+                        
 template <class Item>
 Item generate(std::string generator) {
   return generate_struct<Item>()(generator);
@@ -237,6 +260,12 @@ int main(int argc, char ** argv) {
     });
     d.add("ray_cast_test", [&] {
       process<io::ray_cast_test>();
+    });
+    d.add("pair_int_int", [&] {
+      process<std::pair<int, int>>();
+    });
+    d.add("triangles_point2d", [&] {
+      process<triangles<point2d>>();
     });
     d.dispatch("type");
   });

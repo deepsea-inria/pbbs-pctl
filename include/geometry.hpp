@@ -5,7 +5,8 @@
 #include <math.h>
 #include <iomanip>
 
-
+namespace pasl {
+namespace pctl { 
 using namespace std;
 
 #define EPS 1e-20
@@ -59,7 +60,7 @@ public:
   }
 
   floatT max_dim() {
-    return max(x, max(y, z));
+    return std::max(x, std::max(y, z));
   }
 
   void print() {
@@ -91,11 +92,11 @@ public:
     return pointT(x + op2.x, y + op2.y, z + op2.z);}
 
   pointT min_coord(pointT b) {
-    return pointT(min(x, b.x), min(y, b.y), min(z, b.z));
+    return pointT(std::min(x, b.x), std::min(y, b.y), std::min(z, b.z));
   }
 
   pointT max_coord(pointT b) {
-    return pointT(max(x, b.x), max(y, b.y), max(z, b.z)); 
+    return pointT(std::max(x, b.x), std::max(y, b.y), std::max(z, b.z)); 
   }
 
   floatT& operator[] (int i) {return (i==0) ? x : (i==1) ? y : z;}
@@ -184,7 +185,7 @@ public:
   }
 
   floatT max_dim() {
-    return max(x, y);
+    return std::max(x, y);
   }
 
   void print() {
@@ -233,11 +234,11 @@ public:
   }
 
   pointT min_coord(pointT b) {
-    return pointT(min(x, b.x), min(y, b.y));
+    return pointT(std::min(x, b.x), std::min(y, b.y));
   }
 
   pointT max_coord(pointT b) {
-    return pointT(max(x, b.x), max(y, b.y));
+    return pointT(std::max(x, b.x), std::max(y, b.y));
   }
 
   int quadrant(pointT center) {
@@ -362,7 +363,7 @@ struct triangles {
     free(p);
     free(t);
   }
-
+  
   triangles(long np, long nt, point* _p, triangle* _t)
     : num_points(np), num_triangles(nt), p(_p), t(_t) {}
 };
@@ -405,6 +406,7 @@ inline point2d triangleCircumcenter(point2d a, point2d b, point2d c) {
   vect2d v22 = v2 * v1.dot(v1);
   return  a + vect2d(v22.y - v11.y, v11.x - v22.x)/(2.0 * v1.cross(v2));
 }
-    
+} //end namespace
+} //ebd namespace    
 #endif // _PCTL_BENCH_GEOM_INCLUDED
 

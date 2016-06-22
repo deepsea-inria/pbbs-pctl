@@ -66,7 +66,7 @@ namespace pbbs {
 #ifdef USE_CILK_PLUS_RUNTIME
     int proc = deepsea::cmdline::parse_or_default_int("proc", 1);
   __cilkrts_set_param("nworkers", std::to_string(proc).c_str());
-  std::cerr << "Number of workers: " << __cilkrts_get_nworkers() << std::endl;
+  std::cerr << "Number of workers: " << __cilkrts_get_nworkers() << std::endl;pasl::pctl::granularity::nb_proc = proc;
 #endif
     auto f = [&] (thunk_type measured) {
       auto start = std::chrono::system_clock::now();
@@ -78,11 +78,13 @@ namespace pbbs {
     launch([&] {
       body(f);
     });
-#ifdef ESTIMATOR_LOGGING
+#ifdef REPORTS
     pasl::pctl::granularity::print_reports();
 #endif
 #ifdef PLOGGING
     pasl::pctl::logging::dump();
+#endif
+#if defined(PLOGGING) || defined(THREADS)
     printf("number of created threads: %d\n", pasl::pctl::granularity::threads_created());
 #endif
 #if defined(USE_PASL_RUNTIME)

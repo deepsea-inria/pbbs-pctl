@@ -64,7 +64,7 @@ struct range {
 };
 
 typedef range* boxes[3];
-typedef event* events[3];
+typedef parray<event> events[3];
 typedef range bounding_box[3];
 
 static std::ostream& operator<<(std::ostream& os, const bounding_box b) {
@@ -108,10 +108,10 @@ struct tree_node {
     leaves = L->leaves + R->leaves;
   }
   
-  tree_node(events E, intT _n, bounding_box B)
+  tree_node(events& E, intT _n, bounding_box B)
   : left(NULL), right(NULL) {
     
-    event* events = E[0];
+    event* events = E[0].begin();
     
     // extract indices from events
     triangle_indices = newA(intT, _n/2);
@@ -125,7 +125,7 @@ struct tree_node {
     n = _n / 2;
     leaves = 1;
     for (int i = 0; i < 3; i++) {
-      box[i] = B[i];
+      box[i] = B[i];E[i].clear();
 //      free(E[i]);
     }
   }
@@ -362,9 +362,12 @@ std::pair<intT, intT> split_events_serial(range* boxes, event* events,
 #endif
   intT l = 0;
   intT r = 0;
-  
+
+/*#ifndef PBBS_SEQUENCE  
   left.prefix_tabulate(n, 0);
   right.prefix_tabulate(n, 0);
+#endif*/
+
   for (intT i = 0; i < n; i++) {
     intT b = GET_INDEX(events[i]);
     if (boxes[b].min < cut_off) {
@@ -405,8 +408,18 @@ std::pair<intT, intT> split_events(range* boxes, event* events, float cut_off, i
       upper[i] = boxes[b].max > cut_off;
     });
     const event* events2 = (const event*)events;
-    left = pack(events2, events2 + n, lower);
+
+
+#ifdef PBBS_SEQUENCE
+    result.first = pbbs::sequence::pack(events, left.begin(), lower, n);
+    result.second = pbbs::sequence::pack(events, right.begin(), upper, n);
+#else
+    result.first = pasl::pctl::dps::pack(lower, events2, events2 + n, left.begin());
+    result.second = pasl::pctl::dps::pack(upper, events2, events2 + n, right.begin());
+/*    left = pack(events2, events2 + n, lower);
     right = pack(events2, events2 + n, upper);
+    result = make_pair(left.size(), right.size());*/
+#endif
     free(lower);
     free(upper);
 #else
@@ -420,11 +433,19 @@ std::pair<intT, intT> split_events(range* boxes, event* events, float cut_off, i
     });
     const event* events2 = (const event*)events;
 
-    left = pack(events2, events2 + n, lower.cbegin());
+
+#ifdef PBBS_SEQUENCE
+    result.first = pbbs::sequence::pack(events, left.begin(), lower.begin(), n);
+    result.second = pbbs::sequence::pack(events, right.begin(), upper.begin(), n);
+#else
+    result.first = pasl::pctl::dps::pack(lower.begin(), events2, events2 + n, left.begin());
+    result.second = pasl::pctl::dps::pack(upper.begin(), events2, events2 + n, right.begin());
+/*    left = pack(events2, events2 + n, lower.cbegin());
     right = pack(events2, events2 + n, upper.cbegin());
+    result = make_pair(left.size(), right.size());*/
+#endif
 #endif
 
-    result = make_pair(left.size(), right.size());
   }, [&] {
     result = split_events_serial(boxes, events, cut_off, n, left, right);
   });
@@ -435,7 +456,7 @@ std::pair<intT, intT> split_events(range* boxes, event* events, float cut_off, i
 }
   
 // n is the number of events (i.e. twice the number of triangles)
-tree_node* generate_node(boxes bxs, events evts, bounding_box b,
+tree_node* generate_node(boxes bxs, events& evts, bounding_box b,
                        intT n, intT max_depth) {
   using controller_type = pasl::pctl::granularity::controller_holder<kdtree_file, 4, intT>;
   tree_node* result;
@@ -454,7 +475,7 @@ tree_node* generate_node(boxes bxs, events evts, bounding_box b,
     cut_info cuts[3];
     pasl::pctl::range::parallel_for(0, 3, [&] (int l, int r) { return (r - l) * n; }, [&] (int d) {
 //    for (int d = 0; d < 3; d++)
-      cuts[d] = best_cut(evts[d], b[d], b[(d + 1) % 3], b[(d + 2) % 3], n);
+      cuts[d] = best_cut(evts[d].begin(), b[d], b[(d + 1) % 3], b[(d + 2) % 3], n);
     });
     
     int cut_dim = 0;
@@ -488,7 +509,7 @@ tree_node* generate_node(boxes bxs, events evts, bounding_box b,
       bbl[i] = b[i];
     }
     bbl[cut_dim] = range(bbl[cut_dim].min, cut_off);
-    event* left_events[3];
+//    event* left_events[3];
     intT nl;
     
     bounding_box bbr;
@@ -496,7 +517,7 @@ tree_node* generate_node(boxes bxs, events evts, bounding_box b,
       bbr[i] = b[i];
     }
     bbr[cut_dim] = range(cut_off, bbr[cut_dim].max);
-    event* right_events[3];
+//    event* right_events[3];
     intT nr;
 
 /*#ifdef TIME_MEASURE
@@ -508,12 +529,16 @@ tree_node* generate_node(boxes bxs, events evts, bounding_box b,
     parray<event> xr[3];
     std::pair<intT, intT> sizes[3];
     pasl::pctl::range::parallel_for(0, 3, [&] (int l, int r) { return (r - l) * n; }, [&] (int d) {
-      sizes[d] = split_events(cut_dim_ranges, evts[d], cut_off, n, xl[d], xr[d]);
+//#ifdef PBBS_SEQUENCE
+      xl[d].prefix_tabulate(n, 0);
+      xr[d].prefix_tabulate(n, 0);
+//#endif
+      sizes[d] = split_events(cut_dim_ranges, evts[d].begin(), cut_off, n, xl[d], xr[d]);
     });
     
     for (int d = 0; d < 3; d++) {
-      left_events[d] = xl[d].begin();
-      right_events[d] = xr[d].begin();
+//      left_events[d] = xl[d].begin();
+//      right_events[d] = xr[d].begin();
       if (d == 0) {
         nl = sizes[d].first;
         nr = sizes[d].second;
@@ -529,15 +554,18 @@ tree_node* generate_node(boxes bxs, events evts, bounding_box b,
 #endif*/
     
     // free old events and make recursive calls
-/*    for (int i = 0; i < 3; i++) {
-      free(evts[i]);
-    }*/
+    for (int i = 0; i < 3; i++) {
+//      free(evts[i]);
+      evts[i].clear();
+    }
     tree_node* l;
     tree_node* r;
     par::fork2([&] {
-      l = generate_node(bxs, left_events, bbl, nl, max_depth - 1);
+//      l = generate_node(bxs, left_events, bbl, nl, max_depth - 1);
+      l = generate_node(bxs, xl, bbl, nl, max_depth - 1);
     }, [&] {
-      r = generate_node(bxs, right_events, bbr, nr, max_depth - 1);
+//      r = generate_node(bxs, right_events, bbr, nr, max_depth - 1);
+      r = generate_node(bxs, xr, bbr, nr, max_depth - 1);
     });
     
     result = new tree_node(l, r, cut_dim, cut_off, b);
@@ -673,14 +701,17 @@ parray<intT> ray_cast(triangles<pointT> tri, ray<pointT>* rays, int num_rays) {
   // dimension, sorting each one, and extracting the bounding box
   // from the first and last elements in the sorted events in each dim.
   events evts;
+  events tmp_evts;
   bounding_box box;
   for (int d = 0; d < 3; d++) {
-    evts[d] = newA(event, 2 * n); // freed while generating tree
+//    evts[d] = newA(event, 2 * n); // freed while generating tree
+//    tmp_evts[d] = newA(event, 2 * n);
+    evts[d].prefix_tabulate(2 * n, 0);
     parallel_for((intT)0, n, [&] (intT i) {
       evts[d][2 * i] = event(bxs[d][i].min, i, START);
       evts[d][2 * i + 1] = event(bxs[d][i].max, i, END);
     });
-    sample_sort(evts[d], 2 * n, cmpVal());
+    sample_sort(evts[d].begin(), 2 * n, cmpVal());
 //    quick_sort(evts[d], 2 * n, cmpVal());
 //    std::sort(evts[d], evts[d] + 2 * n, cmpVal());
     box[d] = range(evts[d][0].v, evts[d][2 * n - 1].v);
@@ -710,7 +741,8 @@ parray<intT> ray_cast(triangles<pointT> tri, ray<pointT>* rays, int num_rays) {
     << " Leaves = " << tree->leaves << endl;
   for (int d = 0; d < 3; d++) {
     free(bxs[d]);
-    free(evts[d]);
+//    free(evts[d]);
+//    free(tmp_evts[d]);
   }
   
 #ifdef TIME_MEASURE

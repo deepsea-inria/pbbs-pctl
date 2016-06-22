@@ -12,9 +12,9 @@
 #include <functional>
 #include <stdlib.h>
 #include "bench.hpp"
-#include "hull.hpp"
+#include "delaunay.hpp"
 #include "loaders.hpp"
-#include "hull.h"
+#include "delaunay.h"
 
 /***********************************************************************/
 
@@ -36,11 +36,11 @@ void pbbs_pctl_call(pbbs::measured_type measured, parray<pasl::pctl::_point2d<do
   if (lib_type == "pbbs") {
     parray<pbbs::_point2d<double>> y = to_pbbs(x);
     measured([&] {
-      pbbs::hull(&y[0], (int)y.size());
+      pbbs::delaunay(&y[0], (int)y.size());
     });
   } else {
     measured([&] {
-      pasl::pctl::hull(x);
+      pasl::pctl::delaunay(x);
     });
   }
 }

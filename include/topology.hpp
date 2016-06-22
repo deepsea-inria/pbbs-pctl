@@ -20,8 +20,8 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef _TOPOLOGY_INCLUDED
-#define _TOPOLOGY_INCLUDED
+#ifndef _PCTL_TOPOLOGY_INCLUDED
+#define _PCTL_TOPOLOGY_INCLUDED
 
 #include <iostream>
 #include "geometry.hpp"
@@ -156,7 +156,7 @@ struct simplex {
   
   bool outside(vertex *v) {
     if (boundary || t == NULL) return 0;
-    return counterClockwise(t->vtx[mod3(o+2)]->pt, v->pt, t->vtx[o]->pt);
+    return counter_clockwise(t->vtx[mod3(o+2)]->pt, v->pt, t->vtx[o]->pt);
   }
   
   // flips two triangles and adjusts neighboring triangles
@@ -239,7 +239,7 @@ struct hashEdges {
   typedef pairInt kType;
   typedef edge* eType;
   eType empty() {return NULL;}
-  kType getKey(eType v) { return v->first;}
+  kType get_key(eType v) { return v->first;}
   uintT hash(kType s) { return prandgen::hashi(s.first)+3*(prandgen::hashi(s.second)); }
   int cmp(kType s1, kType s2) {
     return ((s1.first > s2.first) ? 1 :
@@ -254,14 +254,14 @@ typedef Table<hashEdges,intT> EdgeTable;
 EdgeTable makeEdgeTable(intT m) {return EdgeTable(m,hashEdges());}
   
 void topologyFromTriangles(triangles<point2d> Tri, parray<vertex>& vr, parray<tri>& tr) {
-  intT n = Tri.numPoints;
-  point2d* P = Tri.P;
+  intT n = Tri.num_points;
+  point2d* P = Tri.p;
   
-  intT m = Tri.numTriangles;
-  triangle* T = Tri.T;
+  intT m = Tri.num_triangles;
+  triangle* T = Tri.t;
   
   if (vr.size() == 0) {
-    vr.resize(n);
+    vr.prefix_tabulate(n, 0);
   }//*vr = newA(vertex,n);
   vertex* v = vr.begin();
   parallel_for((intT)0, n, [&] (intT i) {
@@ -269,16 +269,18 @@ void topologyFromTriangles(triangles<point2d> Tri, parray<vertex>& vr, parray<tr
   });
   
   if (tr.size() == 0) {
-    tr.resize(m);
+    tr.prefix_tabulate(m, 0);
   }//*tr = newA(tri,m);
   tri* Triangs = tr.begin();
-  parray<edge> E(m*3);
+  parray<edge> E;
+  E.prefix_tabulate(m * 3, 0);
   EdgeTable ET = makeEdgeTable(m*6);
   parallel_for((intT)0, m, [&] (intT i) {
+    Triangs[i] = tri();
     for (int j=0; j<3; j++) {
-      E[i*3 + j] = edge(pairInt(T[i].C[j], T[i].C[(j+1)%3]), &Triangs[i]);
+      E[i*3 + j] = edge(pairInt(T[i].vertices[j], T[i].vertices[(j+1)%3]), &Triangs[i]);
       ET.insert(&E[i*3+j]);
-      Triangs[i].vtx[(j+2)%3] = &v[T[i].C[j]];
+      Triangs[i].vtx[(j+2)%3] = &v[T[i].vertices[j]];
     }
   });
   
@@ -287,7 +289,7 @@ void topologyFromTriangles(triangles<point2d> Tri, parray<vertex>& vr, parray<tr
     Triangs[i].initialized = 1;
     Triangs[i].bad = 0;
     for (int j=0; j<3; j++) {
-      pairInt key = pairInt(T[i].C[(j+1)%3], T[i].C[j]);
+      pairInt key = pairInt(T[i].vertices[(j+1)%3], T[i].vertices[j]);
       edge *Ed = ET.find(key);
       if (Ed != NULL) Triangs[i].ngh[j] = Ed->second;
       else { Triangs[i].ngh[j] = NULL;
@@ -303,4 +305,4 @@ void topologyFromTriangles(triangles<point2d> Tri, parray<vertex>& vr, parray<tr
 } // end namespace
 } // end namespace
 
-#endif // _TOPOLOGY_INCLUDED
+#endif // _PCTL_TOPOLOGY_INCLUDED

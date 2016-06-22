@@ -221,16 +221,16 @@ namespace pctl {
   }
   
   template <class Point, int maxK>
-  struct vertex {
+  struct vertexNN {
     typedef Point pointT;
 
     int identifier;
     Point pt;         // the point itself
-    vertex<Point, maxK>* ngh[maxK];    // the list of neighbors
+    vertexNN<Point, maxK>* ngh[maxK];    // the list of neighbors
 
-    vertex(Point p, int id) : pt(p), identifier(id) {}
+    vertexNN(Point p, int id) : pt(p), identifier(id) {}
 
-    vertex() {}
+    vertexNN() {}
   };
 
   template <class intT, int maxK, class Point>
@@ -242,11 +242,11 @@ namespace pctl {
     parray<intT> result;
     result.prefix_tabulate(n * k, 0);
 
-    parray<vertex<Point, maxK>> vv;
+    parray<vertexNN<Point, maxK>> vv;
     vv.prefix_tabulate(points.size(), 0);
 
-    parray<vertex<Point, maxK>*> vertices(points.size(), [&] (int i) {
-      return new (&vv[i]) vertex<Point, maxK>(points[i], i);
+    parray<vertexNN<Point, maxK>*> vertices(points.size(), [&] (int i) {
+      return new (&vv[i]) vertexNN<Point, maxK>(points[i], i);
 
     });
 
@@ -256,7 +256,7 @@ namespace pctl {
     printf("exectime preliminary execution %.3lf\n", diff.count());
 #endif
 
-    ANN<intT, maxK, vertex<Point, maxK>>(vertices.begin(), n, k);
+    ANN<intT, maxK, vertexNN<Point, maxK>>(vertices.begin(), n, k);
 #ifdef TIME_MEASURE
     start = std::chrono::system_clock::now();
 #endif

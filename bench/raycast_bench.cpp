@@ -23,19 +23,19 @@
 template <class Item>
 using parray = pasl::pctl::parray<Item>;
 
-pbbs::_point3d<double> to_pbbs(_point3d<double> point) {
+pbbs::_point3d<double> to_pbbs(pasl::pctl::_point3d<double> point) {
   return pbbs::_point3d<double>(point.x, point.y, point.z);
 }
 
-pbbs::_vect3d<double> to_pbbs(_vect3d<double> vect) {
+pbbs::_vect3d<double> to_pbbs(pasl::pctl::_vect3d<double> vect) {
   return pbbs::_vect3d<double>(vect.x, vect.y, vect.z);
 }
 
-pbbs::triangle to_pbbs(triangle t) {
+pbbs::triangle to_pbbs(pasl::pctl::triangle t) {
   return pbbs::triangle(t.vertices[0], t.vertices[1], t.vertices[2]);
 }
 
-pbbs::ray<pbbs::_point3d<double>> to_pbbs(ray<_point3d<double>> ray) {
+pbbs::ray<pbbs::_point3d<double>> to_pbbs(pasl::pctl::ray<pasl::pctl::_point3d<double>> ray) {
   return pbbs::ray<pbbs::_point3d<double>>(to_pbbs(ray.o), to_pbbs(ray.d));
 }
 
@@ -59,7 +59,7 @@ void pbbs_pctl_call(pbbs::measured_type measured, pasl::pctl::io::ray_cast_test&
       pbbs::rayCast(tri, rays.begin(), rays.size());
     });
   } else {  
-    triangles<_point3d<double>> tri(x.points.size(), x.triangles.size(), x.points.begin(), x.triangles.begin());
+    pasl::pctl::triangles<pasl::pctl::_point3d<double>> tri(x.points.size(), x.triangles.size(), x.points.begin(), x.triangles.begin());
     measured([&] {
       pasl::pctl::kdtree::ray_cast(tri, x.rays.begin(), x.rays.size());
     });

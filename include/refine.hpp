@@ -28,7 +28,7 @@
 #include "topology.hpp"
 #include "deterministichash.hpp"
 #include "delaunay.hpp"
-
+#include "timer.hpp"
 #ifndef _PCTL_DELAUNAY_REFINE_H_
 #define _PCTL_DELAUNAY_REFINE_H_
 
@@ -39,11 +39,11 @@
 namespace pasl {
 namespace pctl {
 
-struct hashTriangles {
+struct hash_triangles {
   typedef tri* eType;
   typedef tri* kType;
   eType empty() {return NULL;}
-  kType getKey(eType v) { return v;}
+  kType get_key(eType v) { return v;}
   uintT hash(kType s) { return prandgen::hashi(s->id); }
   int cmp(kType s, kType s2) {
     return (s->id > s2->id) ? 1 : ((s->id == s2->id) ? 0 : -1);
@@ -51,8 +51,8 @@ struct hashTriangles {
   bool replaceQ(eType s, eType s2) {return 0;}
 };
 
-typedef Table<hashTriangles,intT> TriangleTable;
-TriangleTable makeTriangleTable(intT m) {return TriangleTable(m,hashTriangles());}
+typedef Table<hash_triangles,intT> TriangleTable;
+TriangleTable make_triangle_table(intT m) {return TriangleTable(m,hash_triangles());}
 
 // *************************************************************
 //   THESE ARE TAKEN FROM delaunay.C
@@ -115,7 +115,7 @@ void reserveForInsert(vertex *v, simplex t, Qs *q) {
 //   DEALING WITH THE CAVITY
 // *************************************************************
 
-inline bool skinnyTriangle(tri *t) {
+inline bool skinny_triangle(tri *t) {
   double minAngle = 30;
   if (minAngleCheck(t->vtx[0]->pt, t->vtx[1]->pt, t->vtx[2]->pt, minAngle))
     return 1;
@@ -153,7 +153,7 @@ inline bool checkEncroached(simplex& t) {
   else return 0;
 }
 
-bool findAndReserveCavity(vertex* v, simplex& t, Qs* q) {
+bool find_and_reserve_cavity(vertex* v, simplex& t, queues* q) {
   t = simplex(v->badT,0);
   if (t.t == NULL) {cout << "refine: nothing in badT" << endl; abort();}
   if (t.t->bad == 0) return 0;
@@ -175,16 +175,16 @@ bool findAndReserveCavity(vertex* v, simplex& t, Qs* q) {
   
   // use circumcenter to add (if it is a boundary then its middle)
   v->pt = circumcenter(t);
-  reserveForInsert(v, t, q);
+  reserve_for_insert(v, t, q);
   return 1;
 }
 
 // checks if v "won" on all adjacent vertices and inserts point if so
 // returns true if "won" and cavity was updated
-bool addCavity(vertex *v, simplex t, Qs *q, TriangleTable TT) {
+bool add_cavity(vertex *v, simplex t, queues *q, TriangleTable TT) {
   bool flag = 1;
-  for (intT i = 0; i < q->vertexQ.size(); i++) {
-    vertex* u = (q->vertexQ)[i];
+  for (intT i = 0; i < q->vertex_queue.size(); i++) {
+    vertex* u = (q->vertex_queue)[i];
     if (u->reserve == v->id) u->reserve = -1; // reset to -1
     else flag = 0; // someone else with higher priority reserved u
   }
@@ -200,23 +200,23 @@ bool addCavity(vertex *v, simplex t, Qs *q, TriangleTable TT) {
     }
     
     // update the cavity
-    for (intT i = 0; i<q->simplexQ.size(); i++)
-      (q->simplexQ)[i].flip();
-    q->simplexQ.push_back(simplex(t0,0));
-    q->simplexQ.push_back(simplex(t1,0));
-    if (!t.isBoundary()) q->simplexQ.push_back(simplex(t2,0));
+    for (intT i = 0; i<q->simplex_queue.size(); i++)
+      (q->simplex_queue)[i].flip();
+    q->simplex_queue.push_back(simplex(t0,0));
+    q->simplex_queue.push_back(simplex(t1,0));
+    if (!t.isBoundary()) q->simplex_queue.push_back(simplex(t2,0));
     
-    for (intT i = 0; i<q->simplexQ.size(); i++) {
-      tri* t = (q->simplexQ)[i].t;
-      if (skinnyTriangle(t)) {
+    for (intT i = 0; i<q->simplex_queue.size(); i++) {
+      tri* t = (q->simplex_queue)[i].t;
+      if (skinny_triangle(t)) {
         TT.insert(t);
         t->bad = 1;}
       else t->bad = 0;
     }
     v->badT = NULL;
   }
-  q->simplexQ.clear();
-  q->vertexQ.clear();
+  q->simplex_queue.clear();
+  q->vertex_queue.clear();
   return flag;
 }
 
@@ -224,14 +224,19 @@ bool addCavity(vertex *v, simplex t, Qs *q, TriangleTable TT) {
 //    MAIN REFINEMENT LOOP
 // *************************************************************
 
-intT addRefiningVertices(vertex** v, intT n, intT nTotal, TriangleTable TT) {
-  intT maxR = (intT) (nTotal/500) + 1; // maximum number to try in parallel
-  parray<Qs> qqs(maxR);
-  parray<Qs*> qs(maxR);
-  for (intT i=0; i < maxR; i++) qs[i] = new (&qqs[i]) Qs;
-  parray<simplex> t(maxR);
-  parray<bool> flags(maxR);
-  parray<vertex*> h(maxR);
+intT add_refining_vertices(vertex** v, intT n, intT nTotal, TriangleTable TT) {
+  intT maxR = (intT) (nTotal / 500) + 1; // maximum number to try in parallel
+  parray<queues> qqs;
+  qqs.prefix_tabulate(maxR, 0);
+  parray<queues*> qs;
+  qs.prefix_tabulate(maxR, 0);
+  for (intT i=0; i < maxR; i++) qs[i] = new (&qqs[i]) queues;
+  parray<simplex> t;
+  t.prefix_tabulate(maxR, 0);
+  parray<bool> flags;
+  flags.prefix_tabulate(maxR, 0);
+  parray<vertex*> h;
+  h.prefix_tabulate(maxR, 0);
   
   intT top = n; intT failed = 0;
   intT size = maxR;
@@ -242,18 +247,22 @@ intT addRefiningVertices(vertex** v, intT n, intT nTotal, TriangleTable TT) {
     vertex** vv = v+top-cnt;
     
     parallel_for((intT)0, cnt, [&] (intT j) {
-      flags[j] = findAndReserveCavity(vv[j],t[j],qs[j]);
+      flags[j] = find_and_reserve_cavity(vv[j],t[j],qs[j]);
     });
+    //TODO: wrong complexity -> qs[j].vq.size() + qs[j].sq.size()
+/*    parray<int> comp(cnt, [&] (int i) { return qs[i]->vertex_queue.size(); });// + qs[i]->simplex_queue.size(); });
+    dps::scan(comp.begin(), comp.end(), 0, [&] (int x, int y) { return x + y; }, comp.begin(), forward_inclusive_scan);
     
+    range::parallel_for((intT)0, cnt, [&] (int l, int r) { return comp[r - 1] - (l == 0 ? 0 : comp[l - 1]); }, [&] (intT j) {*/
     parallel_for((intT)0, cnt, [&] (intT j) {
-      flags[j] = flags[j] && !addCavity(vv[j], t[j], qs[j], TT);
+      flags[j] = flags[j] && !add_cavity(vv[j], t[j], qs[j], TT);
     });
     
     // Pack the failed vertices back onto Q
-    intT k = (intT)dps::pack(flags.cbegin(), vv, vv+cnt, h.begin());
-    pmem::copy(h.cbegin(), h.cbegin()+k, vv);
+    intT k = (intT)dps::pack(flags.cbegin(), vv, vv + cnt, h.begin());
+    pmem::copy(h.cbegin(), h.cbegin() + k, vv);
     failed += k;
-    top = top-cnt+k; // adjust top, accounting for failed vertices
+    top = top - cnt + k; // adjust top, accounting for failed vertices
   }
   return failed;
 }
@@ -263,18 +272,28 @@ intT addRefiningVertices(vertex** v, intT n, intT nTotal, TriangleTable TT) {
 // *************************************************************
 
 triangles<point2d> refine(triangles<point2d> Tri) {
+#ifdef TIME_MEASURE
+    pasl::pctl::timer timer;
+    timer.start();
+#endif
   int expandFactor = 4;
-  intT n = Tri.numPoints;
-  intT m = Tri.numTriangles;
-  intT extraVertices = expandFactor*n;
+  intT n = Tri.num_points;
+  intT m = Tri.num_triangles;
+  intT extraVertices = expandFactor * n;
   intT totalVertices = n + extraVertices;
   intT totalTriangles = m + 2 * extraVertices;
   
-  parray<vertex*> v(extraVertices);
-  parray<vertex> vv(totalVertices);
-  parray<tri> Triangs(totalTriangles);
+  parray<vertex*> v;
+  v.prefix_tabulate(extraVertices, 0);
+  parray<vertex> vv;
+  vv.prefix_tabulate(totalVertices, 0);
+  parray<tri> Triangs;  Triangs.prefix_tabulate(totalTriangles, 0);
   topologyFromTriangles(Tri, vv, Triangs);
-  
+
+    timer.end("from triangles");
+    timer.start();
+
+
   //  set up extra triangles
   parallel_for((intT)m, totalTriangles, [&] (intT i) {
     Triangs[i].id = i;
@@ -282,23 +301,29 @@ triangles<point2d> refine(triangles<point2d> Tri) {
   });
   
   //  set up extra vertices
-  parallel_for((intT)0, totalVertices-n, [&] (intT i) {
-    v[i] = new (&vv[i+n]) vertex(point2d(0,0), i+n);
+  parallel_for((intT)0, totalVertices - n, [&] (intT i) {
+    v[i] = new (&vv[i + n]) vertex(point2d(0,0), i + n);
     // give each one a pointer to two triangles to use
     v[i]->t = Triangs.begin() + m + 2*i;
   });
+
+    timer.end("initialization");
+    timer.start();
   
   // these will increase as more are added
   intT numTriangs = m;
   intT numPoints = n;
   
-  TriangleTable workQ = makeTriangleTable(numTriangs);
+  TriangleTable workQ = make_triangle_table(numTriangs);
   parallel_for((intT)0, numTriangs, [&] (intT i) {
-    if (skinnyTriangle(&Triangs[i])) {
+    if (skinny_triangle(&Triangs[i])) {
       workQ.insert(&Triangs[i]);
       Triangs[i].bad = 1;
     }
   });
+
+    timer.end("queue initialization");
+    timer.start();
   
   // Each iteration processes all bad triangles from the workQ while
   // adding new bad triangles to a new queue
@@ -313,7 +338,7 @@ triangles<point2d> refine(triangles<point2d> Tri) {
     parray<tri*> badT = pack(badTT.cbegin(), badTT.cend(), flags.cbegin());
     intT numBad = (intT)badT.size();
     
-    //cout << "numBad = " << numBad << endl;
+    cout << "numBad = " << numBad << endl;
     if (numBad == 0) break;
     if (numPoints + numBad > totalVertices) {
       cout << "ran out of vertices" << endl;
@@ -327,10 +352,10 @@ triangles<point2d> refine(triangles<point2d> Tri) {
     });
     
     // the new work queue
-    workQ = makeTriangleTable(numBad);
+    workQ = make_triangle_table(numBad);
     
     // This does all the work
-    addRefiningVertices(v.begin() + numPoints - n, numBad, numPoints, workQ);
+    add_refining_vertices(v.begin() + numPoints - n, numBad, numPoints, workQ);
     
     // push any bad triangles that were left untouched onto the Q
     parallel_for((intT)0, numBad, [&] (intT i) {
@@ -340,12 +365,12 @@ triangles<point2d> refine(triangles<point2d> Tri) {
     numPoints += numBad;
     numTriangs += 2*numBad;
   }
- 
+  timer.end("refine");timer.start();
   // Extract Vertices for result
   parray<bool> flag(numTriangs, [&] (intT i) {
     return (vv[i].badT == NULL);
   });
-  parray<long> I = pack_index(flag.cbegin(), flag.cbegin()+numPoints);
+  parray<long> I = pack_index(flag.cbegin(), flag.cbegin() + numPoints);
   intT nO = (intT)I.size();
   point2d* rp = newA(point2d, nO);
   parallel_for((intT)0, nO, [&] (intT i) {
@@ -358,14 +383,14 @@ triangles<point2d> refine(triangles<point2d> Tri) {
   parallel_for((intT)0, numTriangs, [&] (intT i) {
     flag[i] = Triangs[i].initialized;
   });
-  I = pack_index(flag.cbegin(), flag.cbegin()+numTriangs);
+  I = pack_index(flag.cbegin(), flag.cbegin() + numTriangs);
   triangle* rt = newA(triangle, I.size());
   parallel_for((intT)0, (intT)I.size(), [&] (intT i) {
     tri t = Triangs[I[i]];
     rt[i] = triangle(t.vtx[0]->id, t.vtx[1]->id, t.vtx[2]->id);
   });
   //cout << "total triangles = " << I.n << endl;
-  
+  timer.end("finalization");
   return triangles<point2d>(nO, (intT)I.size(), rp, rt);
 }
   

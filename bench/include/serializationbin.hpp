@@ -52,6 +52,23 @@ struct write_to_file_struct<std::string> {
 };
 
 template <class Item>
+struct read_from_file_struct<Item*> {
+  Item* operator()(std::ifstream& in, long size) const {
+    Item* result = (Item*)malloc(sizeof(Item) * size);
+    in.read(reinterpret_cast<char*>(result), sizeof(Item) * size);
+    return result;
+  }
+};
+
+template <class Item>
+struct write_to_file_struct<Item*> {
+  void operator()(std::ofstream& out, Item* items, long size) {
+    out.write(reinterpret_cast<char*>(&size), sizeof(long));
+    out.write(reinterpret_cast<char*>(items), sizeof(Item) * size);
+  }
+};
+
+template <class Item>
 struct read_from_file_struct<parray<Item>> {
   parray<Item> operator()(std::ifstream& in) const {
     long size = 0;
@@ -147,6 +164,25 @@ struct write_to_file_struct<parray<std::pair<char*, int>*>> {
       out.write(reinterpret_cast<char*>(&a[i]->second), sizeof(int));
     }
     delete [] len;
+  }
+};
+
+template <class Point>
+struct read_from_file_struct<triangles<Point>> {
+  triangles<Point> operator()(std::ifstream& in) const {
+    triangles<Point> t;
+    in.read(reinterpret_cast<char*>(&t.num_points), sizeof(long));
+    t.p = read_from_file_struct<Point*>()(in, t.num_points);
+    in.read(reinterpret_cast<char*>(&t.num_triangles), sizeof(long));
+    t.t = read_from_file_struct<triangle*>()(in, t.num_triangles); return t;
+  }
+};
+
+template <class Point>
+struct write_to_file_struct<triangles<Point>> {
+  void operator()(std::ofstream& out, triangles<Point>& x) {
+    write_to_file_struct<Point*>()(out, x.p, x.num_points);
+    write_to_file_struct<triangle*>()(out, x.t, x.num_triangles);
   }
 };
 

@@ -47,11 +47,11 @@ simplex find(vertex *p, simplex start) {
   simplex t = start;
   while (1) {
     int i;
-    for (i=0; i < 3; i++) {
+    for (i = 0; i < 3; i++) {
       t = t.rotClockwise();
       if (t.outside(p)) {t = t.across(); break;}
     }
-    if (i==3) return t;
+    if (i == 3) return t;
     if (!t.valid()) return t;
   }
 }
@@ -59,9 +59,9 @@ simplex find(vertex *p, simplex start) {
 // Holds vertex and simplex queues used to store the cavity created
 // while searching from a vertex between when it is initially searched
 // and later checked to see if all corners are reserved.
-struct Qs {
-  vector<vertex*> vertexQ;
-  vector<simplex> simplexQ;
+struct queues {
+  vector<vertex*> vertex_queue;
+  vector<simplex> simplex_queue;
 };
 
 // Recursive routine for finding a cavity across an edge with
@@ -75,13 +75,13 @@ struct Qs {
 //         b
 //
 //  If p is in circumcircle of T then
-//     add T to simplexQ, c to vertexQ, and recurse
-void findCavity(simplex t, vertex *p, Qs *q) {
+//     add T to simplex_queue, c to vertex_queue, and recurse
+void findCavity(simplex t, vertex *p, queues *q) {
   if (t.inCirc(p)) {
-    q->simplexQ.push_back(t);
+    q->simplex_queue.push_back(t);
     t = t.rotClockwise();
     findCavity(t.across(), p, q);
-    q->vertexQ.push_back(t.firstVertex());
+    q->vertex_queue.push_back(t.firstVertex());
     t = t.rotClockwise();
     findCavity(t.across(), p, q);
   }
@@ -89,27 +89,27 @@ void findCavity(simplex t, vertex *p, Qs *q) {
 
 // Finds the cavity for v and tries to reserve vertices on the
 // boundary (v must be inside of the simplex t)
-// The boundary vertices are pushed onto q->vertexQ and
-// simplices to be deleted on q->simplexQ (both initially empty)
+// The boundary vertices are pushed onto q->vertex_queue and
+// simplices to be deleted on q->simplex_queue (both initially empty)
 // It makes no side effects to the mesh other than to X->reserve
-void reserveForInsert(vertex *v, simplex t, Qs *q) {
+void reserve_for_insert(vertex* v, simplex t, queues* q) {
   // each iteration searches out from one edge of the triangle
-  for (int i=0; i < 3; i++) {
-    q->vertexQ.push_back(t.firstVertex());
+  for (int i = 0; i < 3; i++) {
+    q->vertex_queue.push_back(t.firstVertex());
     findCavity(t.across(), v, q);
     t = t.rotClockwise();
   }
   // the maximum id new vertex that tries to reserve a boundary vertex
   // will have its id written.  reserve starts out as -1
-  for (intT i = 0; i < q->vertexQ.size(); i++)
-    utils::writeMax(&((q->vertexQ)[i]->reserve), v->id);
+  for (intT i = 0; i < q->vertex_queue.size(); i++)
+    utils::writeMax(&((q->vertex_queue)[i]->reserve), v->id);
 }
 
 // checks if v "won" on all adjacent vertices and inserts point if so
-bool insert(vertex *v, simplex t, Qs *q) {
+bool insert(vertex *v, simplex t, queues *q) {
   bool flag = 0;
-  for (intT i = 0; i < q->vertexQ.size(); i++) {
-    vertex* u = (q->vertexQ)[i];
+  for (intT i = 0; i < q->vertex_queue.size(); i++) {
+    vertex* u = (q->vertex_queue)[i];
     if (u->reserve == v->id) u->reserve = -1; // reset to -1
     else flag = 1; // someone else with higher priority reserved u
   }
@@ -118,12 +118,12 @@ bool insert(vertex *v, simplex t, Qs *q) {
     tri* t2 = t1 + 1;
     // the following 3 lines do all the side effects to the mesh.
     t.split(v, t1, t2);
-    for (intT i = 0; i<q->simplexQ.size(); i++) {
-      (q->simplexQ)[i].flip();
+    for (intT i = 0; i < q->simplex_queue.size(); i++) {
+      (q->simplex_queue)[i].flip();
     }
   }
-  q->simplexQ.clear();
-  q->vertexQ.clear();
+  q->simplex_queue.clear();
+  q->vertex_queue.clear();
   return flag;
 }
 
@@ -159,41 +159,41 @@ void checkDelaunay1(tri *triangs, intT n, intT boundarySize) {
 // *************************************************************
 
 struct minpt {
-  point2d operator() (point2d a, point2d b) {return a.minCoords(b);}};
+  point2d operator() (point2d a, point2d b) {return a.min_coord(b);}};
 struct maxpt {
-  point2d operator() (point2d a, point2d b) {return a.maxCoords(b);}};
+  point2d operator() (point2d a, point2d b) {return a.max_coord(b);}};
 
 // P is the set of points to bound and n the number
 // bCount is the number of points to put on the boundary
 // v is an array to put the new points
 // t is an array to put the new triangles
-simplex generateBoundary(point2d* P, intT n, intT bCount, vertex* v, tri* t) {
-  point2d minP = reduce(P, P+n, point2d(0.0,0.0), [&] (point2d a, point2d b) {
-    return a.minCoords(b);
+simplex generate_boundary(point2d* p, intT n, intT boundary_size, vertex* v, tri* t) {
+  point2d minP = reduce(p, p + n, p[0], [&] (point2d a, point2d b) {
+    return a.min_coord(b);
   });
-  point2d maxP = reduce(P, P+n, point2d(0.0, 0.0), [&] (point2d a, point2d b) {
-    return a.maxCoords(b);
+  point2d maxP = reduce(p, p + n, p[0], [&] (point2d a, point2d b) {
+    return a.max_coord(b);
   });
-  double size = (maxP-minP).Length();
+  double size = (maxP - minP).length();
   double stretch = 10.0;
-  double radius = stretch*size;
-  point2d center = maxP + (maxP-minP)/2.0;
+  double radius = stretch * size;
+  point2d center = maxP + (maxP - minP)/2.0;
   
-  point2d* boundaryP = newA(point2d, bCount);
+  point2d* boundary = newA(point2d, boundary_size);
   double pi = 3.14159;
   
   // Generate the bounding points on a circle far outside the bounding box
-  for (intT i=0; i < bCount; i++) {
-    double x = radius * cos(2*pi*((float) i)/((float) bCount));
-    double y = radius * sin(2*pi*((float) i)/((float) bCount));
-    boundaryP[i] = center + vect2d(x,y);
-    v[i] = vertex(boundaryP[i], i + n);
+  for (intT i=0; i < boundary_size; i++) {
+    double x = radius * cos(2 * pi * ((float) i)/((float) boundary_size));
+    double y = radius * sin(2 * pi * ((float) i)/((float) boundary_size));
+    boundary[i] = center + vect2d(x, y);
+    v[i] = vertex(boundary[i], i + n);
   }
   
   // Fill with simplices (bCount - 2  total simplices)
   simplex s = simplex(&v[0], &v[1], &v[2], t);
-  for (intT i=3; i < bCount; i++)
-    s = s.extend(&v[i], t+i-2);
+  for (intT i = 3; i < boundary_size; i++)
+    s = s.extend(&v[i], t + i - 2);
   return s;
 }
 
@@ -202,73 +202,75 @@ simplex generateBoundary(point2d* P, intT n, intT bCount, vertex* v, tri* t) {
 //    MAIN LOOP
 // *************************************************************
 
-void incrementallyAddPoints(vertex** v, intT n, vertex* start) {
+void incrementally_add_points(vertex** v, intT n, vertex* start) {
   
   // various structures needed for each parallel insertion
-  intT maxR = (intT) (n/100) + 1; // maximum number to try in parallel
-  parray<Qs> qqs(maxR);
-  parray<Qs*> qs(maxR);
-  for (intT i=0; i < maxR; i++) {
-    qs[i] = new (&qqs[i]) Qs;
+  intT maxR = (intT) (n / 100) + 1; // maximum number to try in parallel
+  parray<queues> qqs;
+  qqs.prefix_tabulate(maxR, 0);
+  parray<queues*> qs;
+  qs.prefix_tabulate(maxR, 0);
+  for (intT i = 0; i < maxR; i++) {
+    qs[i] = new (&qqs[i]) queues;
   }
   parray<simplex> t(maxR);
   parray<bool> flags(maxR);
   parray<vertex*> h(maxR);
   
   // create a point location structure
-  typedef kNearestNeighbor<intT,vertex,1> KNN;
+  typedef nearest_neighbours_ds<intT, vertex, 1> KNN;
   KNN knn = KNN(&start, 1);
   int multiplier = 8; // when to regenerate
   intT nextNN = multiplier;
   
-  intT top=n; intT rounds = 0; intT failed = 0;
+  intT top = n; intT rounds = 0; intT failed = 0;
   
   // process all vertices starting just below top
-  while(top > 0) {
+  while (top > 0) {
     
     // every once in a while create a new point location
     // structure using all points inserted so far
-    if ((n-top)>=nextNN && (n-top) < n/multiplier) {
+    if ((n - top) >= nextNN && (n - top) < n / multiplier) {
       knn.del();
-      knn = KNN(v+top, n-top);
-      nextNN = nextNN*multiplier;
+      knn = KNN(v + top, n - top);
+      nextNN = nextNN * multiplier;
     }
     
     // determine how many vertices to try in parallel
-    intT cnt = 1 + (n-top)/100;  // 100 is pulled out of a hat
+    intT cnt = 1 + (n - top) / 100;  // 100 is pulled out of a hat
     cnt = (cnt > maxR) ? maxR : cnt;
     cnt = (cnt > top) ? top : cnt;
-    vertex **vv = v+top-cnt;
+    vertex** vv = v + top - cnt;
     
     // for trial vertices find containing triangle, determine cavity
     // and reserve vertices on boundary of cavity
     parallel_for((intT)0, cnt, [&] (intT j) {
       vertex *u = knn.nearest(vv[j]);
-      t[j] = find(vv[j],simplex(u->t,0));
-      reserveForInsert(vv[j],t[j],qs[j]);
+      t[j] = find(vv[j], simplex(u->t, 0));
+      reserve_for_insert(vv[j], t[j], qs[j]);
     });
     
     // For trial vertices check if they own their boundary and
     // update mesh if so.  flags[i] is 1 if failed (need to retry)
     parallel_for((intT)0, cnt, [&] (intT j) {
-      flags[j] = insert(vv[j],t[j],qs[j]);
+      flags[j] = insert(vv[j], t[j], qs[j]);
     });
     
     // Pack failed vertices back onto Q and successful
     // ones up above (needed for point location structure)
-    intT k = (intT)dps::pack(flags.cbegin(), vv, vv+cnt, h.begin());
+    intT k = (intT)dps::pack(flags.cbegin(), vv, vv + cnt, h.begin());
 //    intT k = sequence::pack(vv,h,flags,cnt);
     parallel_for((intT)0, cnt, [&] (intT j) {
       flags[j] = !flags[j];
     });
-    dps::pack(flags.cbegin(), vv, vv+cnt, h.begin()+k);
+    dps::pack(flags.cbegin(), vv, vv + cnt, h.begin() + k);
 //    sequence::pack(vv,h+k,flags,cnt);
     parallel_for((intT)0, cnt, [&] (intT j) {
       vv[j] = h[j];
     });
     
     failed += k;
-    top = top-cnt+k; // adjust top, accounting for failed vertices
+    top = top - cnt + k; // adjust top, accounting for failed vertices
     rounds++;
   }
   
@@ -306,66 +308,69 @@ public:
   intT get(intT i) { return (i*k)%n; }
 };
 
-triangles<point2d> delaunay(point2d* P, intT n) {
-  intT boundarySize = 10;
-  
+triangles<point2d> delaunay(parray<point2d> p) {
+  intT boundary_size = 10;
+  int n = p.size();
   
   // allocate space for vertices
-  intT numVertices = n + boundarySize;
+  intT num_vertices = n + boundary_size;
   parray<vertex*> v(n); // don't need pointers to boundary
-  parray<vertex> vv(numVertices);
+  v.prefix_tabulate(n, 0);
+  parray<vertex> vv;
+  vv.prefix_tabulate(num_vertices, 0);
   
   // The points are psuedorandomly permuted
   hashID hash(n);
   parallel_for((intT)0, n, [&] (intT i) {
-    v[i] = new (&vv[i]) vertex(P[hash.get(i)], i);
+    v[i] = new (&vv[i]) vertex(p[hash.get(i)], i);
   });
   
   // allocate all the triangles needed
-  intT numTriangles = 2 * n + (boundarySize - 2);
-  parray<tri> Triangs(numTriangles);
+  intT num_triangles = 2 * n + (boundary_size - 2);
+  parray<tri> triangles;
+  triangles.prefix_tabulate(num_triangles, 0);
   
   // give two triangles to each vertex
   parallel_for((intT)0, n, [&] (intT i) {
-    v[i]->t = Triangs.begin() + 2*i;
+    v[i]->t = triangles.begin() + 2 * i;
   });
   
   // generate boundary points and fill with simplices
   // The boundary points and simplices go at the end
-  simplex sBoundary = generateBoundary(P, n, boundarySize, vv.begin() + n, Triangs.begin() + 2*n);
-  vertex* v0 = sBoundary.t->vtx[0];
+  simplex sboundary = generate_boundary(p.begin(), n, boundary_size, vv.begin() + n, triangles.begin() + 2*n);
+  vertex* v0 = sboundary.t->vtx[0];
   
   // main loop to add all points
-  incrementallyAddPoints(v.begin(), n, v0);
+  incrementally_add_points(v.begin(), n, v0);
   
-  if (CHECK) checkDelaunay1(Triangs.begin(), numTriangles, boundarySize);
+  if (CHECK) checkDelaunay1(triangles.begin(), num_triangles, boundary_size);
   
-  triangle* rt = newA(triangle, numTriangles);
+  triangle* rt = newA(triangle, num_triangles);
   
   // Since points were permuted need to translate back to
   // original coordinates
-  parray<intT> M(numVertices);
-  parallel_for((intT)0, n, [&] (intT i) {
-    M[i] = hash.get(i);
-  });
-  parallel_for((intT)n, numVertices, [&] (intT i) {
-    M[i] = i;
+  parray<intT> m(num_vertices, [&] (intT i) {
+    if (i < n) {
+      return hash.get(i);
+    } else {
+      return i;
+    }
   });
   
-  parallel_for((intT)n, numTriangles, [&] (intT i) {
-    vertex** vtx = Triangs[i].vtx;
-    rt[i] = triangle(M[vtx[0]->id], M[vtx[1]->id], M[vtx[2]->id]);
+  parallel_for((intT)0, num_triangles, [&] (intT i) {
+    vertex** vtx = triangles[i].vtx;
+    rt[i] = triangle(m[vtx[0]->id], m[vtx[1]->id], m[vtx[2]->id]);
   });
 
-  point2d* rp = newA(point2d, numVertices);
+  point2d* rp = newA(point2d, num_vertices);
   parallel_for((intT)0, n, [&] (intT i) {
-    rp[i] = P[i];
+    rp[i] = p[i];
   });
-  parallel_for((intT)n, numVertices, [&] (intT i) {
+  parallel_for((intT)n, num_vertices, [&] (intT i) {
     rp[i] = vv[i].pt;
   });
   
-  return triangles<point2d>(numVertices, numTriangles, rp, rt);
+  return pasl::pctl::triangles<point2d>(num_vertices, num_triangles, rp, rt);
 }
   
 // Note that this is not currently a complete test of correctness

@@ -14,13 +14,25 @@ public:
   timer() {}
 
   void start() {
+#ifdef TIME_MEASURE
     start_time = std::chrono::system_clock::now();
+#endif
   }
 
-  void end() {
+  double end() {
+#ifdef TIME_MEASURE
     end_time = std::chrono::system_clock::now();
     std::chrono::duration<double> duration = end_time - start_time;
-    total_time += duration.count();
+    double d = duration.count();
+    total_time += d;
+    return d;
+#endif
+  }
+
+  double end(std::string s) {
+#ifdef TIME_MEASURE
+    printf("exectime %s %.3lf\n", s.c_str(), end());
+#endif
   }
 
   double get_time() {

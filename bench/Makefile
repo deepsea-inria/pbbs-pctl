@@ -43,6 +43,7 @@ PROGRAMS=\
         reduce_bench.cpp \
         scan_bench.cpp \
         loop_bench.cpp \
+        delaunay_bench.cpp \
         sequence_data.cpp \
 
 ####################################################################

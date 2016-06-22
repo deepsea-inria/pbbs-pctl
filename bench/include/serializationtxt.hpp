@@ -83,17 +83,6 @@ struct read_from_txt_file_struct<double> {
 };
 
 template <>
-struct read_from_txt_file_struct<char*> {
-  char* operator()(std::vector<std::string>& words, int& p) {
-    char* result = new char[words[p].length() + 1];
-    result[words[p].length()] = '\0';
-    std::copy(words[p].begin(), words[p].end(), result);
-    p++;
-    return result;
-  }
-};
-
-template <>
 struct read_from_txt_file_struct<std::string> {
   std::string operator()(std::vector<std::string>& words, int& p) {
     return words[p++];
@@ -133,6 +122,41 @@ template <>
 struct write_to_txt_file_struct<triangle> {
   void operator()(std::ofstream& out, triangle& x) {
     out << (x.vertices[0] + 1) << " " << (x.vertices[1] + 1) << " " << (x.vertices[2] + 1);
+  }
+};
+
+template <class Item>
+struct read_from_txt_file_struct<Item*> {
+  Item* operator()(std::vector<std::string>& words, int& p, long n) {
+    Item* result = (Item*)malloc(sizeof(Item) * n);
+    for (int i = 0; i < n; i++) {
+      result[i] = read_from_txt_file_struct<Item>()(words, p);
+    }
+    return result;
+  }
+};
+
+template <class Item>
+struct write_to_txt_file_struct<Item*> {
+  void operator()(std::ofstream& out, Item* items, int n) {
+    for (int i = 0; i < n; i++) {
+      write_to_txt_file_struct<Item>()(out, items[i]);
+    }
+  }
+
+  void operator()(std::ofstream& words, Item* items){
+    assert(false);
+  }
+};
+
+template <>
+struct read_from_txt_file_struct<char*> {
+  char* operator()(std::vector<std::string>& words, int& p) {
+    char* result = new char[words[p].length() + 1];
+    result[words[p].length()] = '\0';
+    std::copy(words[p].begin(), words[p].end(), result);
+    p++;
+    return result;
   }
 };
 
@@ -198,6 +222,27 @@ struct write_to_txt_file_struct<parray<Item>> {
       write_to_txt_file_struct<Item>()(out, x[i]);
       out << std::endl;
     }
+  }
+};
+
+template <class Point>
+struct read_from_txt_file_struct<triangles<Point>> {
+  triangles<Point> operator()(std::vector<std::string>& words, int& p) {
+    triangles<Point> triangles;
+    triangles.num_points = std::stoi(words[p++]);
+    triangles.num_triangles = std::stoi(words[p++]);
+    triangles.p = read_from_txt_file_struct<Point*>()(words, p, triangles.num_points);
+    triangles.t = read_from_txt_file_struct<triangle*>()(words, p, triangles.num_triangles);
+    return triangles;
+  }
+};
+
+template <class Point>
+struct write_to_txt_file_struct<triangles<Point>> {
+  void operator()(std::ofstream& out, triangles<Point>& t) {
+    out << t.num_points << " " << t.num_triangles << std::endl;
+    write_to_txt_file_struct<Point*>()(out, t.p, t.num_points);
+    write_to_txt_file_struct<triangle*>()(out, t.t, t.num_triangles);
   }
 };
 

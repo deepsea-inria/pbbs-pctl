@@ -84,7 +84,7 @@ let arg_sizes =
    | _ -> arg_sizes
 
 let sequence_benchmarks = ["comparison_sort"; "blockradix_sort"; "remove_duplicates";
-                      "suffix_array"; "convex_hull"; "nearest_neighbours"; "ray_cast"; ]
+                      "suffix_array"; "convex_hull"; "nearest_neighbours"; "ray_cast"; "delaunay"; ]
 
 let arg_benchmarks = 
    match arg_benchmarks with
@@ -111,6 +111,8 @@ let types_list = function
   | "reduce" -> [ "array_int"; "array_double"; ]
   | "scan" -> [ "array_int"; "array_double"; ]
   | "loop" -> []
+  | "delaunay" -> [ "array_point2d"; ]
+  | "delaunay_refine" -> [ "triangles_point2d"; ]
   | _ -> Pbench.error "invalid benchmark"
 
 let generators_list = function
@@ -198,6 +200,20 @@ let generators_list = function
         ]
      | _ -> Pbench.error "invalid_type")
   | "loop" -> (function n -> function typ -> [])
+  | "delaunay" -> (function n -> 
+    function
+    | "array_point2d" -> [
+        mk_generator "in_square";
+        mk_generator "kuzmin";
+      ]
+    | _ -> Pbench.error "invalid_type")
+  | "delaunay_refine" -> (function n ->
+    function
+    | "triangles_point2d" -> [
+        mk_generator "delaunay_in_square";
+        mk_generator "delaunay_kuzmin";
+      ]
+    | _ -> Pbench.error "invalid_type")
   | _ -> Pbench.error "invalid benchmark"
 
 let mk_generate_sequence_inputs benchmark : Params.t =
@@ -315,6 +331,8 @@ let prog_names = function
   | "reduce" -> "reduce"
   | "scan" -> "scan"
   | "loop" -> "loop"
+  | "delaunay" -> "delaunay"
+  | "delaunay_refine" -> "delaunayrefine"
   | _ -> Pbench.error "invalid benchmark"
 
 let prog benchmark =
@@ -385,6 +403,8 @@ let prog_names = function
   | "nearest_neighbours" -> "nearestneighbours"
   | "ray_cast" -> "raycast"
   | "loop" -> "loop"
+  | "delaunay" -> "delaunay"
+  | "delaunay_refine" -> "delaunayrefine"
   | x -> Pbench.error "invalid benchmark " ^ x
 
 let extensions = XCmd.parse_or_default_list_string "exts" [ "manc"; "norm"; "unko"]
