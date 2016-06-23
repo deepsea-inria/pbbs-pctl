@@ -3,6 +3,7 @@
 #include <fstream>
 #include "geometrydata.hpp"
 #include "teststructs.hpp"
+#include "graph.hpp"
 
 #ifndef _PCTL_PBBS_SERIALIZATION_H_     
 #define _PCTL_PBBS_SERIALIZATION_H_
@@ -206,6 +207,44 @@ struct write_to_file_struct<ray_cast_test> {
     write_to_file_struct<parray<point3d>>()(out, test.points);
     write_to_file_struct<parray<triangle>>()(out, test.triangles);
     write_to_file_struct<parray<ray<point3d>>>()(out, test.rays);
+  }
+};
+
+template <class intT>
+struct read_from_file_struct<graph::graph<intT>> {
+  graph::graph<intT> operator()(std::ifstream& in) {
+    intT n, m;
+    in.read(reinterpret_cast<char*>(&n), sizeof(intT));
+    in.read(reinterpret_cast<char*>(&m), sizeof(intT));
+    intT* degree = new intT[n];
+    in.read(reinterpret_cast<char*>(degree), sizeof(intT) * n);
+    intT* e = (intT*)malloc(sizeof(intT) * m);
+    in.read(reinterpret_cast<char*>(e), sizeof(intT) * m);
+    graph::vertex<intT>* v = (graph::vertex<intT>*)malloc(sizeof(graph::vertex<intT>) * n);
+    int offset = 0;
+    for (int i = 0; i < n; i++) {
+      v[i] = graph::vertex<intT>(e + offset, degree[i]);
+      offset += degree[i];
+    }
+    delete [] degree;
+    return graph::graph<intT>(v, n, m, e);
+  }
+};
+
+template <class intT>
+struct write_to_file_struct<graph::graph<intT>> {
+  void operator()(std::ofstream& out, graph::graph<intT>& graph) {
+    out.write(reinterpret_cast<char*>(&graph.n), sizeof(intT));
+    out.write(reinterpret_cast<char*>(&graph.m), sizeof(intT));
+    intT* degree = new int[graph.n];
+    for (int i = 0; i < graph.n; i++) {
+      degree[i] = graph.V[i].degree;
+    }
+    out.write(reinterpret_cast<char*>(degree), sizeof(intT) * graph.n);
+    delete [] degree;
+    for (int i = 0; i < graph.n; i++) {
+      out.write(reinterpret_cast<char*>(graph.V[i].Neighbors), sizeof(intT) * graph.V[i].degree);
+    }
   }
 };
 

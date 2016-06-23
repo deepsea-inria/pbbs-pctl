@@ -172,6 +172,13 @@ struct generate_struct<std::pair<Item1, Item2>> {
     assert(false);
   }
 };
+
+template <class intT>
+struct generate_struct<graph::graph<intT>> {
+  graph::graph<intT> operator()(std::string generator) {
+    assert(false);
+  }
+};
                         
 template <class Item>
 Item generate(std::string generator) {
@@ -206,18 +213,18 @@ void store(Item& xs, std::string outfile, std::string outfile2) {
 
 template <class Item>
 void process() {
-  Item result;
+  Item* result = (Item*)malloc(sizeof(Item));
   std::string generator = cmdline::parse_or_default<std::string>("generator", "");
   std::string infile = cmdline::parse_or_default<std::string>("infile", "");
   std::string outfile = cmdline::parse_string("outfile");
   if (generator != "") {
-    result = generate<Item>(generator);
+    *result = generate<Item>(generator);
   } else if (infile != "") {
     std::string infile2 = cmdline::parse_or_default<std::string>("infile2", "");
     if (infile2 != "") {
-      result = io::load<Item>(infile, infile2);
+      *result = io::load<Item>(infile, infile2);
     } else {
-      result = io::load<Item>(infile);
+      *result = io::load<Item>(infile);
     }
   } else {
     assert(false);
@@ -225,10 +232,11 @@ void process() {
 
   std::string outfile2 = cmdline::parse_or_default<std::string>("outfile2", "");
   if (outfile2 != "")  {
-    store(result, outfile, outfile2);
+    store(*result, outfile, outfile2);
   } else {
-    store(result, outfile);
+    store(*result, outfile);
   }
+  free(result);
 }
 
 int main(int argc, char ** argv) {
@@ -267,6 +275,8 @@ int main(int argc, char ** argv) {
     d.add("triangles_point2d", [&] {
       process<triangles<point2d>>();
     });
+    d.add("graph", [&] {
+      process<graph::graph<int>>();});
     d.dispatch("type");
   });
   return 0;

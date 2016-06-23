@@ -20,8 +20,8 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef _GRAPH_INCLUDED
-#define _GRAPH_INCLUDED
+#ifndef _PCTL_GRAPH_INCLUDED
+#define _PCTL_GRAPH_INCLUDED
 
 #include <iostream>
 #include <algorithm>
@@ -30,7 +30,7 @@
 
 namespace pasl {
 namespace pctl {
-
+namespace graph {
 // **************************************************************
 //    SPARSE ROW MAJOR REPRESENTATION
 // **************************************************************
@@ -146,8 +146,8 @@ std::ostream& operator<<(std::ostream& out, const vertex<intT>& v) {
   out << "}";
   return out;
 }
-
 } // end namespace
 } // end namespace
+} // end namespace
 
-#endif // _GRAPH_INCLUDED
+#endif // _PCTL_GRAPH_INCLUDED

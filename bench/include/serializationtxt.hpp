@@ -5,7 +5,7 @@
 
 #include "geometry.hpp"
 #include "teststructs.hpp"
-
+#include "graph.hpp"
 #ifndef _PCTL_IO_SHARED_H_
 #define _PCTL_IO_SHARED_H_
 
@@ -282,6 +282,42 @@ struct write_to_txt_files_struct<ray_cast_test> {
       ray_ends[2 * i + 1] = x.rays[i].d + point3d(0, 0, 0);
     }
     write_to_txt_file_struct<parray<point3d>>()(ous, ray_ends);
+  }
+};
+
+template <class intT>
+struct read_from_txt_file_struct<graph::graph<intT>> {
+  graph::graph<intT> operator()(std::vector<std::string>& words, int& p) {
+    int n = std::stoi(words[p++]);
+    int m = std::stoi(words[p++]);
+    graph::vertex<intT>* v = (graph::vertex<intT>*)malloc(sizeof(graph::vertex<intT>) * n);
+    intT* e = (intT*)malloc(sizeof(intT) * m);
+    for (int i = 0; i < n; i++) {
+      int offset = std::stoi(words[p++]);
+      int noffset = i == n - 1 ? m : std::stoi(words[p]);
+      v[i] = graph::vertex<intT>(e + offset, noffset - offset);
+    }
+    for (int i = 0; i < m; i++) {
+      e[i] = std::stoi(words[p++]);
+    }return graph::graph<intT>(v, n, m, e);
+  }
+};
+
+template <class intT>
+struct write_to_txt_file_struct<graph::graph<intT>> {
+  void operator()(std::ofstream& out, graph::graph<intT>& graph) {
+    out << graph.n << std::endl;
+    out << graph.m << std::endl;
+    int offset = 0;
+    for (int i = 0; i < graph.n; i++) {
+      out << offset << std::endl;
+      offset += graph.V[i].degree;
+    }
+    for (int i = 0; i < graph.n; i++) {
+      for (int j = 0; j < graph.V[i].degree; j++) {
+        out << graph.V[i].Neighbors[j] << std::endl;
+      }
+    }
   }
 };
                                                 
