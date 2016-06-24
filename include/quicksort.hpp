@@ -23,7 +23,7 @@
 #ifndef _PBBS_PCTL_QSORT_H_
 #define _PBBS_PCTL_QSORT_H_
 #include <algorithm>
-#include "dpsdatapar.hpp"
+#include "datapar.hpp"
 
 namespace pasl {
 namespace pctl {

@@ -35,6 +35,11 @@ public:
 #endif
   }
 
+  void report_total(std::string s) {
+#ifdef TIME_MEASURE
+    printf("exectime %s %.3lf\n", s.c_str(), total_time);
+#endif
+  }
   double get_time() {
     return total_time;
   }

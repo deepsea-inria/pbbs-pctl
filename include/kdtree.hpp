@@ -24,7 +24,7 @@
 #include <float.h>
 
 #include "geometry.hpp"
-#include "dpsdatapar.hpp"
+#include "datapar.hpp"
 #include "raytriangleintersect.hpp"
 #include "samplesort.hpp"
 #include "ray.hpp"

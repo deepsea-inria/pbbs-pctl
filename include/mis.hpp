@@ -21,7 +21,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <iostream>
-#include "dpsdatapar.hpp"
+#include "datapar.hpp"
 #include "graph.hpp"
 #include "speculativefor.hpp"
 #include "graphutils.hpp"

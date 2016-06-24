@@ -24,7 +24,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "dpsdatapar.hpp"
+#include "datapar.hpp"
 #include "prandgen.hpp"
 #include "suffixarray.hpp"
 

@@ -22,7 +22,7 @@
 #include <iostream>
 #include <vector>
 #include <vector>
-#include "dpsdatapar.hpp"
+#include "datapar.hpp"
 #include "geometry.hpp"
 #include "nearestneighbors.hpp"
 #include "topology.hpp"
@@ -272,10 +272,10 @@ intT add_refining_vertices(vertex** v, intT n, intT nTotal, TriangleTable TT) {
 // *************************************************************
 
 triangles<point2d> refine(triangles<point2d> Tri) {
-#ifdef TIME_MEASURE
+
     pasl::pctl::timer timer;
     timer.start();
-#endif
+
   int expandFactor = 4;
   intT n = Tri.num_points;
   intT m = Tri.num_triangles;
@@ -338,7 +338,7 @@ triangles<point2d> refine(triangles<point2d> Tri) {
     parray<tri*> badT = pack(badTT.cbegin(), badTT.cend(), flags.cbegin());
     intT numBad = (intT)badT.size();
     
-    cout << "numBad = " << numBad << endl;
+//    cout << "numBad = " << numBad << endl;
     if (numBad == 0) break;
     if (numPoints + numBad > totalVertices) {
       cout << "ran out of vertices" << endl;

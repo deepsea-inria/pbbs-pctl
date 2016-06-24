@@ -25,7 +25,7 @@
 
 #include "utils.hpp"
 #include "prandgen.hpp"
-#include "dpsdatapar.hpp"
+#include "datapar.hpp"
 
 namespace pasl {
 namespace pctl {

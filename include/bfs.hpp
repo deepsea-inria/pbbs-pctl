@@ -21,7 +21,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "utils.hpp"
-#include "dpsdatapar.hpp"
+#include "datapar.hpp"
 #include "graph.hpp"
 #include "timer.hpp"
 namespace pasl {
@@ -93,6 +93,7 @@ pair<int,int> bfs(int start, graph::graph<int>& graph) {
     main_timer.start();
     // For each vertexB in the frontier try to "hook" unvisited neighbors.
     range::parallel_for(0, frontier_size, [&] (int l, int r) { return (r == frontier_size ? nr : counts[r]) - counts[l]; },[&] (int i) {
+//    cilk_for (int i = 0; i < frontier_size; i++) {
       int k = 0;
       int v = frontier[i];
       int o = counts[i];
@@ -105,6 +106,7 @@ pair<int,int> bfs(int start, graph::graph<int>& graph) {
 	else frontier_next[o + j] = -1;
       }
       g[v].degree = k;
+//    }
     });
     main_timer.end();
     filter_timer.start();

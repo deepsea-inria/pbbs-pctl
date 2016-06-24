@@ -2,7 +2,7 @@
 
 #include "transpose.hpp"
 #include "utils.hpp"
-#include "dpsdatapar.hpp"
+#include "datapar.hpp"
 #include "io.hpp"
 #ifdef PBBS_SEQUENCE
 #include "sequence.h"

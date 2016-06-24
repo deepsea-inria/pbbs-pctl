@@ -44,6 +44,7 @@ PROGRAMS=\
         scan_bench.cpp \
         loop_bench.cpp \
         delaunay_bench.cpp \
+        delaunayrefine_bench.cpp \
         bfs_bench.cpp \
         sequence_data.cpp \
 

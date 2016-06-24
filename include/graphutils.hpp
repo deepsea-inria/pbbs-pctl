@@ -26,7 +26,7 @@
 #include <math.h>
 
 #include "graph.hpp"
-#include "dpsdatapar.hpp"
+#include "datapar.hpp"
 #include "blockradixsort.hpp"
 #include "deterministichash.hpp"
 #include "prandgen.hpp"
