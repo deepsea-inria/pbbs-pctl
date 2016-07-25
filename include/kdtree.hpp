@@ -131,8 +131,7 @@ struct tree_node {
   }
   
   static void del(tree_node* t) {
-    using controller_type = pasl::pctl::granularity::controller_holder<kdtree_file, 1, intT>;
-    par::cstmt(controller_type::controller, [&] { return t->n; }, [&] {
+    par::cstmt<kdtree_file, 1, intT>([&] { return t->n; }, [&] {
       if (t->is_leaf()) {
         free(t->triangle_indices);
       } else {
@@ -194,7 +193,7 @@ cut_info best_cut_serial(event* e, range r, range r1, range r2, intT n) {
     return cut_info(FLT_MAX, r.min, n, n);
   }
 #if defined(TIME_MEASURE) && defined(MANUAL_CONTROL)
-  cut_timer.start();
+//  cut_timer.start();
 #endif
   float area = 2 * (r1.max - r1.min) * (r2.max - r2.min);
   float diameter = 2 * ((r1.max - r1.min) + (r2.max - r2.min));
@@ -224,7 +223,7 @@ cut_info best_cut_serial(event* e, range r, range r1, range r2, intT n) {
   }
 
 #if defined(TIME_MEASURE) && defined(MANUAL_CONTROL)
-  cut_timer.end();
+//  cut_timer.end();
 #endif
 //  std::cerr << "Best k " << k << std::endl;
   return cut_info(min_cost, e[k].v, ln, rn);
@@ -240,17 +239,16 @@ cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
   }
 #endif
 #ifdef TIME_MEASURE
-    cut_timer.start();
+//    cut_timer.start();
 #endif
   cut_info result;
-  using controller_type = pasl::pctl::granularity::controller_holder<kdtree_file, 2, intT>;
-  par::cstmt(controller_type::controller, [&] { return n; }, [&] { //std::cerr << "Parallel " << n << std::endl;
-//    pasl::pctl::granularity::estimator& estimator = controller_type::controller.get_estimator();
+  
+  par::cstmt<kdtree_file, 2, intT>([&] { return n; }, [&] { //std::cerr << "Parallel " << n << std::endl;
 //    std::cerr << pasl::pctl::perworker::get_my_id()() << " " << estimator.privates.mine() << std::endl;
 //    std::cerr << "Parallelize " << n  << std::endl;
     if (r.max - r.min == 0.0) {
       result = cut_info(FLT_MAX, r.min, n, n);
-      return;
+      return result;
     }
     
     // area of two orthogonal faces
@@ -262,6 +260,7 @@ cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
     // count number that end before i
 #ifdef MANUAL_ALLOCATION
    intT* upper = newA(intT, n);
+//   cilk_for (intT i = 0; i < n; i++)
    parallel_for((intT)0, n, [&] (intT i) {
      upper[i] = IS_END(e[i]);
    });
@@ -273,14 +272,25 @@ cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
    );
 #endif
    float* cost = newA(float, n);
-   parallel_for((intT)0, n, [&] (intT i) {
-      intT in_left = i - upper[i];
-      intT in_right = n / 2 - (upper[i] + IS_END(e[i]));
-      float left_length = e[i].v - r.min;
-      float left_area = orthog_area + diameter * left_length;
-      float right_length = r.max - e[i].v;
-      float right_area = orthog_area + diameter * right_length;
-      cost[i] = left_area * in_left + right_area * in_right;
+//   cilk_for (intT i = 0; i < n; i++) {
+   pasl::pctl::range::parallel_for((intT)0, n, [&] (intT l, intT r) { return r - l; }, [&] (intT i) {
+     intT in_left = i - upper[i];
+     intT in_right = n / 2 - (upper[i] + IS_END(e[i]));
+     float left_length = e[i].v - r.min;
+     float left_area = orthog_area + diameter * left_length;
+     float right_length = r.max - e[i].v;
+     float right_area = orthog_area + diameter * right_length;
+     cost[i] = left_area * in_left + right_area * in_right;
+   }, [&] (intT ll, intT rr) {
+     for (int i = ll; i < rr; i++) {
+       intT in_left = i - upper[i];
+       intT in_right = n / 2 - (upper[i] + IS_END(e[i]));
+       float left_length = e[i].v - r.min;
+       float left_area = orthog_area + diameter * left_length;
+       float right_length = r.max - e[i].v;
+       float right_area = orthog_area + diameter * right_length;
+       cost[i] = left_area * in_left + right_area * in_right;
+     }
    });
 
 #ifdef PBBS_SEQUENCE
@@ -301,22 +311,28 @@ cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
       return x + y; }, upper.begin(), forward_exclusive_scan
     );
 #endif
-/*    intT current = 0;
-    for (int i = 0; i < n; i++) {
-      int x = upper[i];
-      upper[i] = current;
-      current += x;
-    }*/
-    
     // calculate cost of each possible split location
-    parray<float> cost(n, [&] (intT i) {
+    parray<float> cost;
+    cost.prefix_tabulate(n, 0);
+
+    pasl::pctl::range::parallel_for(0, n, [&] (intT l, intT r) { return r - l; }, [&] (intT i) {
       intT in_left = i - upper[i];
       intT in_right = n / 2 - (upper[i] + IS_END(e[i]));
       float left_length = e[i].v - r.min;
       float left_area = orthog_area + diameter * left_length;
       float right_length = r.max - e[i].v;
       float right_area = orthog_area + diameter * right_length;
-      return (left_area * in_left + right_area * in_right);
+      cost[i] = left_area * in_left + right_area * in_right;
+    }, [&] (intT ll, intT rr) {
+      for (intT i = ll; i < rr; i++) {
+        intT in_left = i - upper[i];
+        intT in_right = n / 2 - (upper[i] + IS_END(e[i]));
+        float left_length = e[i].v - r.min;
+        float left_area = orthog_area + diameter * left_length;
+        float right_length = r.max - e[i].v;
+        float right_area = orthog_area + diameter * right_length;
+        cost[i] = left_area * in_left + right_area * in_right;
+      }
     });
     
     // find minimum across all (maxIndex with less is minimum)
@@ -327,12 +343,6 @@ cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
       return x < y;
     });
 #endif
-/*    intT k = 0;
-    for (int i = 0; i < cost.size(); i++) {
-      if (cost[k] > cost[i]) {
-        k = i;
-      }
-    }*/
 #endif
       
     float c = cost[k];
@@ -348,7 +358,7 @@ cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
     result = best_cut_serial(e, r, r1, r2, n);
   });
 #ifdef TIME_MEASURE
-    cut_timer.end();
+//    cut_timer.end();
 #endif
   return result;
 }
@@ -356,9 +366,9 @@ cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
 pasl::pctl::timer split_timer;
 std::pair<intT, intT> split_events_serial(range* boxes, event* events,
                        float cut_off, intT n,
-                       parray<event>& left, parray<event>& right) {
+                       event* left, event* right) {
 #if defined(TIME_MEASURE) && defined(MANUAL_CONTROL)
-    split_timer.start();
+//    split_timer.start();
 #endif
   intT l = 0;
   intT r = 0;
@@ -380,7 +390,7 @@ std::pair<intT, intT> split_events_serial(range* boxes, event* events,
     }
   }
 #if defined(TIME_MEASURE) && defined(MANUAL_CONTROL)
-    split_timer.end();
+//    split_timer.end();
 #endif
   return make_pair(l, r);
 }
@@ -390,25 +400,31 @@ std::pair<intT, intT> split_events(range* boxes, event* events, float cut_off, i
 //  return split_events_serial(boxes, events, cut_off, n, left, right);
 #ifdef MANUAL_CONTROL
   if (n < min_parallel_size) {
-    return split_events_serial(boxes, events, cut_off, n, left, right);
+    return split_events_serial(boxes, events, cut_off, n, left.begin(), right.begin());
   }
 #endif
 #ifdef TIME_MEASURE
-    split_timer.start();
+//    split_timer.start();
 #endif
   std::pair<intT, intT> result;
-  using controller_type = pasl::pctl::granularity::controller_holder<kdtree_file, 3, intT>;
-  par::cstmt(controller_type::controller, [&] { return n; }, [&] {
+  
+  par::cstmt<kdtree_file, 3, intT>([&] { return n; }, [&] {
 #ifdef MANUAL_ALLOCATION
     bool* lower = newA(bool, n);
     bool* upper = newA(bool, n);
-    parallel_for((intT)0, n, [&] (intT i) {
+//    cilk_for (intT i = 0; i < n; i++) {
+    pasl::pctl::range::parallel_for((intT)0, n, [&] (int l, int r) { return r - l; }, [&] (intT i) {
       intT b = GET_INDEX(events[i]);
       lower[i] = boxes[b].min < cut_off;
       upper[i] = boxes[b].max > cut_off;
+    }, [&] (intT l, intT r) {
+      for (intT i = l; i < r; i++) {
+        intT b = GET_INDEX(events[i]);
+        lower[i] = boxes[b].min < cut_off;
+        upper[i] = boxes[b].max > cut_off;
+      }
     });
     const event* events2 = (const event*)events;
-
 
 #ifdef PBBS_SEQUENCE
     result.first = pbbs::sequence::pack(events, left.begin(), lower, n);
@@ -416,41 +432,41 @@ std::pair<intT, intT> split_events(range* boxes, event* events, float cut_off, i
 #else
     result.first = pasl::pctl::dps::pack(lower, events2, events2 + n, left.begin());
     result.second = pasl::pctl::dps::pack(upper, events2, events2 + n, right.begin());
-/*    left = pack(events2, events2 + n, lower);
-    right = pack(events2, events2 + n, upper);
-    result = make_pair(left.size(), right.size());*/
 #endif
     free(lower);
     free(upper);
 #else
-    parray<bool> lower(n, [&] (intT i) {
-      intT b = GET_INDEX(events[i]);
-      return boxes[b].min < cut_off;
-    });
-    parray<bool> upper(n, [&] (intT i) {
-      intT b = GET_INDEX(events[i]);
-      return boxes[b].max > cut_off;
+    parray<bool> lower;
+    lower.prefix_tabulate(n, 0);
+    parray<bool> upper;
+    upper.prefix_tabulate(n, 0);
+    pasl::pctl::range::parallel_for(0, n, [&] (intT l, intT r) { return r - l; }, [&] (intT i) {
+      intT b = GET_INDEX(events[i]);      lower[i] = boxes[b].min < cut_off;
+      upper[i] = boxes[b].max > cut_off;
+    }, [&] (intT l, intT r) {
+      for (intT i = l; i < r; i++) {
+        intT b = GET_INDEX(events[i]);
+        lower[i] = boxes[b].min < cut_off;
+        upper[i] = boxes[b].max > cut_off;
+      }
     });
     const event* events2 = (const event*)events;
 
-
 #ifdef PBBS_SEQUENCE
-    result.first = pbbs::sequence::pack(events, left.begin(), lower.begin(), n);
-    result.second = pbbs::sequence::pack(events, right.begin(), upper.begin(), n);
+    result.first = pbbs::sequence::pack(events, left.begin(), lower, n);
+    result.second = pbbs::sequence::pack(events, right.begin(), upper, n);
 #else
     result.first = pasl::pctl::dps::pack(lower.begin(), events2, events2 + n, left.begin());
     result.second = pasl::pctl::dps::pack(upper.begin(), events2, events2 + n, right.begin());
-/*    left = pack(events2, events2 + n, lower.cbegin());
-    right = pack(events2, events2 + n, upper.cbegin());
-    result = make_pair(left.size(), right.size());*/
 #endif
 #endif
-
+    left.resize(result.first, result.first, event());
+    right.resize(result.second, result.second, event());
   }, [&] {
-    result = split_events_serial(boxes, events, cut_off, n, left, right);
+    result = split_events_serial(boxes, events, cut_off, n, left.begin(), right.begin());
   });
 #ifdef TIME_MEASURE
-    split_timer.end();
+//    split_timer.end();
 #endif
   return result;
 }
@@ -458,7 +474,7 @@ std::pair<intT, intT> split_events(range* boxes, event* events, float cut_off, i
 // n is the number of events (i.e. twice the number of triangles)
 tree_node* generate_node(boxes bxs, events& evts, bounding_box b,
                        intT n, intT max_depth) {
-  using controller_type = pasl::pctl::granularity::controller_holder<kdtree_file, 4, intT>;
+  
   tree_node* result;
 //  par::cstmt(controller_type::controller, [&] { return n; }, [&] {
     //cout << "n=" << n << " max_depth=" << max_depth << endl;
@@ -467,14 +483,10 @@ tree_node* generate_node(boxes bxs, events& evts, bounding_box b,
       return result;
     }
 
-/*#ifdef TIME_MEASURE
-      auto start = std::chrono::system_clock::now();
-#endif*/
-    
     // loop over dimensions and find the best cut across all of them
     cut_info cuts[3];
     pasl::pctl::range::parallel_for(0, 3, [&] (int l, int r) { return (r - l) * n; }, [&] (int d) {
-//    for (int d = 0; d < 3; d++)
+//    cilk_for (int d = 0; d < 3; d++)
       cuts[d] = best_cut(evts[d].begin(), b[d], b[(d + 1) % 3], b[(d + 2) % 3], n);
     });
     
@@ -490,12 +502,6 @@ tree_node* generate_node(boxes bxs, events& evts, bounding_box b,
     float area = box_surface_area(b);
     float best_cost = CT + CL * cuts[cut_dim].cost / area;
     float orig_cost = (float) (n / 2);
-/*#ifdef TIME_MEASURE
-      auto end = std::chrono::system_clock::now();
-      std::chrono::duration<float> diff = end - start;
-      printf ("exectime best cut find %.3lf\n", diff.count());
-#endif*/
-//    std::cerr << n << " " << cuts[cut_dim].num_left << " " << cuts[cut_dim].num_right << " " << max_expand << std::endl;
     // quit recursion early if best cut is not very good
     if (best_cost >= orig_cost ||
         cuts[cut_dim].num_left + cuts[cut_dim].num_right > max_expand * n / 2) {
@@ -509,7 +515,6 @@ tree_node* generate_node(boxes bxs, events& evts, bounding_box b,
       bbl[i] = b[i];
     }
     bbl[cut_dim] = range(bbl[cut_dim].min, cut_off);
-//    event* left_events[3];
     intT nl;
     
     bounding_box bbr;
@@ -517,17 +522,13 @@ tree_node* generate_node(boxes bxs, events& evts, bounding_box b,
       bbr[i] = b[i];
     }
     bbr[cut_dim] = range(cut_off, bbr[cut_dim].max);
-//    event* right_events[3];
     intT nr;
 
-/*#ifdef TIME_MEASURE
-      start = std::chrono::system_clock::now();
-#endif*/
-    
     // now split each event array to the two sides
-    parray<event> xl[3];
-    parray<event> xr[3];
+    events xl;
+    events xr;
     std::pair<intT, intT> sizes[3];
+//    cilk_for (int d = 0; d < 3; d++) {
     pasl::pctl::range::parallel_for(0, 3, [&] (int l, int r) { return (r - l) * n; }, [&] (int d) {
 //#ifdef PBBS_SEQUENCE
       xl[d].prefix_tabulate(n, 0);
@@ -537,8 +538,6 @@ tree_node* generate_node(boxes bxs, events& evts, bounding_box b,
     });
     
     for (int d = 0; d < 3; d++) {
-//      left_events[d] = xl[d].begin();
-//      right_events[d] = xr[d].begin();
       if (d == 0) {
         nl = sizes[d].first;
         nr = sizes[d].second;
@@ -547,27 +546,18 @@ tree_node* generate_node(boxes bxs, events& evts, bounding_box b,
         abort();
       }
     }
-/*#ifdef TIME_MEASURE
-      end = std::chrono::system_clock::now();
-      diff = end - start;
-      printf ("exectime split find %.3lf\n", diff.count());
-#endif*/
     
     // free old events and make recursive calls
     for (int i = 0; i < 3; i++) {
-//      free(evts[i]);
       evts[i].clear();
     }
     tree_node* l;
     tree_node* r;
-    par::fork2([&] {
-//      l = generate_node(bxs, left_events, bbl, nl, max_depth - 1);
+    par::primitive_fork2([&] {
       l = generate_node(bxs, xl, bbl, nl, max_depth - 1);
     }, [&] {
-//      r = generate_node(bxs, right_events, bbr, nr, max_depth - 1);
       r = generate_node(bxs, xr, bbr, nr, max_depth - 1);
     });
-    
     result = new tree_node(l, r, cut_dim, cut_off, b);
 //  });
   return result;
@@ -661,6 +651,7 @@ intT find_ray(rayT r, tree_node* tree, trianglesT tri) {
 
 void process_rays(trianglesT tri, rayT* rays, intT num_rays,
                  tree_node* tree, intT* results) {
+//  cilk_for (intT i = 0; i < num_rays; i++)
   parallel_for((intT)0, num_rays, [&] (intT i) {
     results[i] = find_ray(rays[i], tree, tri);
   });
@@ -668,7 +659,6 @@ void process_rays(trianglesT tri, rayT* rays, intT num_rays,
 
 parray<intT> ray_cast(triangles<pointT> tri, ray<pointT>* rays, int num_rays) {
 
-//  st
 
 #ifdef TIME_MEASURE
       auto start = std::chrono::system_clock::now();
@@ -682,13 +672,23 @@ parray<intT> ray_cast(triangles<pointT> tri, ray<pointT>* rays, int num_rays) {
     bxs[d] = newA(range, n);
   }
   pointT* p = tri.p;
-  parallel_for((intT)0, n, [&] (intT i) {
+//  cilk_for (intT i = 0; i < n; i++) {
+  pasl::pctl::range::parallel_for((intT)0, n, [&] (intT l, intT r) { return r - l; }, [&] (intT i) {
     pointT p0 = p[tri.t[i].vertices[0]];
     pointT p1 = p[tri.t[i].vertices[1]];
     pointT p2 = p[tri.t[i].vertices[2]];
     bxs[0][i] = fix_range(std::min(p0.x, std::min(p1.x, p2.x)), std::max(p0.x, std::max(p1.x, p2.x)));
     bxs[1][i] = fix_range(std::min(p0.y, std::min(p1.y, p2.y)), std::max(p0.y, std::max(p1.y, p2.y)));
     bxs[2][i] = fix_range(std::min(p0.z, std::min(p1.z, p2.z)), std::max(p0.z, std::max(p1.z, p2.z)));
+  }, [&] (intT l, intT r) {
+    for (intT i = l; i < r; i++) {
+      pointT p0 = p[tri.t[i].vertices[0]];
+      pointT p1 = p[tri.t[i].vertices[1]];
+      pointT p2 = p[tri.t[i].vertices[2]];
+      bxs[0][i] = fix_range(std::min(p0.x, std::min(p1.x, p2.x)), std::max(p0.x, std::max(p1.x, p2.x)));
+      bxs[1][i] = fix_range(std::min(p0.y, std::min(p1.y, p2.y)), std::max(p0.y, std::max(p1.y, p2.y)));
+      bxs[2][i] = fix_range(std::min(p0.z, std::min(p1.z, p2.z)), std::max(p0.z, std::max(p1.z, p2.z)));
+    }
   });
 #ifdef TIME_MEASURE
       auto end = std::chrono::system_clock::now();
