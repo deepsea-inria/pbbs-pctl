@@ -15,6 +15,24 @@
 
 namespace cmdline = deepsea::cmdline;
 
+static constexpr
+int szb1 = 4 * 256;
+static constexpr
+int szb2 = 2*szb1;
+
+template <int szb>
+class bytes {
+public:
+  char b[szb];
+};
+
+template <int szb>
+inline
+bool operator==(const bytes<szb>& lhs, const bytes<szb>& rhs) {
+  assert(false);
+  return false;
+}
+
 namespace pasl {
 namespace pctl {
   
@@ -205,20 +223,15 @@ void using_item_type(pbbs::measured_type measure) {
   d.dispatch_or_default("action", "benchmark");
 }
   
-static constexpr
-int szb1 = 4 * 256;
-static constexpr
-int szb2 = 4 * 512;
-  
 void determine_item_type(pbbs::measured_type measure) {
   with_gc::threshold = cmdline::parse_or_default("threshold", with_gc::threshold);
   int item_szb = cmdline::parse<int>("item_szb");
   if (item_szb == 1) {
     using_item_type<char>(measure);
   } else if (item_szb == szb1) {
-    using_item_type<char[szb1]>(measure);
+    using_item_type<bytes<szb1>>(measure);
   } else if (item_szb == szb2) {
-    using_item_type<char[szb2]>(measure);
+    using_item_type<bytes<szb2>>(measure);
   } else {
     std::cerr << "bogus item_szb " <<  item_szb << std::endl;
     exit(0);
