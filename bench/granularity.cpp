@@ -124,10 +124,6 @@ void check_nb_occurrences(int n) {
   assert(with_gc::nb_occurrences_rec(lo, hi, p) == nb);
   free(data);
 }
-  
-void configure() {
-  with_gc::threshold = cmdline::parse_or_default("threshold", with_gc::threshold);
-}
 
 template <class Item>
 unsigned int hash(Item& x) {
@@ -211,7 +207,7 @@ static constexpr
 int szb2 = 4 * 512;
   
 void determine_item_type(pbbs::measured_type measure) {
-  configure();
+  with_gc::threshold = cmdline::parse_or_default("threshold", with_gc::threshold);
   int item_szb = cmdline::parse<int>("item_szb");
   if (item_szb == 1) {
     using_item_type<char>(measure);
