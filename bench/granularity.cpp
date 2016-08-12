@@ -1,7 +1,7 @@
 /*!
  * \file granularity.cpp
  * \brief Example use of pctl granularity control
- * \date 2015
+ * \date 2016
  * \copyright COPYRIGHT (c) 2015 Umut Acar, Arthur Chargueraud, and
  * Michael Rainey. All rights reserved.
  * \license This project is released under the GNU Public License.
@@ -9,39 +9,45 @@
  */
 
 #include "bench.hpp"
-#include "io.hpp"
+#include "prandgen.hpp"
 
 /***********************************************************************/
+
+namespace cmdline = deepsea::cmdline;
 
 namespace pasl {
 namespace pctl {
   
-int nb_occurrences_seq(char* lo, char* hi, char c) {
+using namespace granularity;
+  
+template <class Item, class Predicate>
+int nb_occurrences_seq(Item* lo, Item* hi, const Predicate& p) {
   int r = 0;
   for (; lo != hi; lo++) {
-    if (*lo == c) {
+    if (p(*lo)) {
       r++;
     }
   }
   return r;
 }
 
-namespace withoutgc {
+namespace without_gc {
   
-  int nb_occurrences_rec(char* lo, char* hi, char c) {
+  template <class Item, class Predicate>
+  int nb_occurrences_rec(Item* lo, Item* hi, const Predicate& p) {
     int r;
     auto n = hi - lo;
     if (n == 0) {
       r = 0;
     } else if (n == 1) {
-      return *lo == c;
+      return p(*lo) ? 1 : 0;
     } else {
       auto mid = lo + (n / 2);
       int r1, r2;
-      granularity::primitive_fork2([&] {
-        r1 = nb_occurrences_rec(lo, mid, c);
+      primitive_fork2([&] {
+        r1 = nb_occurrences_rec(lo, mid, p);
       }, [&] {
-        r2 = nb_occurrences_rec(mid, hi, c);
+        r2 = nb_occurrences_rec(mid, hi, p);
       });
       r = r1 + r2;
     }
@@ -49,23 +55,24 @@ namespace withoutgc {
   }
   
 } // end namespace
-
-namespace withgc {
   
-  int threshold = 1;
+namespace with_gc {
   
-  int nb_occurrences_rec(char* lo, char* hi, char c) {
+  int threshold = 2;
+  
+  template <class Item, class Predicate>
+  int nb_occurrences_rec(Item* lo, Item* hi, const Predicate& p) {
     int r;
     auto n = hi - lo;
     if (n <= threshold) {
-      r = nb_occurrences_seq(lo, hi, c);
+      r = nb_occurrences_seq(lo, hi, p);
     } else {
       auto mid = lo + (n / 2);
       int r1, r2;
-      granularity::primitive_fork2([&] {
-        r1 = nb_occurrences_rec(lo, mid, c);
+      primitive_fork2([&] {
+        r1 = nb_occurrences_rec(lo, mid, p);
       }, [&] {
-        r2 = nb_occurrences_rec(mid, hi, c);
+        r2 = nb_occurrences_rec(mid, hi, p);
       });
       r = r1 + r2;
     }
@@ -73,92 +80,6 @@ namespace withgc {
   }
   
 } // end namespace
-
-int max_nb_occurrences_seq(int* lo, int* hi, char* strings, char c) {
-  int r = 0;
-  for (; lo != hi; lo++) {
-    int r1 = nb_occurrences_seq(strings + *lo, strings + *(lo + 1), c);
-    r = std::max(r, r1);
-  }
-  return r;
-}
-  
-namespace withoutgc {
-  
-  int max_nb_occurrences_rec(int* lo, int* hi, char* strings, char c) {
-    int r;
-    auto n = hi - lo;
-    if (n == 0) {
-      r = 0;
-    } else if (n == 1) {
-      r = withgc::nb_occurrences_rec(strings + *lo, strings + *(lo + 1), c);
-    } else {
-      auto mid = lo + (n / 2);
-      int r1, r2;
-      granularity::primitive_fork2([&] {
-        r1 = max_nb_occurrences_rec(lo, mid, strings, c);
-      }, [&] {
-        r2 = max_nb_occurrences_rec(mid, hi, strings, c);
-      });
-      r = std::max(r1, r2);
-    }
-    return r;
-  }
-  
-} // end namespace
-  
-namespace withgc {
-  
-  int max_nb_occurrences_rec(int* lo, int* hi, char* strings, char c) {
-    int r;
-    auto n = hi - lo;
-    if (n == 0) {
-      r = 0;
-    } else {
-      auto m = *hi - *lo;
-      if (m <= threshold) {
-        return max_nb_occurrences_seq(lo, hi, strings, c);
-      } else {
-        auto mid = std::lower_bound(lo, hi, m / 2);
-        int r1, r2;
-        granularity::primitive_fork2([&] {
-          r1 = max_nb_occurrences_rec(lo, mid, strings, c);
-        }, [&] {
-          r2 = max_nb_occurrences_rec(mid, hi, strings, c);
-        });
-        r = std::max(r1, r2);
-      }
-    }
-    return r;
-  }
-  
-  int max_nb_occurrences_rec_alt(int* lo, int* hi, char* strings, char c) {
-    int r;
-    auto n = hi - lo;
-    if (n <= threshold) {
-      r = max_nb_occurrences_seq(lo, hi, strings, c);
-    } else {
-      auto m = *hi - *lo;
-      if (m <= threshold) {
-        return max_nb_occurrences_seq(lo, hi, strings, c);
-      } else {
-        auto mid = std::lower_bound(lo, hi, m / 2);
-        int r1, r2;
-        granularity::primitive_fork2([&] {
-          r1 = max_nb_occurrences_rec_alt(lo, mid, strings, c);
-        }, [&] {
-          r2 = max_nb_occurrences_rec_alt(mid, hi, strings, c);
-        });
-        r = std::max(r1, r2);
-      }
-    }
-    return r;
-  }
-  
-} // end namespace
-  
-}
-}
 
 /*---------------------------------------------------------------------*/
 
@@ -167,78 +88,146 @@ void write_random_chars(char* lo, char* hi) {
     *lo = rand() % 256;
   }
 }
-
-// returns segmented array to represent k length-m random strings
-std::tuple<int*, int*, char*> create_random_string_array(int k, int m) {
-  int n = m * k;
-  char* strings = (char*)malloc(sizeof(char) * n);
-  int* lo = (int*)malloc(sizeof(int) * (k + 1));
-  int* hi = lo + (k + 1);
-  for (int i = 0; i < k; i++) {
-    lo[i] = i * m;
+  
+template <class Item>
+void write_random_data(Item* lo, Item* hi) {
+  for (auto it = lo; it != hi; it++) {
+    auto lo2 = (char*)it;
+    auto hi2 = lo2 + sizeof(Item);
+    write_random_chars(lo2, hi2);
   }
-  return std::make_tuple(lo, hi, strings);
+}
+  
+template <class Item>
+Item* create_random_array(int n) {
+  Item* data = (Item*)malloc(sizeof(Item) * n);
+  auto lo = data;
+  auto hi = data + n;
+  write_random_data(lo, hi);
+  return data;
 }
 
-template <class Untrusted>
-bool check_nb_occurrences(char* lo, char* hi, char c, const Untrusted& u) {
-  return pasl::pctl::nb_occurrences_seq(lo, hi, c) == u(lo, hi, c);
-}
-
+template <class Item>
 void check_nb_occurrences(int n) {
   if (n == 0) {
     return;
   }
-  char* string = (char*)malloc(sizeof(char) * n);
-  auto lo = string;
-  auto hi = string + n;
-  write_random_chars(lo, hi);
+  Item* data = create_random_array<Item>(n);
+  auto lo = data;
+  auto hi = data + n;
   auto c = *lo;
-  assert(check_nb_occurrences(lo, hi, c, [&] (char* lo, char* hi, char c) {
-    return pasl::pctl::withoutgc::nb_occurrences_rec(lo, hi, c);
-  }));
-  assert(check_nb_occurrences(lo, hi, c, [&] (char* lo, char* hi, char c) {
-    return pasl::pctl::withgc::nb_occurrences_rec(lo, hi, c);
-  }));
+  auto p = [c] (Item d) {
+    return d == c;
+  };
+  int nb = nb_occurrences_seq(lo, hi, p);
+  assert(without_gc::nb_occurrences_rec(lo, hi, p) == nb);
+  assert(with_gc::nb_occurrences_rec(lo, hi, p) == nb);
+  free(data);
+}
+  
+void configure() {
+  with_gc::threshold = cmdline::parse_or_default("threshold", with_gc::threshold);
 }
 
-template <class Untrusted>
-bool check_max_nb_occurrences(int* lo, int* hi, char* strings, char c, const Untrusted& u) {
-  return pasl::pctl::max_nb_occurrences_seq(lo, hi, strings, c) == u(lo, hi, strings, c);
-}
-
-void check_max_nb_occurrences(int k, int m) {
-  int n = m * k;
-  if (n == 0) {
-    return;
+template <class Item>
+unsigned int hash(Item& x) {
+  unsigned int h = 0;
+  assert(sizeof(Item) % sizeof(unsigned int) == 0);
+  auto lo = (unsigned int*)&x;
+  auto hi = lo + (sizeof(Item) / sizeof(unsigned int));
+  for (auto it = lo; it != hi; it++) {
+    h = prandgen::hashu(*it + h);
   }
-  auto sa = create_random_string_array(k, m);
-  int* lo = std::get<0>(sa);
-  int* hi = std::get<1>(sa);
-  char* strings = std::get<2>(sa);
-  auto c = strings[0];
-  check_max_nb_occurrences(lo, hi, strings, c, [&] (int* lo, int* hi, char* strings, char c) {
-    return pasl::pctl::withoutgc::max_nb_occurrences_rec(lo, hi, strings, c);
-  });
-  check_max_nb_occurrences(lo, hi, strings, c, [&] (int* lo, int* hi, char* strings, char c) {
-    return pasl::pctl::withgc::max_nb_occurrences_rec(lo, hi, strings, c);
-  });
+  return h;
 }
+  
+template <class Item, class Predicate>
+void benchmark(Item* lo, Item* hi, const Predicate& p, pbbs::measured_type measure) {
+  cmdline::dispatcher d;
+  d.add("sequential", [&] {
+    measure([&] {
+      nb_occurrences_seq(lo, hi, p);
+    });
+  });
+  d.add("parallel_without_gc", [&] {
+    measure([&] {
+      without_gc::nb_occurrences_rec(lo, hi, p);
+    });
+  });
+  d.add("parallel_with_gc", [&] {
+    measure([&] {
+      with_gc::nb_occurrences_rec(lo, hi, p);
+    });
+  });
+  d.dispatch("algorithm");
+}
+  
+template <class Item>
+void benchmark(pbbs::measured_type measure) {
+  int n = cmdline::parse<int>("n");
+  Item* data = create_random_array<Item>(n);
+  auto lo = data;
+  auto hi = lo + n;
+  auto c = *lo;
+  if (! cmdline::parse<bool>("use_hash")) {
+    assert(sizeof(Item) == sizeof(char));
+    auto p = [c] (Item d) {
+      return d == c;
+    };
+    benchmark(lo, hi, p, measure);
+  } else {
+    auto h = hash(c);
+    auto p = [h] (Item& d) {
+      return h == hash(d);
+    };
+    benchmark(lo, hi, p, measure);
+  }
+  free(data);
+}
+  
+template <class Item>
+void test() {
+  int n = cmdline::parse_or_default("n", 1024);
+  for (int i = 1; i < n; i++) {
+    pasl::pctl::check_nb_occurrences<char>(n);
+  }
+}
+  
+template <class Item>
+void using_item_type(pbbs::measured_type measure) {
+  cmdline::dispatcher d;
+  d.add("benchmark", [&] {
+    benchmark<Item>(measure);
+  });
+  d.add("test", [&] {
+    test<Item>();
+  });
+  d.dispatch_or_default("action", "benchmark");
+}
+  
+} // end namespace
+} // end namespace
 
-namespace cmdline = deepsea::cmdline;
+/*---------------------------------------------------------------------*/
+
+static constexpr
+int szb1 = 4 * 256;
+static constexpr
+int szb2 = 4 * 512;
 
 int main(int argc, char** argv) {
-  pbbs::launch(argc, argv, [&] (pbbs::measured_type measured) {
-    pasl::pctl::withgc::threshold =
-      cmdline::parse_or_default("threshold", pasl::pctl::withgc::threshold);
-    int n = cmdline::parse_or_default("n", 1024);
-    for (int i = 1; i < n; i++) {
-      check_nb_occurrences(n);
-    }
-    for (int k = 1; k < n; k++) {
-      for (int m = 1; m < n; m++) {
-        check_max_nb_occurrences(k, m);
-      }
+  pbbs::launch(argc, argv, [&] (pbbs::measured_type measure) {
+    pasl::pctl::configure();
+    int item_szb = cmdline::parse<int>("item_szb");
+    if (item_szb == 1) {
+      pasl::pctl::using_item_type<char>(measure);
+    } else if (item_szb == szb1) {
+      pasl::pctl::using_item_type<char[szb1]>(measure);
+    } else if (item_szb == szb2) {
+      pasl::pctl::using_item_type<char[szb2]>(measure);
+    } else {
+      std::cerr << "bogus item_szb " <<  item_szb << std::endl;
+      exit(0);
     }
   });
   return 0;
