@@ -139,23 +139,27 @@ unsigned int hash(Item& x) {
   
 template <class Item, class Predicate>
 void benchmark(Item* lo, Item* hi, const Predicate& p, pbbs::measured_type measure) {
+  int result;
   cmdline::dispatcher d;
   d.add("sequential", [&] {
     measure([&] {
-      nb_occurrences_seq(lo, hi, p);
+      result = nb_occurrences_seq(lo, hi, p);
     });
   });
   d.add("parallel_without_gc", [&] {
     measure([&] {
-      without_gc::nb_occurrences_rec(lo, hi, p);
+      result = without_gc::nb_occurrences_rec(lo, hi, p);
     });
   });
   d.add("parallel_with_gc", [&] {
     measure([&] {
-      with_gc::nb_occurrences_rec(lo, hi, p);
+      result = with_gc::nb_occurrences_rec(lo, hi, p);
     });
   });
   d.dispatch("algorithm");
+  if (result < 0) {
+    std::cerr << "bogus result" << std::endl;
+  }
 }
   
 template <class Item>
