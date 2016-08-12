@@ -205,30 +205,34 @@ void using_item_type(pbbs::measured_type measure) {
   d.dispatch_or_default("action", "benchmark");
 }
   
+static constexpr
+int szb1 = 4 * 256;
+static constexpr
+int szb2 = 4 * 512;
+  
+void determine_item_type(pbbs::measured_type measure) {
+  configure();
+  int item_szb = cmdline::parse<int>("item_szb");
+  if (item_szb == 1) {
+    using_item_type<char>(measure);
+  } else if (item_szb == szb1) {
+    using_item_type<char[szb1]>(measure);
+  } else if (item_szb == szb2) {
+    using_item_type<char[szb2]>(measure);
+  } else {
+    std::cerr << "bogus item_szb " <<  item_szb << std::endl;
+    exit(0);
+  }
+}
+  
 } // end namespace
 } // end namespace
 
 /*---------------------------------------------------------------------*/
 
-static constexpr
-int szb1 = 4 * 256;
-static constexpr
-int szb2 = 4 * 512;
-
 int main(int argc, char** argv) {
   pbbs::launch(argc, argv, [&] (pbbs::measured_type measure) {
-    pasl::pctl::configure();
-    int item_szb = cmdline::parse<int>("item_szb");
-    if (item_szb == 1) {
-      pasl::pctl::using_item_type<char>(measure);
-    } else if (item_szb == szb1) {
-      pasl::pctl::using_item_type<char[szb1]>(measure);
-    } else if (item_szb == szb2) {
-      pasl::pctl::using_item_type<char[szb2]>(measure);
-    } else {
-      std::cerr << "bogus item_szb " <<  item_szb << std::endl;
-      exit(0);
-    }
+    pasl::pctl::determine_item_type(measure);
   });
   return 0;
 }
