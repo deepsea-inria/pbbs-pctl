@@ -102,8 +102,8 @@ namespace with_gc {
 /*---------------------------------------------------------------------*/
 
 void write_random_chars(char* lo, char* hi) {
-  for (; lo != hi; lo++) {
-    *lo = rand() % 256;
+  for (int i = 0; lo != hi; lo++, i++) {
+    *lo = (char)prandgen::hashi(i);
   }
 }
   
