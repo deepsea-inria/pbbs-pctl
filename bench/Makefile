@@ -32,6 +32,7 @@ VERBOSE_MAKE=0
 VERBOSE_DEPENDENCIES=0
 
 PROGRAMS=\
+	granularity.cpp \
 	psort.cpp \
 	blockradixsort_bench.cpp \
 	samplesort_bench.cpp \
