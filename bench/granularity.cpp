@@ -103,7 +103,12 @@ namespace with_gc {
 
 void write_random_chars(char* lo, char* hi) {
   for (int i = 0; lo != hi; lo++, i++) {
-    *lo = (char)prandgen::hashi(i);
+    union {
+      char* p;
+      uint64_t v;
+    } x;
+    x.p = lo;
+    *lo = (char)prandgen::hashi((unsigned int)x.v);
   }
 }
   
