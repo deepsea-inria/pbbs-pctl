@@ -90,7 +90,8 @@ pair<int,int> bfs(int start, graph::graph<int> graph) {
   while (frontier_size > 0) {
     round++;
     total_visited += frontier_size;
-
+//    std::cerr << total_visited << std::endl;
+//    std::cerr << frontier_size << std::endl;
     scan_timer.start();
 //    parallel_for(0, frontier_size, [&] (int i) {
 //      cilk_for (int i = 0; i < frontier_size; i++)
@@ -133,7 +134,7 @@ pair<int,int> bfs(int start, graph::graph<int> graph) {
 
        for (int j = 0; j < g[v].degree; j++) {
          int ngh = g[v].Neighbors[j];
-           if (visited_ptr[ngh] == 0 && utils::CAS(&visited_ptr[ngh], 0, 1)) {
+           if (visited_ptr[ngh] == 0 && !__sync_val_compare_and_swap(&visited_ptr[ngh], 0, 1)) {//utils::CAS(&visited_ptr[ngh], 0, 1)) {
              frontier_next_ptr[o + j] = g[v].Neighbors[k++] = ngh;
            }
          else frontier_next_ptr[o + j] = -1;}
@@ -174,7 +175,7 @@ pair<int,int> bfs(int start, graph::graph<int> graph) {
 #endif
     filter_timer.end();
   }
-//  std::cerr << total_visited << " " << round << std::endl;
+  std::cerr << total_visited << " " << round << std::endl;
   scan_timer.report_total("scan total");
   main_timer.report_total("main total");
   filter_timer.report_total("filter total");
