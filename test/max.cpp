@@ -1,6 +1,6 @@
 /*!
  * \file max.cpp
- * \brief Quickcheck for reduce and scan
+ * \brief Quickcheck for finding maximum
  * \date 2015
  * \copyright COPYRIGHT (c) 2015 Umut Acar, Arthur Chargueraud, and
  * Michael Rainey. All rights reserved.

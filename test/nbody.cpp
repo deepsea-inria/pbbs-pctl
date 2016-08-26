@@ -1,6 +1,6 @@
 /*!
- * \file scan.cpp
- * \brief Quickcheck for scan
+ * \file nbody.cpp
+ * \brief Quickcheck for n body simulation
  * \date 2015
  * \copyright COPYRIGHT (c) 2015 Umut Acar, Arthur Chargueraud, and
  * Michael Rainey. All rights reserved.

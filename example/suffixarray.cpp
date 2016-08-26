@@ -1,7 +1,7 @@
 /*!
  * \file suffixarray.cpp
- * \brief Example of suffix array
- * \date 2015
+ * \brief Example of suffix array usage
+ * \date 2016
  * \copyright COPYRIGHT (c) 2015 Umut Acar, Arthur Chargueraud, and
  * Michael Rainey. All rights reserved.
  * \license This project is released under the GNU Public License.

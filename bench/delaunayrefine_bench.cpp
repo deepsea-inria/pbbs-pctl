@@ -1,7 +1,7 @@
 /*!
- * \file psort.cpp
- * \brief Benchmarking script for parallel sorting algorithms
- * \date 2015
+ * \file delaunayrefine_bench.cpp
+ * \brief Benchmarking script for parallel delaunay triangulation refinement
+ * \date 2016
  * \copyright COPYRIGHT (c) 2015 Umut Acar, Arthur Chargueraud, and
  * Michael Rainey. All rights reserved.
  * \license This project is released under the GNU Public License.

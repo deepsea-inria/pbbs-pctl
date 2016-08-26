@@ -1,6 +1,6 @@
 /*!
- * \file scan.cpp
- * \brief Quickcheck for scan
+ * \file refine.cpp
+ * \brief Quickcheck for delaunay triangulation refinement
  * \date 2015
  * \copyright COPYRIGHT (c) 2015 Umut Acar, Arthur Chargueraud, and
  * Michael Rainey. All rights reserved.
