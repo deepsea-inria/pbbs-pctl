@@ -226,6 +226,17 @@ bool add_cavity(vertex *v, simplex t, queues *q, TriangleTable TT) {
 
 intT add_refining_vertices(vertex** v, intT n, intT nTotal, TriangleTable TT) {
   intT maxR = (intT) (nTotal / 500) + 1; // maximum number to try in parallel
+#ifdef MANUAL_ALLOCATION
+  queues* qqs = (queues*) malloc(sizeof(queues) * maxR);
+  queues** qs = (queues**) malloc(sizeof(queues*) * maxR);
+  for (intT i = 0; i < maxR; i++) qs[i] = new (&qqs[i]) queues;
+  simplex* t = (simplex*) malloc(sizeof(simplex) * maxR);
+  bool* flags = (bool*) malloc(sizeof(flags) * maxR);
+  vertex** h = (vertex**) malloc(sizeof(vertex*) * maxR);
+//  int* comp = (int*) malloc(sizeof(int) * maxR);
+  auto flags_ref = flags;
+  auto t_ref = t;auto qs_ref = qs;
+#else
   parray<queues> qqs;
   qqs.prefix_tabulate(maxR, 0);
   parray<queues*> qs;
@@ -237,30 +248,63 @@ intT add_refining_vertices(vertex** v, intT n, intT nTotal, TriangleTable TT) {
   flags.prefix_tabulate(maxR, 0);
   parray<vertex*> h;
   h.prefix_tabulate(maxR, 0);
+//  parray<int> comp; comp.prefix_tabulate(maxR, 0);
+  auto flags_ref = flags.begin();
+  auto t_ref = t.begin();
+  auto qs_ref = qs.begin();
+#endif
   
   intT top = n; intT failed = 0;
   intT size = maxR;
-  
   // process all vertices starting just below the top
   while(top > 0) {
     intT cnt = std::min<intT>(size,top);
     vertex** vv = v+top-cnt;
-    
-    parallel_for((intT)0, cnt, [&] (intT j) {
-      flags[j] = find_and_reserve_cavity(vv[j],t[j],qs[j]);
+    range::parallel_for((intT)0, cnt, [&] (int l, int r) { return r - l; }, [&, flags_ref, vv, t_ref, qs_ref] (intT j) {
+//    cilk_for (int j = 0; j < cnt; j++)
+      flags_ref[j] = find_and_reserve_cavity(vv[j],t_ref[j],qs_ref[j]);
+    }, [&, flags_ref, vv, t_ref, qs_ref] (int l, int r) {
+      for (int j = l; j < r; j++) {
+        flags_ref[j] = find_and_reserve_cavity(vv[j], t_ref[j], qs_ref[j]);
+//        std::cerr << qs_ref[j]->vertex_queue.size() + qs_ref[j]->simplex_queue.size() << std::endl; 
+      }
     });
     //TODO: wrong complexity -> qs[j].vq.size() + qs[j].sq.size()
-/*    parray<int> comp(cnt, [&] (int i) { return qs[i]->vertex_queue.size(); });// + qs[i]->simplex_queue.size(); });
-    dps::scan(comp.begin(), comp.end(), 0, [&] (int x, int y) { return x + y; }, comp.begin(), forward_inclusive_scan);
+/*    parallel_for(0, cnt, [&] (int i) {
+      comp[i] = std::max((int)qs[i]->vertex_queue.size() + (int)qs[i]->simplex_queue.size(), 1);
+    });
+#ifdef MANUAL_ALLOCATION
+    dps::scan(comp, comp + cnt, 0, [&] (int x, int y) { return x + y; }, comp, forward_inclusive_scan);
+#else
+    dps::scan(comp.begin(), comp.begin() + cnt, 0, [&] (int x, int y) { return x + y; }, comp.begin(), forward_inclusive_scan);
+#endif*/
     
-    range::parallel_for((intT)0, cnt, [&] (int l, int r) { return comp[r - 1] - (l == 0 ? 0 : comp[l - 1]); }, [&] (intT j) {*/
-    parallel_for((intT)0, cnt, [&] (intT j) {
-      flags[j] = flags[j] && !add_cavity(vv[j], t[j], qs[j], TT);
+//    range::parallel_for((intT)0, cnt, [&] (int l, int r) { return comp[r - 1] - (l == 0 ? 0 : comp[l - 1]); }, [&] (intT j) {
+    range::parallel_for((intT)0, cnt, [&] (int l, int r) { return r - l; }, [&, flags_ref, vv, t_ref, qs_ref] (intT j) {
+//    cilk_for (int j = 0; j < cnt; j++)
+      flags_ref[j] = flags_ref[j] && !add_cavity(vv[j], t_ref[j], qs_ref[j], TT);
+    }, [&, flags_ref, vv, t_ref, qs_ref] (intT l, intT r) {
+      for (int j = l; j < r; j++) {
+        flags_ref[j] = flags_ref[j] && !add_cavity(vv[j], t_ref[j], qs_ref[j], TT);
+      }
     });
     
     // Pack the failed vertices back onto Q
+#ifdef MANUAL_ALLOCATION
+#ifdef PBBS_SEQUENCE
+    intT k = pbbs::sequence::pack(vv, h, flags, cnt);
+#else
+    intT k = (intT)dps::pack(flags, vv, vv + cnt, h);
+#endif
+    pmem::copy(h, h + k, vv);
+#else
+#ifdef PBBS_SEQUENCE
+    intT k = pbbs::sequence::pack(vv, h.begin(), flags.cbegin(), cnt);
+#else
     intT k = (intT)dps::pack(flags.cbegin(), vv, vv + cnt, h.begin());
+#endif
     pmem::copy(h.cbegin(), h.cbegin() + k, vv);
+#endif
     failed += k;
     top = top - cnt + k; // adjust top, accounting for failed vertices
   }
@@ -325,18 +369,26 @@ triangles<point2d> refine(triangles<point2d> Tri) {
     timer.end("queue initialization");
     timer.start();
   
+  pasl::pctl::timer entries_timer;
+  pasl::pctl::timer pack_timer;
+  pasl::pctl::timer table_timer;
+  pasl::pctl::timer refining_timer;
   // Each iteration processes all bad triangles from the workQ while
   // adding new bad triangles to a new queue
   while (1) {
+    entries_timer.start();
     parray<tri*> badTT = workQ.entries();
     workQ.del();
+    entries_timer.end();
     
+    pack_timer.start();
     // packs out triangles that are no longer bad
     parray<bool> flags(badTT.size(), [&] (intT i) {
       return badTT[i]->bad;
     });
     parray<tri*> badT = pack(badTT.cbegin(), badTT.cend(), flags.cbegin());
     intT numBad = (intT)badT.size();
+    pack_timer.end();
     
 //    cout << "numBad = " << numBad << endl;
     if (numBad == 0) break;
@@ -344,7 +396,8 @@ triangles<point2d> refine(triangles<point2d> Tri) {
       cout << "ran out of vertices" << endl;
       abort();
     }
-    
+
+    table_timer.start();
     // allocate 1 vertex per bad triangle and assign triangle to it
     parallel_for((intT)0, numBad, [&] (intT i) {
       badT[i]->bad = 2; // used to detect whether touched
@@ -353,19 +406,23 @@ triangles<point2d> refine(triangles<point2d> Tri) {
     
     // the new work queue
     workQ = make_triangle_table(numBad);
-    
+    table_timer.end();
+
+    refining_timer.start();
     // This does all the work
     add_refining_vertices(v.begin() + numPoints - n, numBad, numPoints, workQ);
+    refining_timer.end();
     
     // push any bad triangles that were left untouched onto the Q
     parallel_for((intT)0, numBad, [&] (intT i) {
       if (badT[i]->bad==2) workQ.insert(badT[i]);
     });
-    
+
     numPoints += numBad;
     numTriangs += 2*numBad;
   }
-  timer.end("refine");timer.start();
+  timer.end("refine");
+  timer.start();
   // Extract Vertices for result
   parray<bool> flag(numTriangs, [&] (intT i) {
     return (vv[i].badT == NULL);
@@ -391,6 +448,9 @@ triangles<point2d> refine(triangles<point2d> Tri) {
   });
   //cout << "total triangles = " << I.n << endl;
   timer.end("finalization");
+  entries_timer.report_total("entries");
+  pack_timer.report_total("pack");
+  table_timer.report_total("table");  refining_timer.report_total("refining");
   return triangles<point2d>(nO, (intT)I.size(), rp, rt);
 }
   
