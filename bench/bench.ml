@@ -258,11 +258,16 @@ let mk_files_inputs benchmark : Params.t =
      (mk_infile "data/dragonTriangles.txt" & mk_infile2 "data/dragonRays.txt" & mk_outfile "_data/dragon_ray_cast_dataset.bin")))
   | "loop" ->
     (mk_type "pair_int_int" &
-    ((mk_infile "data/loop_10.txt" & mk_outfile "_data/loop_10.bin") ++
-     (mk_infile "data/loop_1000.txt" & mk_outfile "_data/loop_1000.bin") ++
-     (mk_infile "data/loop_30000.txt" & mk_outfile "_data/loop_30000.bin") ++
-     (mk_infile "data/loop_3000000.txt" & mk_outfile "_data/loop_3000000.bin") ++
-     (mk_infile "data/loop_100000000.txt" & mk_outfile "_data/loop_100000000.bin")))
+    ((mk_infile "data/loop_109_10.txt" & mk_outfile "_data/loop_109_10.bin") ++
+     (mk_infile "data/loop_109_1000.txt" & mk_outfile "_data/loop_109_1000.bin") ++
+     (mk_infile "data/loop_109_30000.txt" & mk_outfile "_data/loop_109_30000.bin") ++
+     (mk_infile "data/loop_109_3000000.txt" & mk_outfile "_data/loop_109_3000000.bin") ++
+     (mk_infile "data/loop_109_100000000.txt" & mk_outfile "_data/loop_109_100000000.bin") ++
+     (mk_infile "data/loop_1010_10.txt" & mk_outfile "_data/loop_1010_10.bin") ++
+     (mk_infile "data/loop_1010_1000.txt" & mk_outfile "_data/loop_1010_1000.bin") ++
+     (mk_infile "data/loop_1010_100000.txt" & mk_outfile "_data/loop_1010_100000.bin") ++
+     (mk_infile "data/loop_1010_33222591.txt" & mk_outfile "_data/loop_1010_33222591.bin") ++
+     (mk_infile "data/loop_1010_1000000000.txt" & mk_outfile "_data/loop_1010_1000000000.bin")))
   | "bfs" ->
     (mk_type "graph" &
     ((mk_infile "data/3Dgrid_J_10000000.txt" & mk_outfile "_data/3Dgrid_J_10000000.bin") ++
@@ -416,7 +421,9 @@ let prog_names = function
   | "bfs" -> "bfs"
   | x -> Pbench.error "invalid benchmark " ^ x
 
-let extensions = XCmd.parse_or_default_list_string "exts" [ "manc"; "norm"; "unko"]
+let extensions = XCmd.parse_or_default_list_string "exts" [ "manc"; "norm"; "unko"; "unke"]
+
+let no_pbbs = XCmd.mem_flag "nopbbs"
 
 let prog benchmark extension =
   sprintf "./%s_bench.%s" (prog_names benchmark) extension
@@ -431,7 +438,7 @@ let make() =
 let mk_progs benchmark = 
   ((mk_list string "prog" (
      List.map (fun ext -> "numactl --interleave=all " ^ (prog benchmark ext)) extensions)) & (mk string "lib_type" "pctl")) ++
-  ((mk_prog ("numactl --interleave=all " ^ (prog benchmark "manc"))) & (mk string "lib_type" "pbbs"))
+  (if no_pbbs then (fun e -> []) else ((mk_prog ("numactl --interleave=all " ^ (prog benchmark "manc"))) & (mk string "lib_type" "pbbs")))
 
 let run() =
   List.iter (fun benchmark ->
@@ -478,7 +485,7 @@ let plot() =
       X (mk_sequence_input_names benchmark);
       Input (Printf.sprintf "_results/results_%s.txt" benchmark);
       Output (Printf.sprintf "_plots/plots_%s.pdf" benchmark);
-      Y_label "exectime";
+      Y_label "relative to pbbs";
       Y eval_relative;
     ]));
     system (Printf.sprintf "cp _results/chart-all.r _results/charts-%s.r" benchmark) arg_virtual_run;
@@ -487,7 +494,6 @@ let plot() =
 let all () = select make run check plot
 
 end
-
 
 (*****************************************************************************)
 (** Main *)
