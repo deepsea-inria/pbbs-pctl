@@ -142,38 +142,6 @@ char* trigramString(intT s, intT e) {
   return T.string(s, e);
 }
 
-/*
-void _cilk_broken(nGramTable T, char** A, char* AA, long* L, intT s, intT n) {
-  parallel_for (intT i = 0; i < n; i++) {
-    A[i] = AA + L[i];
-    T.word(100*(i+s),A[i],100);
-  }
-}
-
-// allocates all words one after the other
-char** trigramWords(intT s, intT e) {
-  intT n = e - s;
-  char **A = new char*[n];
-  long *L = new long[n+1];
-  nGramTable T = nGramTable();
-  parallel_for (intT i = 0; i < n; i++)
-  L[i] = T.wordLength(100*(i+s),100);
-  long m = sequence::scan(L,L,n,utils::addF<long>(),(long) 0);
-  char *AA = new char[m];
-  _cilk_broken(T,A,AA,L,s,n);
-  free(L);
-  A[n] = AA;
-  return A;
-}
- 
-
-void freeWords(char** W, intT n) {
-  free(W[n]);
-  free(W);
-}
-
-*/
-  
 } // end namespace
 } // end namespace
 

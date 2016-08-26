@@ -62,21 +62,14 @@ E median(E a, E b, E c, BinPred f) {
   : (f(a,c) ? a : (f(b,c) ? c : b));
 }
 
-template <class E, class BinPred, class intT>
-class quicksort_contr {
-public:
-  static controller_type contr;
-};
-
-template <class E, class BinPred, class intT>
-controller_type quicksort_contr<E,BinPred,intT>::contr("quicksort");
+constexpr char quicksort_file[] = "quicksort";
 
 // Quicksort based on median of three elements as pivot
 //  and uses insertionSort for small inputs
 template <class E, class BinPred, class intT>
 void quick_sort(E* A, intT n, BinPred f) {
-  using controller_type = quicksort_contr<E,BinPred,intT>;
-  par::cstmt(controller_type::contr, [&] { return n * log(n); }, [&] {
+  
+  par::cstmt<quicksort_file, E, BinPred, intT>([&] { return n * log(n); }, [&] {
 #ifdef MANUAL_CONTROL
     if (n < ISORT) {
       insertion_sort(A, n, f);

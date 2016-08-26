@@ -7,23 +7,15 @@
 namespace pasl {
 namespace pctl {
     
-template <class E, class intT>
-class transpose_contr {
-public:
-  static controller_type contr;
-};
-
-template <class E, class intT>
-controller_type transpose_contr<E,intT>::contr("transpose");
+constexpr char transpose_file[] = "transpose";
 
 #define TRANS_THRESHHOLD 64
-// 64
   
 template <class E, class intT>
 void transpose(E* A, E* B,
                intT rStart, intT rCount, intT rLength,
                intT cStart, intT cCount, intT cLength) {
-  using controller_type = transpose_contr<E, intT>;
+
   auto seq = [&] {
     for (intT i=rStart; i < rStart + rCount; i++)
       for (intT j=cStart; j < cStart + cCount; j++)
@@ -36,7 +28,7 @@ void transpose(E* A, E* B,
     return;
   }
 #endif
-  par::cstmt(controller_type::contr, [&] { return rCount * cCount; }, [&] {
+  par::cstmt<transpose_file, 1, E, intT>( [&] { return rCount * cCount; }, [&] {
     if (cCount < 2 && rCount < 2) {
       seq();
     } else if (cCount > rCount) {
@@ -61,20 +53,12 @@ void transpose(E* A, E* B, intT rCount, intT cCount) {
   transpose(A, B, 0,rCount,cCount,0,cCount,rCount);
 }
 
-template <class E, class intT>
-class block_transpose_contr {
-public:
-  static controller_type contr;
-};
-
-template <class E, class intT>
-controller_type block_transpose_contr<E,intT>::contr("block_transpose");
   
 template <class E, class intT>
 void block_transpose(E *A, E *B, intT *OA, intT *OB, intT *L,
                      intT rStart, intT rCount, intT rLength,
                      intT cStart, intT cCount, intT cLength) {
-  using controller_type = block_transpose_contr<E, intT>;
+
   auto seq = [&] {
     for (intT i=rStart; i < rStart + rCount; i++)
       for (intT j=cStart; j < cStart + cCount; j++) {
@@ -95,7 +79,7 @@ void block_transpose(E *A, E *B, intT *OA, intT *OB, intT *L,
     return;
   }
 #endif
-  par::cstmt(controller_type::contr, [&] { return total; }, [&] {
+  par::cstmt<transpose_file, 2, E, intT>([&] { return total; }, [&] {
     if (cCount < 2 && rCount < 2) {
       seq();
     } else if (cCount > rCount) {
