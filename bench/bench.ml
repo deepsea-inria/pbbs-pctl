@@ -1,6 +1,60 @@
 open XBase
 open Params
 
+(**
+Before running this script the dependencies should be properly installed.
+The pbbs-pctl, pctl and pbbs-include repositories should appear in the same folder at the same level.
+
+This bench script supports following modes and parameters.
+Modes:
+generate - generates all the files need for the specified sizes and benchmarks
+compare - compiles, runs for the specified binaries, sizes of inputs and benchmarks and builds plots for benchmarks
+to compare with pbbs
+
+Parameters of the run.
+Benchmark (list of strings):
+The list of the benchmarks to run on. The supported benchmarks:
+- blockradix_sort
+- comparison_sort
+- remove_duplicates
+- suffix_array (most of the input data is pregenerated)
+- convex_hull
+- nearest_neighbours
+- ray_cast (only has pregenerated input data)
+- bfs (only has pregenerated input data)
+- delaunay (works only on sizes <= medium)
+- delaunay_refine (works only on size small)
+
+Exts (list of strings):
+The extensions of the binaries to compare. The most interesting:
+- manc, the version using manual gc
+- norm100, the version using original gc and kappa 100
+- unke100, the version using the proposed gc and kappa 100
+More modes could be found in Makefile.
+
+Size (list of strings string):
+The specified size of the inputs to run binaries on. The available sizes:
+- small
+- medium
+- large
+
+Proc (list of integers):
+The number of processors to run binaries on.
+
+Runs (int):
+The number of times to get time-data for each test run.
+
+The typical list of commands to generate:
+./bench.ml generate -benchmark blockradix_sort,comparison_sort,remove_duplicates,suffix_array,convex_hull,nearest_neighbours -size large
+./bench.ml generate -benchmark delaunay -size medium
+./bench.ml generate -benchmark delaunay_refine -size small
+
+The typical list of commands to compare approaches:
+./bench.ml compare -benchmark blockradix_sort,comparison_sort,remove_duplicates,suffix_array,convex_hull,nearest_neighbours,ray_cast,bfs -size large -runs 6 -exts norm100,unke100 -proc 1,10,20,30,39
+./bench.ml compare -benchmark delaunay -size medium -runs 6 -exts norm100,unke100 -proc 1,10,20,30,39
+./bench.ml compare -benchmark delaunay_refine -size small -runs 6 -exts norm100,unke100 -proc 1,10,20,30,39
+**)
+
 let system = XSys.command_must_succeed_or_virtual
 
 (*****************************************************************************)
