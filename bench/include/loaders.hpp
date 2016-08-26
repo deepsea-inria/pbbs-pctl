@@ -23,7 +23,6 @@ Item load(std::string file, const Generator_fct& gen, bool regenerate = false) {
   } else {
     Item result = gen();
     std::ofstream out(file, std::ofstream::binary);
-    std::cerr << "Try to write into file\n";
     write_to_file(out, result);
     out.close();
     return result;
@@ -111,7 +110,6 @@ std::string load_trigram_string(std::string file, int n, bool regenerate = false
 }
 
 std::string load_string_from_txt(std::string file, std::string txt_file, bool regenerate = false) {
-//  std::string x = read_string_from_txt(txt_file);
   return load(file, [&] { return read_from_txt_file<std::string>(txt_file); }, regenerate);
 }
 
@@ -135,9 +133,6 @@ ray_cast_test load_ray_cast_test(std::string file, std::string triangles_file, s
 
 void parse_filename(std::string fname, std::string& base, std::string& extension) {
   assert(fname != "");
-/*  std::stringstream ss(fname);
-  std::getline(ss, base, '.');
-  std::getline(ss, extension);*/
   int pos = fname.find_last_of(".");
   base = fname.substr(0, pos);
   extension = fname.substr(pos + 1);

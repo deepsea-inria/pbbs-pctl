@@ -201,7 +201,6 @@ struct read_from_txt_file_struct<parray<Item>> {
     for (int i = 0; i < n; i++) {
       result[i] = read_from_txt_file_struct<Item>()(words, p);
     }
-    std::cerr << "Finished loading\n";
     return result;
   }
 
