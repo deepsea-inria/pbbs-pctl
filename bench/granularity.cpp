@@ -99,6 +99,101 @@ namespace with_gc {
   
 } // end namespace
 
+namespace with_oracle_guided {
+  
+  template <class Item, class Predicate>
+  class nb_occurrences_rec_contr {
+  public:
+    static controller_type contr;
+  };
+
+  template <class Item, class Predicate>
+  controller_type nb_occurrences_rec_contr<Item, Predicate>::contr("nb_occurrences_rec" +
+                                                                   sota<Item>() + sota<Predicate>());
+  
+  template <class Item, class Predicate>
+  int nb_occurrences_rec(Item* lo, Item* hi, const Predicate& p) {
+    using controller_type = nb_occurrences_rec_contr<Item, Predicate>;
+    int r;
+    auto n = hi - lo;
+    par::cstmt(controller_type::contr, [&] { return n; }, [&] {
+      if (n == 0) {
+        r = 0;
+      } else if (n == 1 && p(*lo)) {
+        r = 1;
+      } else if (n == 1) {
+        r = 0;
+      } else {
+        auto mid = lo + (n / 2);
+        int r1, r2;
+        primitive_fork2([&] {
+          r1 = nb_occurrences_rec(lo, mid, p);
+        }, [&] {
+          r2 = nb_occurrences_rec(mid, hi, p);
+        });
+        r = r1 + r2;
+      }
+    });
+    return r;
+  }
+  
+} // end namespace
+  
+namespace parallel_with_oracle_guided_and_seq_alt_body {
+  
+  template <class Item, class Predicate>
+  class nb_occurrences_rec_contr {
+  public:
+    static controller_type contr;
+  };
+  
+  template <class Item, class Predicate>
+  controller_type nb_occurrences_rec_contr<Item, Predicate>::contr("nb_occurrences_rec" +
+                                                                   sota<Item>() + sota<Predicate>());
+  
+  template <class Item, class Predicate>
+  int nb_occurrences_rec(Item* lo, Item* hi, const Predicate& p) {
+    using controller_type = nb_occurrences_rec_contr<Item, Predicate>;
+    int r;
+    auto n = hi - lo;
+    par::cstmt(controller_type::contr, [&] { return n; }, [&] {
+      if (n == 0) {
+        r = 0;
+      } else if (n == 1 && p(*lo)) {
+        r = 1;
+      } else if (n == 1) {
+        r = 0;
+      } else {
+        auto mid = lo + (n / 2);
+        int r1, r2;
+        primitive_fork2([&] {
+          r1 = nb_occurrences_rec(lo, mid, p);
+        }, [&] {
+          r2 = nb_occurrences_rec(mid, hi, p);
+        });
+        r = r1 + r2;
+      }
+    }, [&] {
+      r = nb_occurrences_seq(lo, hi, p);
+    });
+    return r;
+  }
+  
+} // end namespace
+  
+namespace parallel_with_level1_reduce {
+  
+  template <class Item, class Predicate>
+  int nb_occurrences_rec(Item* lo, Item* hi, const Predicate& p) {
+    return level1::reduce(lo, hi, 0, [&] (int x, int y) {
+      return x + y;
+    }, [&] (Item& i) {
+      return (p(i)) ? 1 : 0;
+    });
+  }
+  
+} // end namespace
+
 /*---------------------------------------------------------------------*/
 
 void write_random_chars(char* lo, char* hi) {
@@ -179,10 +274,26 @@ void benchmark(Item* lo, Item* hi, const Predicate& p, pbbs::measured_type measu
       result = with_gc::nb_occurrences_rec(lo, hi, p);
     });
   });
+  d.add("parallel_with_oracle_guided", [&] {
+    measure([&] {
+      result = with_oracle_guided::nb_occurrences_rec(lo, hi, p);
+    });
+  });
+  d.add("parallel_with_oracle_guided_and_seq_alt_body", [&] {
+    measure([&] {
+      result = parallel_with_oracle_guided_and_seq_alt_body::nb_occurrences_rec(lo, hi, p);
+    });
+  });
+  d.add("parallel_with_level1_reduce", [&] {
+    measure([&] {
+      result = parallel_with_level1_reduce::nb_occurrences_rec(lo, hi, p);
+    });
+  });
   d.dispatch("algorithm");
   if (result < 0) {
     std::cerr << "bogus result" << std::endl;
   }
+  assert(result == nb_occurrences_seq(lo, hi, p));
 }
   
 template <class Item>
