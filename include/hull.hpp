@@ -101,11 +101,11 @@ intT quick_hull_seq(iter<intT> indices, point2d* p, intT n, intT l, intT r) {
   return m1 + 1 + m2;
 }
 
-controller_type quickhull_contr("quickhull");
+constexpr char quickhull_file[] = "quickhull";
 
 intT quick_hull(iter<intT> indices, iter<intT> tmp, iter<point2d> p, intT n, intT l, intT r) {
   intT result;
-  par::cstmt(quickhull_contr, [&] { return n * std::log2(n); }, [&] {
+  par::cstmt<quickhull_file, intT>([&] { return n * std::log2(n); }, [&] {
     if (n < 2) {
       result = quick_hull_seq(indices, p, n, l, r);
     } else {

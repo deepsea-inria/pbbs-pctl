@@ -1,7 +1,7 @@
 /*!
- * \file scan.cpp
- * \brief Quickcheck for scan
- * \date 2015
+ * \file deterministichash.cpp
+ * \brief Quickcheck for hash table
+ * \date 2016
  * \copyright COPYRIGHT (c) 2015 Umut Acar, Arthur Chargueraud, and
  * Michael Rainey. All rights reserved.
  * \license This project is released under the GNU Public License.

@@ -1,6 +1,60 @@
 open XBase
 open Params
 
+(**
+Before running this script the dependencies should be properly installed.
+The pbbs-pctl, pctl and pbbs-include repositories should appear in the same folder at the same level.
+
+This bench script supports following modes and parameters.
+Modes:
+generate - generates all the files need for the specified sizes and benchmarks
+compare - compiles, runs for the specified binaries, sizes of inputs and benchmarks and builds plots for benchmarks
+to compare with pbbs
+
+Parameters of the run.
+Benchmark (list of strings):
+The list of the benchmarks to run on. The supported benchmarks:
+- blockradix_sort
+- comparison_sort
+- remove_duplicates
+- suffix_array (most of the input data is pregenerated)
+- convex_hull
+- nearest_neighbours
+- ray_cast (only has pregenerated input data)
+- bfs (only has pregenerated input data)
+- delaunay (works only on sizes <= medium)
+- delaunay_refine (works only on size small)
+
+Exts (list of strings):
+The extensions of the binaries to compare. The most interesting:
+- manc, the version using manual gc
+- norm100, the version using original gc and kappa 100
+- unke100, the version using the proposed gc and kappa 100
+More modes could be found in Makefile.
+
+Size (list of strings string):
+The specified size of the inputs to run binaries on. The available sizes:
+- small
+- medium
+- large
+
+Proc (list of integers):
+The number of processors to run binaries on.
+
+Runs (int):
+The number of times to get time-data for each test run.
+
+The typical list of commands to generate:
+./bench.ml generate -benchmark blockradix_sort,comparison_sort,remove_duplicates,suffix_array,convex_hull,nearest_neighbours -size large
+./bench.ml generate -benchmark delaunay -size medium
+./bench.ml generate -benchmark delaunay_refine -size small
+
+The typical list of commands to compare approaches:
+./bench.ml compare -benchmark blockradix_sort,comparison_sort,remove_duplicates,suffix_array,convex_hull,nearest_neighbours,ray_cast,bfs -size large -runs 6 -exts norm100,unke100 -proc 1,10,20,30,39
+./bench.ml compare -benchmark delaunay -size medium -runs 6 -exts norm100,unke100 -proc 1,10,20,30,39
+./bench.ml compare -benchmark delaunay_refine -size small -runs 6 -exts norm100,unke100 -proc 1,10,20,30,39
+**)
+
 let system = XSys.command_must_succeed_or_virtual
 
 (*****************************************************************************)
@@ -258,11 +312,16 @@ let mk_files_inputs benchmark : Params.t =
      (mk_infile "data/dragonTriangles.txt" & mk_infile2 "data/dragonRays.txt" & mk_outfile "_data/dragon_ray_cast_dataset.bin")))
   | "loop" ->
     (mk_type "pair_int_int" &
-    ((mk_infile "data/loop_10.txt" & mk_outfile "_data/loop_10.bin") ++
-     (mk_infile "data/loop_1000.txt" & mk_outfile "_data/loop_1000.bin") ++
-     (mk_infile "data/loop_30000.txt" & mk_outfile "_data/loop_30000.bin") ++
-     (mk_infile "data/loop_3000000.txt" & mk_outfile "_data/loop_3000000.bin") ++
-     (mk_infile "data/loop_100000000.txt" & mk_outfile "_data/loop_100000000.bin")))
+    ((mk_infile "data/loop_109_10.txt" & mk_outfile "_data/loop_109_10.bin") ++
+     (mk_infile "data/loop_109_1000.txt" & mk_outfile "_data/loop_109_1000.bin") ++
+     (mk_infile "data/loop_109_30000.txt" & mk_outfile "_data/loop_109_30000.bin") ++
+     (mk_infile "data/loop_109_3000000.txt" & mk_outfile "_data/loop_109_3000000.bin") ++
+     (mk_infile "data/loop_109_100000000.txt" & mk_outfile "_data/loop_109_100000000.bin") ++
+     (mk_infile "data/loop_1010_10.txt" & mk_outfile "_data/loop_1010_10.bin") ++
+     (mk_infile "data/loop_1010_1000.txt" & mk_outfile "_data/loop_1010_1000.bin") ++
+     (mk_infile "data/loop_1010_100000.txt" & mk_outfile "_data/loop_1010_100000.bin") ++
+     (mk_infile "data/loop_1010_33222591.txt" & mk_outfile "_data/loop_1010_33222591.bin") ++
+     (mk_infile "data/loop_1010_1000000000.txt" & mk_outfile "_data/loop_1010_1000000000.bin")))
   | "bfs" ->
     (mk_type "graph" &
     ((mk_infile "data/3Dgrid_J_10000000.txt" & mk_outfile "_data/3Dgrid_J_10000000.bin") ++
@@ -416,7 +475,9 @@ let prog_names = function
   | "bfs" -> "bfs"
   | x -> Pbench.error "invalid benchmark " ^ x
 
-let extensions = XCmd.parse_or_default_list_string "exts" [ "manc"; "norm"; "unko"]
+let extensions = XCmd.parse_or_default_list_string "exts" [ "manc"; "norm"; "unko"; "unke"]
+
+let no_pbbs = XCmd.mem_flag "nopbbs"
 
 let prog benchmark extension =
   sprintf "./%s_bench.%s" (prog_names benchmark) extension
@@ -431,7 +492,7 @@ let make() =
 let mk_progs benchmark = 
   ((mk_list string "prog" (
      List.map (fun ext -> "numactl --interleave=all " ^ (prog benchmark ext)) extensions)) & (mk string "lib_type" "pctl")) ++
-  ((mk_prog ("numactl --interleave=all " ^ (prog benchmark "manc"))) & (mk string "lib_type" "pbbs"))
+  (if no_pbbs then (fun e -> []) else ((mk_prog ("numactl --interleave=all " ^ (prog benchmark "manc"))) & (mk string "lib_type" "pbbs")))
 
 let run() =
   List.iter (fun benchmark ->
@@ -478,7 +539,7 @@ let plot() =
       X (mk_sequence_input_names benchmark);
       Input (Printf.sprintf "_results/results_%s.txt" benchmark);
       Output (Printf.sprintf "_plots/plots_%s.pdf" benchmark);
-      Y_label "exectime";
+      Y_label "relative to pbbs";
       Y eval_relative;
     ]));
     system (Printf.sprintf "cp _results/chart-all.r _results/charts-%s.r" benchmark) arg_virtual_run;
@@ -487,7 +548,6 @@ let plot() =
 let all () = select make run check plot
 
 end
-
 
 (*****************************************************************************)
 (** Main *)

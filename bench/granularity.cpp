@@ -299,6 +299,7 @@ void benchmark(Item* lo, Item* hi, const Predicate& p, pbbs::measured_type measu
 template <class Item>
 void benchmark(pbbs::measured_type measure) {
   int n = cmdline::parse<int>("n");
+  int nb_hash_iters = cmdline::parse_or_default("nb_hash_iters", 0);
   Item* data = create_random_array<Item>(n);
   auto lo = data;
   auto hi = lo + n;
@@ -309,13 +310,23 @@ void benchmark(pbbs::measured_type measure) {
       return d == c;
     };
     benchmark(lo, hi, p, measure);
-  } else {
+  } else if (nb_hash_iters == 0) {
     auto h = hash(c);
     auto p = [h] (Item& d) {
       return h == hash(d);
     };
     benchmark(lo, hi, p, measure);
-  }
+  } else {
+    auto h = hash(c);
+    auto p = [h,nb_hash_iters] (Item& d) {
+      unsigned int hh = hash(d);
+      for (int i = 0; i < nb_hash_iters; i++) {
+        hh = hash(hh);
+      }
+      return h == hh;
+    };
+    benchmark(lo, hi, p, measure);
+  } 
   free(data);
 }
   

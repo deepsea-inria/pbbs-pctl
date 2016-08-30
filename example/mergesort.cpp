@@ -1,6 +1,6 @@
 /*!
  * \file mergesort.cpp
- * \brief Benchmarking script for parallel sorting algorithms
+ * \brief Example of parallel mergesort usage
  * \date 2015
  * \copyright COPYRIGHT (c) 2015 Umut Acar, Arthur Chargueraud, and
  * Michael Rainey. All rights reserved.

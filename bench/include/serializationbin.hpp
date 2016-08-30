@@ -74,7 +74,6 @@ struct read_from_file_struct<parray<Item>> {
   parray<Item> operator()(std::ifstream& in) const {
     long size = 0;
     in.read(reinterpret_cast<char*>(&size), sizeof(long));
-    std::cerr << "Read size: " << size << std::endl;
     parray<Item> result(size);
     in.read(reinterpret_cast<char*>(result.begin()), sizeof(Item) * size);
     return result;
@@ -84,8 +83,6 @@ struct read_from_file_struct<parray<Item>> {
 template <class Item>
 struct write_to_file_struct<parray<Item>> {
   void operator()(std::ofstream& out, parray<Item>& a) {
-//    std::cerr << "Write to file\n";
-//    std::cerr << a.size() << std::endl;
     long size = a.size();
     out.write(reinterpret_cast<char*>(&size), sizeof(long));
     out.write(reinterpret_cast<char*>(a.begin()), sizeof(Item) * size);
@@ -203,7 +200,6 @@ struct read_from_file_struct<ray_cast_test> {
 template <>
 struct write_to_file_struct<ray_cast_test> {
   void operator()(std::ofstream& out, ray_cast_test& test) {
-//    std::cerr << "Write to file " << test.points.size() << " " << test.triangles.size() << " " << test.rays.size() << std::endl;
     write_to_file_struct<parray<point3d>>()(out, test.points);
     write_to_file_struct<parray<triangle>>()(out, test.triangles);
     write_to_file_struct<parray<ray<point3d>>>()(out, test.rays);

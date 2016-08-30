@@ -1,7 +1,7 @@
 /*!
- * \file psort.cpp
+ * \file blockradixsort_bench.cpp
  * \brief Benchmarking script for parallel sorting algorithms
- * \date 2015
+ * \date 2016
  * \copyright COPYRIGHT (c) 2015 Umut Acar, Arthur Chargueraud, and
  * Michael Rainey. All rights reserved.
  * \license This project is released under the GNU Public License.
@@ -25,7 +25,7 @@ using parray = pasl::pctl::parray<Item>;
 
 template <class Item>
 void pbbs_pctl_call(pbbs::measured_type measured, parray<Item>& x) {
-  std:string lib_type = deepsea::cmdline::parse_or_default_string("lib_type", "pctl");
+  std::string lib_type = deepsea::cmdline::parse_or_default_string("lib_type", "pctl");
   if (lib_type == "pbbs") {
     measured([&] {
       pbbs::integerSort<int>(&x[0], (int)x.size());

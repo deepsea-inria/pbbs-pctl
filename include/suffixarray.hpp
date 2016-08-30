@@ -29,7 +29,6 @@
 
 #include <iostream>
 #include "blockradixsort.hpp"
-//#include "merge.hpp"
 #include "psort.hpp"
 #include "utils.hpp"
 #include "rangemin.hpp"
@@ -218,7 +217,6 @@ void suffix_array_rec(intT* s, intT n, intT K, bool find_LCP,
    main_timer.start();
 #endif
 
-//  std::cerr << "Parallel for\n";
 #ifdef ESTIMATOR_LOGGING
   long long before = pasl::pctl::granularity::threads_created();
 #endif

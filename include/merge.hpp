@@ -97,8 +97,8 @@ void merge(ET* S1, intT l1, ET* S2, intT l2, ET* R, F f) {
   }
 #endif
 
-  using controller_type = pasl::pctl::granularity::controller_holder<merge_file, 1, ET, F, intT>;
-  pasl::pctl::granularity::cstmt(controller_type::controller, [&] { return l1 + l2; }, [&] {
+
+  pasl::pctl::granularity::cstmt<merge_file, 1, ET, F, intT>([&] { return l1 + l2; }, [&] {
     // always split the larger in half
       intT m1 = l1 / 2;
       intT m2 = binSearch(S2, l2, S1[m1], f);

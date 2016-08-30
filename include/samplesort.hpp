@@ -79,20 +79,13 @@ void split_positions(E* a, E* b, intT* c, intT length_a, intT length_b, BinPred 
 #define PIVOT_QUOT 2
 #define comparison_sort(__A, __n, __compare) (quick_sort(__A, __n, __compare))
 
-template <class E, class BinPred, class intT>
-class samplesort_contr {
-public:
-  static controller_type contr;
-};
-
-template <class E, class BinPred, class intT>
-controller_type samplesort_contr<E,BinPred,intT>::contr("samplesort");
+constexpr char samplesort_file[] = "samplesort";
 
 template<class E, class BinPred, class intT>
 void sample_sort (E* a, intT n, BinPred compare) {
 //  std::cerr << "Right here " << n << "\n";
-  using controller_type = samplesort_contr<E, BinPred, intT>;
-  par::cstmt(controller_type::contr, [&] { return (n * log(n)); }, [&] {
+
+  par::cstmt<samplesort_file, E, BinPred, intT>([&] { return (n * log(n)); }, [&] {
 #ifdef MANUAL_CONTROL
     if (n <= SSORT_THR) {
 //      comparison_sort(a, n, compare);
