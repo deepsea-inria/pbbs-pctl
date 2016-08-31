@@ -344,7 +344,7 @@ let pretty_n n =
   if sn = big_n then
     "large"
   else if sn = small_n then
-    "medium"
+    "medium, hash"
   else if sn = tiny_n then
     "small"
   else
@@ -362,7 +362,7 @@ let formatter =
  Env.format (Env.(
   [
     ("proc", Format_custom (fun n -> sprintf "Nb. cores %s" n));
-    ("use_hash", Format_custom (fun n -> if n = "1" then "hash=yes" else "hash=no"));
+    ("use_hash", Format_custom (fun n -> ""));
     ("n", Format_custom pretty_n);
     ("nb_hash_iters", Format_custom (fun n -> "slow hash"));
     ("item_szb", Format_custom pretty_item_szb);
@@ -392,7 +392,7 @@ let plot() =
     Mk_bar_plot.(call ([
       Bar_plot_opt Bar_plot.([
          X_titles_dir Vertical;
-         Y_axis [ Axis.Is_log false; Axis.Lower (Some 0.); Axis.Upper(Some 1.);] ]);
+         Y_axis [ Axis.Is_log false; Axis.Lower (Some 0.); Axis.Upper(Some 0.6);] ]);
       Formatter formatter;
       Charts mk_unit;
       Series mk_configurations;
