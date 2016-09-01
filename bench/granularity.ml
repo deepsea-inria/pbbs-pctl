@@ -110,7 +110,7 @@ let mk_item_szb = mk int "item_szb" 1
 
 let mk_use_hash = mk int "use_hash" 0
 
-let thresholds = XList.take 3 thresholds
+let thresholds = XList.take 6 thresholds
 
 let mk_thresholds = mk_list int "threshold" thresholds
 
