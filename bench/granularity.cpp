@@ -376,7 +376,7 @@ void benchmark(int lo, int hi, Pointer d, const Weight& w, const Predicate& p,
                pbbs::measured_type measure) {
   int result;
   cmdline::dispatcher dp;
-  dp.add("nested_parallel_gc", [&] {
+  dp.add("nested_parallel_with_gc", [&] {
     measure([&] {
       result = nested_parallel_with_gc::nb_occurrences(lo, hi, d, w, p);
     });
