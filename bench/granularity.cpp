@@ -207,7 +207,7 @@ namespace nested_parallel_with_gc {
   template <class Pointer, class Weight, class Predicate>
   int nb_occurrences(int lo, int hi, Pointer d, const Weight& w, const Predicate& p) {
     int r = 0;
-    if (w(lo, hi, d) <= threshold) {
+    if ((hi - lo) <= 2 || w(lo, hi, d) <= threshold) {
       for (int i = lo; i < hi; i++) {
         auto v = d[i];
         r += with_gc::nb_occurrences_rec(v.first, v.second, p);
@@ -463,6 +463,7 @@ void benchmark(pbbs::measured_type measure) {
     auto c = *data.second;
     auto w = [&] (int lo, int hi, indexer<Item> idxr){
       auto d = idxr.segdes;
+      std::cout << "lo = " << lo << " hi = " << hi << " " << (d[hi].second - d[lo].second) << std::endl;
       return d[hi].second - d[lo].second;
     };
     if (! cmdline::parse<bool>("use_hash")) {
