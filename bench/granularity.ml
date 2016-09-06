@@ -94,6 +94,16 @@ let small_n = 100000
 
 let tiny_n = 1000
 
+let mk_algorithm = mk string "algorithm"
+
+let mk_item_szb = mk int "item_szb"
+
+let mk_use_hash = mk int "use_hash"
+
+let mk_n = mk int "n"
+
+let mk_nb_hash_iters = mk int "nb_hash_iters"
+
 (*****************************************************************************)
 (** Single-byte experiment *)
 
@@ -121,8 +131,6 @@ let mk_common = mk_n & mk_item_szb & mk_use_hash
 let mk_common_parallel = mk_common & mk_numa_interleave & mk_proc
                                                             
 let mk_common_sequential = mk_common & mk_numa_firsttouch
-
-let mk_algorithm a = mk string "algorithm" a
 
 let mk_algorithm_sequential = mk_algorithm "sequential"
 
@@ -244,14 +252,6 @@ let prog = "./granularity.virtual"
 
 let make() =
   build "." ["granularity.unke100"] arg_virtual_build
-
-let mk_item_szb = mk int "item_szb"
-
-let mk_use_hash = mk int "use_hash"
-
-let mk_n = mk int "n"
-
-let mk_nb_hash_iters = mk int "nb_hash_iters"
 
 let mk_thresholds = mk_list int "threshold" [1;single_byte_threshold]
 
@@ -408,6 +408,185 @@ let all () = select make run check plot
 end
 
 (*****************************************************************************)
+(** Nested Single Byte experiment *)
+
+module ExpNestedSingleByte = struct
+
+let name = "nested_single_byte"
+
+let prog = "./granularity.virtual"
+
+let make() =
+  build "." ["granularity.unke100"] arg_virtual_build
+
+let big_n = 20000
+let small_n = 1000
+let tiny_n = 80
+
+let mk_item_szb = mk int "item_szb" 1
+
+let mk_use_hash = mk int "use_hash" 0
+
+let thresholds = XList.take 6 thresholds
+
+let mk_thresholds = mk_list int "threshold" thresholds
+
+let mk_n = mk int "n" big_n
+        
+let mk_common = mk_n & mk_item_szb & mk_use_hash
+
+let mk_common_parallel = mk_common & mk_numa_interleave & mk_proc
+                                                            
+let mk_common_sequential = mk_common & mk_numa_firsttouch
+
+let mk_algorithm_sequential = mk_algorithm "sequential"
+
+let mk_nested_parallel_with_gc = mk_algorithm "nested_parallel_with_gc"
+                                                        
+let run() =
+  Mk_runs.(call (run_modes @ [
+    Output (file_results name);
+    Timeout 400;
+    Args (
+     mk_prog prog 
+   & mk_nested_parallel_with_gc
+   & mk_thresholds
+      )]))
+
+let check = nothing  (* do something here *)
+
+let plot() = ()
+   (*
+    Mk_bar_plot.(call ([
+      Bar_plot_opt Bar_plot.([
+         X_titles_dir Vertical;
+         Y_axis [ Axis.Is_log false;] ]);
+      Formatter formatter;
+      Charts mk_unit;
+      Series mk_proc;
+      X ( mk_algo_sim ++ mk_algo_sta ++ (mk_algo_dyn & mk_thresholds) );
+      Input (file_results name);
+      Output (file_plots name);
+      Y_label "Number of operations per second per core";
+      Y eval_nb_operations_per_second;
+  ]))
+    *)
+
+let all () = select make run check plot
+
+end
+
+(*****************************************************************************)
+(** Nested Oracle-guided experiment *)
+
+module ExpNestedOracleGuided = struct
+
+let name = "nested_oracle_guided"
+
+let prog = "./granularity.virtual300"
+
+let make() =
+  build "." ["granularity.unke"] arg_virtual_build
+        
+let mk_common = mk_numa_interleave & mk_proc
+
+let mk_algorithm_parallel_with_gc =
+  mk string "algorithm" "nested_parallel_with_gc"
+        
+let mk_algorithm_parallel_with_level2 =
+  mk string "algorithm" "nested_parallel_with_level2"
+
+let mk_thresholds = mk_list int "threshold" [1;5000]
+     
+let mk_algorithm_manual =
+  mk_algorithm_parallel_with_gc & mk_thresholds
+
+let mk_with_char =
+  (mk_item_szb 1) & (mk_use_hash 0) & (mk_n ExpNestedSingleByte.big_n)
+                                          
+let mk_with_cheap_hash =
+    (mk_item_szb 2048) & (mk_use_hash 1) & (mk_n ExpNestedSingleByte.small_n)
+                                             
+let mk_with_expensive_hash =
+    (mk_item_szb 2048) & (mk_use_hash 1) & (mk_n ExpNestedSingleByte.tiny_n) & (mk_nb_hash_iters 1000000)
+
+let mk_configurations = mk_with_char ++ mk_with_cheap_hash ++ mk_with_expensive_hash
+
+let pretty_algorithm n =
+  if n = "nested_parallel_with_gc" then
+    "Manual granularity control"
+  else if n = "nested_parallel_with_level2" then
+    "Oracle guided"
+  else
+    "<unknown algorithm>"
+
+let pretty_n n =
+  let sn = int_of_string n in
+  if sn = big_n then
+    "large"
+  else if sn = small_n then
+    "medium, hash"
+  else if sn = tiny_n then
+    "small"
+  else
+    "<unknown problem size>"
+
+let pretty_item_szb n =
+  if n = "1" then
+    "char"
+  else if n = "2048" then
+    "2k char"
+  else
+    "<unknown nb char>"
+      
+let formatter =
+ Env.format (Env.(
+  [
+    ("proc", Format_custom (fun n -> sprintf "Nb. cores %s" n));
+    ("use_hash", Format_custom (fun n -> ""));
+    ("n", Format_custom pretty_n);
+    ("nb_hash_iters", Format_custom (fun n -> "slow hash"));
+    ("item_szb", Format_custom pretty_item_szb);
+    ("algorithm", Format_custom pretty_algorithm);
+   ]
+  ))            
+                                                  
+let mk_algorithms =
+     mk_algorithm_manual
+  ++ mk_algorithm_parallel_with_level2
+                                                  
+let run() =
+  Mk_runs.(call (run_modes @ [
+    Output (file_results name);
+    Timeout 400;
+    Args (
+      mk_prog prog
+   &  mk_common
+   & mk_algorithms
+   &  mk_configurations)]))
+
+let check = nothing  (* do something here *)
+
+let plot() = 
+    Mk_bar_plot.(call ([
+      Bar_plot_opt Bar_plot.([
+         X_titles_dir Vertical;
+         Y_axis [ Axis.Is_log false; Axis.Lower (Some 0.); Axis.Upper(Some 1.6);] ]);
+      Formatter formatter;
+      Charts mk_unit;
+      Series mk_algorithms;
+      X mk_configurations;
+      Input (file_results name);
+      Output (file_plots name);
+      Y_label "Time (s)";
+      Y eval_exectime;
+  ]))
+
+let all () = select make run check plot
+
+end
+
+(*****************************************************************************)
 (** Main *)
 
 let _ =
@@ -417,6 +596,8 @@ let _ =
     "two_kilo", ExpTwoKilo.all;
     "thresholds", ExpThresholds.all;
     "oracle_guided", ExpOracleGuided.all;
+    "nested_single_byte", ExpNestedSingleByte.all;
+    "nested_oracle_guided", ExpNestedOracleGuided.all;
   ]
   in
   Pbench.execute_from_only_skip arg_actions [] bindings;
