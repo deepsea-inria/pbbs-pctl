@@ -463,7 +463,6 @@ void benchmark(pbbs::measured_type measure) {
     auto c = *data.second;
     auto w = [&] (int lo, int hi, indexer<Item> idxr){
       auto d = idxr.segdes;
-      std::cout << "lo = " << lo << " hi = " << hi << " " << (d[hi].second - d[lo].second) << std::endl;
       return d[hi].second - d[lo].second;
     };
     if (! cmdline::parse<bool>("use_hash")) {
