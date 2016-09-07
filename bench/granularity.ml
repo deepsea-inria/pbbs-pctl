@@ -569,6 +569,10 @@ let check = nothing  (* do something here *)
 
 let plot() = 
     Mk_bar_plot.(call ([
+      Chart_opt Chart.([
+            Legend_opt Legend.([
+               Legend_pos Top_left
+               ])]);
       Bar_plot_opt Bar_plot.([
          X_titles_dir Vertical;
          Y_axis [ Axis.Is_log false; Axis.Lower (Some 0.); Axis.Upper(Some 1.6);] ]);
