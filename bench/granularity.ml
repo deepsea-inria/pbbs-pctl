@@ -496,7 +496,7 @@ let mk_algorithm_parallel_with_gc =
 let mk_algorithm_parallel_with_level2 =
   mk string "algorithm" "nested_parallel_with_level2"
 
-let mk_thresholds = mk_list int "threshold" [1;5000]
+let mk_thresholds = mk_list int "threshold" [(*1;*)5000]
      
 let mk_algorithm_manual =
   mk_algorithm_parallel_with_gc & mk_thresholds
