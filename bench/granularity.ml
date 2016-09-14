@@ -329,9 +329,9 @@ let mk_algorithm_manual =
 
 let pretty_algorithm n =
   if n = "parallel_with_oracle_guided" then
-    "Oracle guided"
+    "BOGUS"
   else if n = "parallel_with_oracle_guided_and_seq_alt_body" then
-    "Oracle guided + alt seq body"
+    "Oracle guided"
   else if n = "parallel_with_level1_reduce" then
     "Reduce (level 1)"
   else if n = "parallel_with_gc" then
@@ -372,8 +372,8 @@ let formatter =
                                                   
 let mk_configurations =
      mk_algorithm_manual
-  ++ mk_algorithm_parallel_with_oracle_guided
-     (*  ++ mk_algorithm_parallel_with_oracle_guided_and_seq_alt_body*)
+     (*  ++ mk_algorithm_parallel_with_oracle_guided*)
+       ++ mk_algorithm_parallel_with_oracle_guided_and_seq_alt_body
   ++ mk_algorithm_parallel_with_level1_reduce
                                                   
 let run() =
