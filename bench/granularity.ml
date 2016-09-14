@@ -373,7 +373,7 @@ let formatter =
 let mk_configurations =
      mk_algorithm_manual
   ++ mk_algorithm_parallel_with_oracle_guided
-  ++ mk_algorithm_parallel_with_oracle_guided_and_seq_alt_body
+     (*  ++ mk_algorithm_parallel_with_oracle_guided_and_seq_alt_body*)
   ++ mk_algorithm_parallel_with_level1_reduce
                                                   
 let run() =
