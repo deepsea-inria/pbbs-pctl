@@ -486,7 +486,7 @@ let make() =
   List.iter (fun benchmark ->
     List.iter (fun extension ->
       build "." [prog benchmark extension] arg_virtual_build
-    ) extensions
+    ) ("manc" :: extensions)
   ) arg_benchmarks
 
 let mk_progs benchmark = 
