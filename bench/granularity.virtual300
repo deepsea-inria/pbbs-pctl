@@ -1,0 +1,12 @@
+#!/bin/bash
+
+incmd=$@
+
+outcmd="./granularity.unke $incmd"
+
+if [[ $incmd == *"-numa_interleave 1"* ]]
+then
+    outcmd="numactl --interleave=all $outcmd"
+fi
+
+$outcmd
