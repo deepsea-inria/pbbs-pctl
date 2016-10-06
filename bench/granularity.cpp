@@ -206,10 +206,7 @@ namespace nested_parallel_with_gc {
   int nb_occurrences(int lo, int hi, Pointer d, const Weight& w, const Predicate& p) {
     int r = 0;
     if (w(lo, hi, d) <= with_gc::threshold) {
-      for (int i = lo; i < hi; i++) {
-        auto v = d[i];
-        r += nb_occurrences_seq(v.first, v.second, p);
-      }
+      r = nb_occurrences_seq(lo, hi, d, w, p);
     } else if ((hi - lo) <= 2) {
       for (int i = lo; i < hi; i++) {
         auto v = d[i];
