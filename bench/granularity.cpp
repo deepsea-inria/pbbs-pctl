@@ -20,7 +20,9 @@ int szb1 = 4 * 256;
 static constexpr
 int szb2 = 2*szb1;
 static constexpr
-int szb3 = 1 << 20;
+int szb3 = 1 << 17;
+static constexpr
+int szb4 = 1 << 20;
 
 template <int szb>
 class bytes {
@@ -526,6 +528,8 @@ void determine_item_type(pbbs::measured_type measure) {
     using_item_type<bytes<szb2>>(measure);
   } else if (item_szb == szb3) {
     using_item_type<bytes<szb3>>(measure);
+  } else if (item_szb == szb4) {
+    using_item_type<bytes<szb4>>(measure);
   } else {
     std::cerr << "bogus item_szb " <<  item_szb << std::endl;
     exit(0);

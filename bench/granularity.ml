@@ -88,11 +88,11 @@ let thresholds =
 
 let single_byte_threshold = List.nth thresholds 3
     
-let big_n = 204800000
+let big_n = 804800000
 
-let small_n = 100000
+let small_n = 400000
 
-let tiny_n = 1000
+let tiny_n = 10000
 
 let mk_algorithm = mk string "algorithm"
 
@@ -101,8 +101,6 @@ let mk_item_szb = mk int "item_szb"
 let mk_use_hash = mk int "use_hash"
 
 let mk_n = mk int "n"
-
-let mk_nb_hash_iters = mk int "nb_hash_iters"
 
 (*****************************************************************************)
 (** Single-byte experiment *)
@@ -260,13 +258,13 @@ let mk_common = mk_numa_interleave & mk_proc & ExpSingleByte.mk_algorithm_parall
 let mk_with_char =
   (mk_item_szb 1) & (mk_use_hash 0) & (mk_n big_n)
                                           
-let mk_with_cheap_hash =
+let mk_with_hash_small =
     (mk_item_szb 2048) & (mk_use_hash 1) & (mk_n small_n)
                                              
-let mk_with_expensive_hash =
-    (mk_item_szb 2048) & (mk_use_hash 1) & (mk_n tiny_n) & (mk_nb_hash_iters 1000000)
+let mk_with_hash_big =
+    (mk_item_szb 131072) & (mk_use_hash 1) & (mk_n tiny_n)
 
-let mk_configurations = mk_with_char ++ mk_with_cheap_hash ++ mk_with_expensive_hash
+let mk_configurations = mk_with_char ++ mk_with_hash_small ++ mk_with_hash_big
                                                              
 let run() =
   Mk_runs.(call (run_modes @ [
@@ -339,22 +337,24 @@ let pretty_algorithm n =
   else
     "<unknown algorithm>"
 
-let pretty_n n =
+let pretty_n n = "" (*
   let sn = int_of_string n in
   if sn = big_n then
     "large"
   else if sn = small_n then
-    "medium, hash"
+    "medium"
   else if sn = tiny_n then
     "small"
   else
-    "<unknown problem size>"
+    "<unknown problem size>" *)
 
 let pretty_item_szb n =
   if n = "1" then
     "char"
   else if n = "2048" then
     "2k char"
+  else if n = "131072" then
+    "100k char"
   else
     "<unknown nb char>"
       
@@ -364,7 +364,6 @@ let formatter =
     ("proc", Format_custom (fun n -> sprintf "Nb. cores %s" n));
     ("use_hash", Format_custom (fun n -> ""));
     ("n", Format_custom pretty_n);
-    ("nb_hash_iters", Format_custom (fun n -> "slow hash"));
     ("item_szb", Format_custom pretty_item_szb);
     ("algorithm", Format_custom pretty_algorithm);
    ]
@@ -419,9 +418,9 @@ let prog = "./granularity.virtual"
 let make() =
   build "." ["granularity.unke100"] arg_virtual_build
 
-let big_n = 20000
-let small_n = 1000
-let tiny_n = 80
+let big_n = 40000
+let small_n = 1500
+let tiny_n = 150
 
 let mk_item_szb = mk int "item_szb" 1
 
@@ -496,7 +495,7 @@ let mk_algorithm_parallel_with_gc =
 let mk_algorithm_parallel_with_level2 =
   mk string "algorithm" "nested_parallel_with_level2"
 
-let mk_thresholds = mk_list int "threshold" [(*1;*)5000]
+let mk_thresholds = mk_list int "threshold" [1;5000]
      
 let mk_algorithm_manual =
   mk_algorithm_parallel_with_gc & mk_thresholds
@@ -504,13 +503,13 @@ let mk_algorithm_manual =
 let mk_with_char =
   (mk_item_szb 1) & (mk_use_hash 0) & (mk_n ExpNestedSingleByte.big_n)
                                           
-let mk_with_cheap_hash =
+let mk_with_hash_small =
     (mk_item_szb 2048) & (mk_use_hash 1) & (mk_n ExpNestedSingleByte.small_n)
                                              
-let mk_with_expensive_hash =
-    (mk_item_szb 2048) & (mk_use_hash 1) & (mk_n ExpNestedSingleByte.tiny_n) & (mk_nb_hash_iters 1000000)
+let mk_with_hash_big =
+    (mk_item_szb 131072) & (mk_use_hash 1) & (mk_n ExpNestedSingleByte.tiny_n)
 
-let mk_configurations = mk_with_char ++ mk_with_cheap_hash ++ mk_with_expensive_hash
+let mk_configurations = mk_with_char ++ mk_with_hash_small ++ mk_with_hash_big
 
 let pretty_algorithm n =
   if n = "nested_parallel_with_gc" then
@@ -520,22 +519,25 @@ let pretty_algorithm n =
   else
     "<unknown algorithm>"
 
-let pretty_n n =
-  let sn = int_of_string n in
-  if sn = big_n then
+let pretty_n n = ""
+(*  let sn = int_of_string n in
+  if sn = ExpNestedSingleByte.big_n then
     "large"
-  else if sn = small_n then
-    "medium, hash"
-  else if sn = tiny_n then
+  else if sn = ExpNestedSingleByte.small_n then
+    "medium"
+  else if sn = ExpNestedSingleByte.tiny_n then
     "small"
-  else
-    "<unknown problem size>"
+else
+n *)
 
 let pretty_item_szb n =
-  if n = "1" then
+  let sn = int_of_string n in
+  if sn = 1 then
     "char"
-  else if n = "2048" then
+  else if sn = 2048 then
     "2k char"
+  else if sn = 131072 then
+    "100k char"
   else
     "<unknown nb char>"
       
@@ -545,7 +547,6 @@ let formatter =
     ("proc", Format_custom (fun n -> sprintf "Nb. cores %s" n));
     ("use_hash", Format_custom (fun n -> ""));
     ("n", Format_custom pretty_n);
-    ("nb_hash_iters", Format_custom (fun n -> "slow hash"));
     ("item_szb", Format_custom pretty_item_szb);
     ("algorithm", Format_custom pretty_algorithm);
    ]
@@ -571,7 +572,7 @@ let plot() =
     Mk_bar_plot.(call ([
       Chart_opt Chart.([
             Legend_opt Legend.([
-               Legend_pos Top_left
+               Legend_pos Top_right
                ])]);
       Bar_plot_opt Bar_plot.([
          X_titles_dir Vertical;
