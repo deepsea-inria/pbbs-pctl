@@ -112,7 +112,7 @@ let name = "single_byte"
 let prog = "./granularity.virtual"
 
 let make() =
-  build "." ["granularity.unke100"] arg_virtual_build
+  build "." ["granularity_bench.unke100"] arg_virtual_build
 
 let mk_item_szb = mk int "item_szb" 1
 
@@ -192,7 +192,7 @@ let name = "two_kilo"
 let prog = "./granularity.virtual"
 
 let make() =
-  build "." ["granularity.unke100"] arg_virtual_build
+  build "." ["granularity_bench.unke100"] arg_virtual_build
 
 let mk_n = mk int "n" small_n
 
@@ -249,7 +249,7 @@ let name = "thresholds"
 let prog = "./granularity.virtual"
 
 let make() =
-  build "." ["granularity.unke100"] arg_virtual_build
+  build "." ["granularity_bench.unke100"] arg_virtual_build
 
 let mk_thresholds = mk_list int "threshold" [1;single_byte_threshold]
 
@@ -309,7 +309,7 @@ let name = "oracle_guided"
 let prog = "./granularity.virtual"
 
 let make() =
-  build "." ["granularity.unke100"] arg_virtual_build
+  build "." ["granularity_bench.unke100"] arg_virtual_build
         
 let mk_common = mk_numa_interleave & mk_proc
         
@@ -416,7 +416,7 @@ let name = "nested_single_byte"
 let prog = "./granularity.virtual"
 
 let make() =
-  build "." ["granularity.unke100"] arg_virtual_build
+  build "." ["granularity_bench.unke100"] arg_virtual_build
 
 let big_n = 40000
 let small_n = 1500
@@ -485,7 +485,7 @@ let name = "nested_oracle_guided"
 let prog = "./granularity.virtual300"
 
 let make() =
-  build "." ["granularity.unke"] arg_virtual_build
+  build "." ["granularity_bench.unke"] arg_virtual_build
         
 let mk_common = mk_numa_interleave & mk_proc
 
