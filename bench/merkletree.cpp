@@ -138,8 +138,8 @@ template <class Hash_policy>
 void merkletree(pbbs::measured_type measure, const Hash_policy& hash_policy) {
   using hash_type = typename Hash_policy::digest_type;
   hash_type* merkle = nullptr;
-  int block_szb = cmdline::parse_int("block_szb");
-  int nb_blocks = 1 << cmdline::parse_int("nb_blocks_lg");
+  int block_szb = cmdline::parse<int>("block_szb");
+  int nb_blocks = 1 << cmdline::parse<int>("nb_blocks_lg");
   if (block_szb == one_kb) {
     std::vector<small_block> blocks(nb_blocks);
     initialize_blocks(blocks.begin(), blocks.end());
@@ -153,7 +153,7 @@ void merkletree(pbbs::measured_type measure, const Hash_policy& hash_policy) {
     initialize_blocks(blocks.begin(), blocks.end());
     merkle = merkletree(measure, blocks.begin(), blocks.end(), hash_policy);
   } else {
-    std::cerr << "Bogus block_szb" << std::endl;
+    std::cerr << "Bogus block_szb " << block_szb << std::endl;
     exit(0);
   }
   free(merkle);
