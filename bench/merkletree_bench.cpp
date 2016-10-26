@@ -79,9 +79,14 @@ void merkletree_par(Block_iterator lo, Block_iterator hi, Hash* merkle_lo,
                     const Hash_block_fn& hash_block_fn) {
   using value_type = typename std::iterator_traits<Block_iterator>::value_type;
   unsigned row_lo = round_up_to_power_of_2((unsigned)(hi - lo));
-  pasl::pctl::range::parallel_for(lo, hi, [&] (Block_iterator, Block_iterator) { return (hi - lo) * sizeof(value_type); }, [&] (Block_iterator it) {
-    auto i = it - lo;
-    hash_block_fn(it, merkle_lo + row_lo + i);
+  pasl::pctl::range::parallel_for(lo, hi, [&] (Block_iterator lo, Block_iterator hi) {
+    return (hi - lo) * sizeof(value_type);
+  }, [&] (Block_iterator it) {
+    hash_block_fn(it, merkle_lo + row_lo + (it - lo));
+  }, [&] (Block_iterator lo, Block_iterator hi) {
+    for (auto it = lo; it != hi; it++) {
+      hash_block_fn(it, merkle_lo + row_lo + (it - lo));
+    }
   });
   for (row_lo = parent(row_lo); row_lo != 0; row_lo = parent(row_lo)) {
     pasl::pctl::parallel_for(row_lo, 2 * row_lo, [&] (unsigned i) {
