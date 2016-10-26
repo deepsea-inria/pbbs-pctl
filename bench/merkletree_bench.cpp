@@ -174,13 +174,22 @@ public:
   }
 };
   
-static constexpr int one_kb = 1 << 10;
-static constexpr int ten_kb = 1 << 17;
-static constexpr int one_mb = 1 << 20;
+static constexpr int lg_half_kb = 9;
+static constexpr int lg_one_kb = 10;
+static constexpr int lg_ten_kb = 17;
+static constexpr int lg_one_mb = 20;
+static constexpr int lg_sixteen_mb = 24;
+static constexpr int half_kb = 1 << lg_half_kb;
+static constexpr int one_kb = 1 << lg_one_kb;
+static constexpr int ten_kb = 1 << lg_ten_kb;
+static constexpr int one_mb = 1 << lg_one_mb;
+static constexpr int sixteen_mb = 1 << lg_sixteen_mb;
 
-using small_block = byte_array<one_kb>;
-using medium_block = byte_array<ten_kb>;
-using large_block = byte_array<one_mb>;
+using half_kb_block = byte_array<half_kb>;
+using one_kb_block = byte_array<one_kb>;
+using ten_kb_block = byte_array<ten_kb>;
+using one_mb_block = byte_array<one_mb>;
+using sixteen_mb_block = byte_array<sixteen_mb>;
   
 void initialize_block(int i, unsigned char* lo, unsigned char* hi) {
   int j = 0;
@@ -204,24 +213,34 @@ void merkletree(pbbs::measured_type measure, const Hash_policy& hash_policy) {
   using hash_type = typename Hash_policy::digest_type;
   hash_type* merkle = nullptr;
   unsigned nb = 0;
-  int block_szb = cmdline::parse<int>("block_szb");
   int nb_blocks = 1 << cmdline::parse<int>("nb_blocks_lg");
-  if (block_szb == one_kb) {
-    std::vector<small_block> blocks(nb_blocks);
+  cmdline::dispatcher d;
+  d.add(std::to_string(lg_half_kb), [&] {
+    std::vector<one_kb_block> blocks(nb_blocks);
     initialize_blocks(blocks.begin(), blocks.end());
     merkle = merkletree(measure, blocks.begin(), blocks.end(), hash_policy, nb);
-  } else if (block_szb == ten_kb) {
-    std::vector<medium_block> blocks(nb_blocks);
+  });
+  d.add(std::to_string(lg_one_kb), [&] {
+    std::vector<one_kb_block> blocks(nb_blocks);
     initialize_blocks(blocks.begin(), blocks.end());
     merkle = merkletree(measure, blocks.begin(), blocks.end(), hash_policy, nb);
-  } else if (block_szb == one_mb) {
-    std::vector<large_block> blocks(nb_blocks);
+  });
+  d.add(std::to_string(lg_ten_kb), [&] {
+    std::vector<ten_kb_block> blocks(nb_blocks);
     initialize_blocks(blocks.begin(), blocks.end());
     merkle = merkletree(measure, blocks.begin(), blocks.end(), hash_policy, nb);
-  } else {
-    std::cerr << "Bogus block_szb " << block_szb << std::endl;
-    exit(0);
-  }
+  });
+  d.add(std::to_string(lg_one_mb), [&] {
+    std::vector<one_mb_block> blocks(nb_blocks);
+    initialize_blocks(blocks.begin(), blocks.end());
+    merkle = merkletree(measure, blocks.begin(), blocks.end(), hash_policy, nb);
+  });
+  d.add(std::to_string(lg_sixteen_mb), [&] {
+    std::vector<sixteen_mb_block> blocks(nb_blocks);
+    initialize_blocks(blocks.begin(), blocks.end());
+    merkle = merkletree(measure, blocks.begin(), blocks.end(), hash_policy, nb);
+  });
+  d.dispatch("block_szb_lg");
   if (cmdline::parse_or_default_bool("print", false)) {
     int i = 0;
     for (auto it = merkle; it != merkle + nb; it++, i++) {
