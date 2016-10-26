@@ -284,12 +284,56 @@ public:
     for (int i = 0; i < sizeof(digest_type); i++) {
       (*dst)[i] = tmp[i] | (*rhs)[i];
     }
-    SHA1((const unsigned char*)(&tmp), sizeof(digest_type), (unsigned char*)dst);
+    SHA256((const unsigned char*)(&tmp), sizeof(digest_type), (unsigned char*)dst);
   }
   
   static
   void hash_range(const unsigned char* lo, const unsigned char* hi, digest_type* dst) {
-    SHA1(lo, hi - lo, (unsigned char*)dst);
+    SHA256(lo, hi - lo, (unsigned char*)dst);
+  }
+  
+};
+
+class sha384 {
+public:
+  
+  using digest_type = byte_array<SHA384_DIGEST_LENGTH>;
+  
+  static
+  void hash_2(digest_type* lhs, digest_type* rhs, digest_type* dst) {
+    digest_type tmp;
+    std::copy((char*)lhs, (char*)(lhs + 1), (char*)&tmp);
+    for (int i = 0; i < sizeof(digest_type); i++) {
+      (*dst)[i] = tmp[i] | (*rhs)[i];
+    }
+    SHA384((const unsigned char*)(&tmp), sizeof(digest_type), (unsigned char*)dst);
+  }
+  
+  static
+  void hash_range(const unsigned char* lo, const unsigned char* hi, digest_type* dst) {
+    SHA384(lo, hi - lo, (unsigned char*)dst);
+  }
+  
+};
+
+class sha512 {
+public:
+  
+  using digest_type = byte_array<SHA512_DIGEST_LENGTH>;
+  
+  static
+  void hash_2(digest_type* lhs, digest_type* rhs, digest_type* dst) {
+    digest_type tmp;
+    std::copy((char*)lhs, (char*)(lhs + 1), (char*)&tmp);
+    for (int i = 0; i < sizeof(digest_type); i++) {
+      (*dst)[i] = tmp[i] | (*rhs)[i];
+    }
+    SHA512((const unsigned char*)(&tmp), sizeof(digest_type), (unsigned char*)dst);
+  }
+  
+  static
+  void hash_range(const unsigned char* lo, const unsigned char* hi, digest_type* dst) {
+    SHA512(lo, hi - lo, (unsigned char*)dst);
   }
   
 };
@@ -301,6 +345,12 @@ void merkletree(pbbs::measured_type measure) {
   });
   d.add("sha256", [&] {
     merkletree(measure, sha256());
+  });
+  d.add("sha384", [&] {
+    merkletree(measure, sha384());
+  });
+  d.add("sha512", [&] {
+    merkletree(measure, sha512());
   });
   d.dispatch("digest");
 }
