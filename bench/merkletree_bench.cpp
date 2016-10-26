@@ -152,6 +152,7 @@ typename Hash_policy::digest_type* merkletree(pbbs::measured_type measure,
 template <int szb>
 class byte_array {
 public:
+  byte_array() { }
   unsigned char contents[szb];
   unsigned char& operator[] (const int i) {
     assert(i >= 0);
