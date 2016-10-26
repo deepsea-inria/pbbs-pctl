@@ -89,10 +89,14 @@ void merkletree_par(Block_iterator lo, Block_iterator hi, Hash* merkle_lo,
     }
   });
   for (row_lo = parent(row_lo); row_lo != 0; row_lo = parent(row_lo)) {
-    pasl::pctl::parallel_for(row_lo, 2 * row_lo, [&] (unsigned i) {
-      size_t l = left_child(i);
-      size_t r = right_child(i);
-      hash_fn(merkle_lo + l, merkle_lo + r, merkle_lo + i);
+    pasl::pctl::range::parallel_for(row_lo, 2 * row_lo, [&] (unsigned lo, unsigned hi) {
+      return (hi - lo) * sizeof(Hash);
+    }, [&] (unsigned i) {
+      hash_fn(merkle_lo + left_child(i), merkle_lo + right_child(i), merkle_lo + i);
+    }, [&] (unsigned lo, unsigned hi) {
+      for (unsigned i = lo; i != hi; i++) {
+        hash_fn(merkle_lo + left_child(i), merkle_lo + right_child(i), merkle_lo + i);
+      }
     });
   }
 }
