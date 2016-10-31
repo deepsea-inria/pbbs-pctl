@@ -192,7 +192,7 @@ void hash_range3(const unsigned char* lo, const unsigned char* hi, Digest& dst,
   auto lo2 = (Digest*)lo;
   auto hi2 = lo2 + m;
   auto hash_fn2 = [&] (const Digest* src1, const Digest* src2, Digest* dst) {
-    hash2(*(Digest*)src1, *(Digest*)src2, *dst, hash_fn);
+    hash2(*((Digest*)src1), *((Digest*)src2), *dst, hash_fn);
   };
   auto hash_block_fn = [&] (const Digest* lo,  Digest* dst) {
     hash_fn((const unsigned char*)lo, sizeof(Digest), (unsigned char*)dst);
