@@ -32,9 +32,9 @@ using namespace granularity;
 template <class Digest, class Hash_fn>
 void hash2(Digest& lhs, Digest& rhs, Digest& dst, const Hash_fn& hash_fn) {
   Digest tmp;
-  pasl::pctl::parallel_for(0, Digest::szb1, [&] (long i) {
+  for (int i = 0; i < Digest::szb1; i++) {
     tmp[i] = lhs[i] | rhs[i];
-  });
+  }
   hash_fn((const unsigned char*)tmp.begin(), (size_t)Digest::szb1, dst.begin());
 }
 
