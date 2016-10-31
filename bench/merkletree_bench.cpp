@@ -32,19 +32,20 @@ using namespace granularity;
 template <class Digest, class Hash_fn>
 void hash2(Digest& lhs, Digest& rhs, Digest& dst, const Hash_fn& hash_fn) {
   Digest tmp;
-  for (int i = 0; i < Digest::szb1; i++) {
+  pasl::pctl::parallel_for(0, Digest::szb1, [&] (long i) {
     tmp[i] = lhs[i] | rhs[i];
-  }
+  });
   hash_fn((const unsigned char*)tmp.begin(), (size_t)Digest::szb1, dst.begin());
 }
 
+#if 0
 template <class Digest, class Hash_fn>
 void hash_range_seq(Digest* lo, Digest* hi, Digest& dst, const Hash_fn& hash_fn) {
   auto n = hi - lo;
   if (n == 0) {
     memset(dst.begin(), 0, Digest::szb1);
   } else if (n == 1) {
-    std::copy(lo->begin(), lo->end(), dst.begin());
+    pasl::pctl::pmem::copy(lo->begin(), lo->end(), dst.begin());
   } else {
     auto mid = lo + (n / 2);
     Digest dst1, dst2;
@@ -70,7 +71,7 @@ public:
   }
   
   void copy(const result_type& src, result_type& dst) const {
-    std::copy(src.begin(), src.end(), dst.begin());
+    pasl::pctl::pmem::copy(src.begin(), src.end(), dst.begin());
   }
   
   // dst, src represent left, right range to be merged, respectively
@@ -108,6 +109,8 @@ void hash_range1(const unsigned char* lo, const unsigned char* hi, Digest& dst, 
   auto hi2 = lo2 + m;
   hash_range_par(lo2, hi2, dst, hash_fn);
 }
+  
+#endif
   
 template <class Int>
 Int left_child(Int i) {
@@ -167,6 +170,34 @@ void merkletree_par(Block_iterator lo, Block_iterator hi, Hash* merkle_lo,
       }
     });
   }
+}
+  
+template <class Digest, class Hash_fn, class Hash_block_fn>
+void hash_range2(Digest* lo, Digest* hi, Digest& dst,
+                 const Hash_fn& hash_fn,
+                 const Hash_block_fn& hash_block_fn) {
+  auto n = hi - lo;
+  Digest* merkle = malloc_array<Digest>(2 * n);
+  merkletree_par(lo, hi, merkle, hash_fn, hash_block_fn);
+  auto root_hash = merkle + 1;
+  pasl::pctl::pmem::copy(root_hash->begin(), root_hash->end(), dst.begin());
+  free(merkle);
+}
+  
+template <class Digest, class Hash_fn>
+void hash_range3(const unsigned char* lo, const unsigned char* hi, Digest& dst,
+                 const Hash_fn& hash_fn) {
+  auto n = hi - lo;
+  auto m = n / sizeof(Digest);
+  auto lo2 = (Digest*)lo;
+  auto hi2 = lo2 + m;
+  auto hash_fn2 = [&] (const Digest* src1, const Digest* src2, Digest* dst) {
+    hash2(*(Digest*)src1, *(Digest*)src2, *dst, hash_fn);
+  };
+  auto hash_block_fn = [&] (const Digest* lo,  Digest* dst) {
+    hash_fn((const unsigned char*)lo, sizeof(Digest), (unsigned char*)dst);
+  };
+  hash_range2(lo2, hi2, dst, hash_fn2, hash_block_fn);
 }
   
 template <class Block_iterator, class Hash_policy>
@@ -353,7 +384,7 @@ public:
       assert(szb == digest_type::szb1);
       hash_2((digest_type*)dst, (digest_type*)src, (digest_type*)dst);
     };
-    hash_range1(lo, hi, *dst, hash_fn);
+    hash_range3(lo, hi, *dst, hash_fn);
   }
   
 };
@@ -372,7 +403,7 @@ public:
   
   static
   void hash_range(const unsigned char* lo, const unsigned char* hi, digest_type* dst) {
-    hash_range1(lo, hi, *dst, [] (const unsigned char* lo, size_t n, unsigned char* dst) {
+    hash_range3(lo, hi, *dst, [] (const unsigned char* lo, size_t n, unsigned char* dst) {
       SHA256(lo, n, dst);
     });
   }
@@ -394,7 +425,7 @@ public:
   
   static
   void hash_range(const unsigned char* lo, const unsigned char* hi, digest_type* dst) {
-    hash_range1(lo, hi, *dst, [] (const unsigned char* lo, size_t n, unsigned char* dst) {
+    hash_range3(lo, hi, *dst, [] (const unsigned char* lo, size_t n, unsigned char* dst) {
       SHA384(lo, n, dst);
     });
   }
@@ -415,7 +446,7 @@ public:
   
   static
   void hash_range(const unsigned char* lo, const unsigned char* hi, digest_type* dst) {
-    hash_range1(lo, hi, *dst, [] (const unsigned char* lo, size_t n, unsigned char* dst) {
+    hash_range3(lo, hi, *dst, [] (const unsigned char* lo, size_t n, unsigned char* dst) {
       SHA512(lo, n, dst);
     });
   }
