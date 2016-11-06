@@ -617,7 +617,7 @@ let mk_block_szb_lg n = mk int "block_szb_lg" n
 
 let mk_nb_blocks_lg n = mk int "nb_blocks_lg" n
 
-let sizes = [(9, 21); (10, 20); (17, 13); (20, 10); (24, 6)]
+let sizes = [(9, 21); (10, 20); (*(17, 13);*) (20, 10); (24, 6)]
 
 let mk_modes = mk_list string "mode" ["manual"; "oracle";]
 
@@ -638,6 +638,18 @@ let run() =
 
 let check = nothing  (* do something here *)
 
+let formatter =
+ Env.format (Env.(
+  [
+    ("proc", Format_custom (fun n -> sprintf "Nb. cores %s" n));
+    ("use_hash", Format_custom (fun n -> ""));
+    ("digest", Format_custom (fun n -> ""));
+    ("mode", Format_custom (fun n -> if n = "manual" then "cilk_for" else "oracle guided"));
+    ("block_szb_lg", Format_custom (fun n -> sprintf "B=2^%s" n));
+    ("nb_blocks_lg", Format_custom (fun n -> sprintf "N=2^%s" n));
+   ]
+  ))            
+
 let plot() =
   Mk_bar_plot.(call ([
       Chart_opt Chart.([
@@ -646,7 +658,7 @@ let plot() =
                ])]);
       Bar_plot_opt Bar_plot.([
          X_titles_dir Vertical;
-         Y_axis [ Axis.Is_log false; Axis.Lower (Some 0.); Axis.Upper(Some 1.6);] ]);
+         Y_axis [ Axis.Is_log false; Axis.Lower (Some 0.); Axis.Upper(Some 3.0);] ]);
       Formatter formatter;
       Charts mk_digests;
       Series mk_modes;
@@ -655,6 +667,7 @@ let plot() =
       Output (file_plots name);
       Y_label "Time (s)";
       Y eval_exectime;
+      Y_whiskers eval_exectime_stddev;
   ]))
 
 
