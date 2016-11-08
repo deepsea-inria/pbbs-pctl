@@ -167,7 +167,7 @@ let types_list = function
   | "loop" -> []
   | "delaunay" -> [ "array_point2d"; ]
   | "delaunay_refine" -> [ "triangles_point2d"; ]
-  | "bfs" -> [ "bfs"; ]
+  | "bfs" | "pbfs" -> [ "graph"; ]
   | _ -> Pbench.error "invalid benchmark"
 
 let generators_list = function
@@ -269,7 +269,7 @@ let generators_list = function
         mk_generator "delaunay_kuzmin";
       ]
     | _ -> Pbench.error "invalid_type")
-  | "bfs" -> (function n -> function typ -> [])
+  | "bfs" | "pbfs" -> (function n -> function typ -> [])
   | _ -> Pbench.error "invalid benchmark"
 
 let mk_generate_sequence_inputs benchmark : Params.t =
@@ -293,6 +293,11 @@ let mk_generate_sequence_inputs benchmark : Params.t =
     & mk_size size
     & mk_generator
     & (mk_outfile (string_of_size size) typ mk_generator) )))))))
+
+(*let graphs = ["chain"; "cube"; "grid_sq"; "paths_100_phases_1"; "paths_20_phases_1"; "paths_524288_phases_1"; "paths_8_phases_1";
+    "phased_524288_single"; "phased_low_50"; "phased_mix_10"; "random_arity_100"; "random_arity_3"; "random_arity_8"; "rmat24"; "rmat27";
+    "tree_2_512_1024"; "tree_2_512_512"; "tree_binary"; "tree_depth_2"]*)
+let graphs = ["grid_sq"; "phased_524288_single"; "phased_low_50"; "phased_mix_10"; "random_arity_100"; "tree_2_512_1024"; "paths_100_phases_1"]
 
 let mk_files_inputs benchmark : Params.t =
   let mk_type typ = mk string "type" typ in
@@ -322,11 +327,34 @@ let mk_files_inputs benchmark : Params.t =
      (mk_infile "data/loop_1010_100000.txt" & mk_outfile "_data/loop_1010_100000.bin") ++
      (mk_infile "data/loop_1010_33222591.txt" & mk_outfile "_data/loop_1010_33222591.bin") ++
      (mk_infile "data/loop_1010_1000000000.txt" & mk_outfile "_data/loop_1010_1000000000.bin")))
-  | "bfs" ->
+  | "bfs" | "pbfs" ->
     (mk_type "graph" &
     ((mk_infile "data/3Dgrid_J_10000000.txt" & mk_outfile "_data/3Dgrid_J_10000000.bin") ++
      (mk_infile "data/randLocalGraph_J_5_10000000.txt" & mk_outfile "_data/randLocalGraph_J_5_10000000.bin") ++
-     (mk_infile "data/rMatGraph_J_5_10000000.txt" & mk_outfile "_data/rMatGraph_J_5_10000000.bin")))
+     (mk_infile "data/rMatGraph_J_5_10000000.txt" & mk_outfile "_data/rMatGraph_J_5_10000000.bin") ++
+     
+     (let mk_input graph size = mk string "infile" (sprintf "/home/rainey/new-sc15-graph/graph/bench/_data/%s_%s.adj_bin" graph size) in
+      let mk_output graph size = mk string "outfile" (sprintf "_data/%s_%s.bin" graph size) in
+      Params.concat(~~ List.map arg_sizes (fun size ->
+      Params.concat(~~ List.map graphs (fun graph ->
+        (mk_input graph size & mk_output graph size)
+     ))))) ++
+
+     (mk_infile "/home/rainey/graphdata/livejournal1.adj_bin" & mk_outfile "_data/livejournal.bin") ++
+     (mk_infile "/home/rainey/graphdata/europe.adj_bin" & mk_outfile "_data/europe.bin") ++
+     (mk_infile "/home/rainey/graphdata/rgg.adj_bin" & mk_outfile "_data/rgg.bin") ++
+     (mk_infile "/home/rainey/graphdata/delaunay.adj_bin" & mk_outfile "_data/delaunay.bin") ++
+     (mk_infile "/home/rainey/graphdata/wikipedia-20070206.adj_bin" & mk_outfile "_data/wikipedia-20070206.bin") ++
+     (mk_infile "/home/rainey/graphdata/twitter.adj_bin" & mk_outfile "_data/twitter.bin") ++
+     (mk_infile "/home/rainey/graphdata/usa.adj_bin" & mk_outfile "_data/usa.bin") ++
+
+     (mk_infile "/home/rainey/new-sc15-graph/graph/bench/_data/unbalanced_tree_trunk_first_large.adj_bin" & mk_outfile "_data/unbalanced_tree_trunk_first_large.bin")
+
+     (*(mk_infile "/home/rainey/pasl/graph/bench/graph/paths_2_phases_1_large.adj_bin" & mk_outfile "_data/paths_2_phases_1_large.bin") ++
+     (mk_infile "/home/rainey/pasl/graph/bench/graph/paths_3percent_large.adj_bin" & mk_outfile "_data/paths_3percent_large.bin") ++
+     (mk_infile "/home/rainey/pasl/graph/bench/graph/paths_5percent_large.adj_bin" & mk_outfile "_data/paths_5percent_large.bin") ++
+     (mk_infile "/home/rainey/pasl/graph/bench/graph/phased_mix_100_large.adj_bin" & mk_outfile "_data/phased_mix_100_large.bin"))*)
+    ))
   | _ -> Params.concat ([])
 
 let mk_sequence_inputs benchmark : Params.t =
@@ -400,6 +428,7 @@ let prog_names = function
   | "delaunay" -> "delaunay"
   | "delaunay_refine" -> "delaunayrefine"
   | "bfs" -> "bfs"
+  | "pbfs" -> "pbfs"
   | _ -> Pbench.error "invalid benchmark"
 
 let prog benchmark =
@@ -473,6 +502,7 @@ let prog_names = function
   | "delaunay" -> "delaunay"
   | "delaunay_refine" -> "delaunayrefine"
   | "bfs" -> "bfs"
+  | "pbfs" -> "pbfs"
   | x -> Pbench.error "invalid benchmark " ^ x
 
 let extensions = XCmd.parse_or_default_list_string "exts" [ "manc"; "norm"; "unko"; "unke"]

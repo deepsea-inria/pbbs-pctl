@@ -48,6 +48,7 @@ PROGRAMS=\
         delaunay_bench.cpp \
         delaunayrefine_bench.cpp \
         bfs_bench.cpp \
+        pbfs_bench.cpp \
         sequence_data.cpp \
 
 ####################################################################
@@ -72,7 +73,7 @@ include $(TOOLS_BUILD_FOLDER)/Makefile_options
 # (If extending the list, need to add cases for the definition
 # of COMPILE_OPTIONS_FOR further below, and also for "clean".
 
-MODES=dbg log sta opt seq cilk norm manc unko unkh clog norc manb unke unkp unkt norm30 unko30 unke30 unkp30 unkt30 norm100 unko100 unke100 unkp100 unkt100
+MODES=dbg log sta opt seq cilk norm manc unko unkh clog norc manb unke unkp unkt norm30 unko30 unke30 unkp30 unkt30 norm100 unko100 unke100 unkp100 unkt100 unkm unkm100
 
 # Compilation options for each mode
 
@@ -92,6 +93,7 @@ COMPILE_OPTIONS_FOR_unko=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DOPTIMISTIC
 COMPILE_OPTIONS_FOR_unkh=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DHONEST
 COMPILE_OPTIONS_FOR_clog=$(COMPILE_OPTIONS_FOR_cilk) -DPLOGGING
 COMPILE_OPTIONS_FOR_unke=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DEASYOPTIMISTIC
+COMPILE_OPTIONS_FOR_unkm=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DEASYOPTIMISTIC -DTWO_MODES
 COMPILE_OPTIONS_FOR_unkp=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DEASYOPTIMISTIC -DPRUNING
 COMPILE_OPTIONS_FOR_unkt=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DEASYOPTIMISTIC -DTIMEPRUNING
 
@@ -104,6 +106,7 @@ COMPILE_OPTIONS_FOR_unkt30=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DEASYOPTIMISTIC
 COMPILE_OPTIONS_FOR_norm100=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DKAPPA100
 COMPILE_OPTIONS_FOR_unko100=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DOPTIMISTIC -DKAPPA100
 COMPILE_OPTIONS_FOR_unke100=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DEASYOPTIMISTIC -DKAPPA100
+COMPILE_OPTIONS_FOR_unkm100=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DEASYOPTIMISTIC -DTWO_MODES -DKAPPA100
 COMPILE_OPTIONS_FOR_unkp100=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DEASYOPTIMISTIC -DPRUNING -DKAPPA100
 COMPILE_OPTIONS_FOR_unkt100=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DEASYOPTIMISTIC -DTIMEPRUNING -DKAPPA100
 

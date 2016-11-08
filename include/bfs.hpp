@@ -127,7 +127,7 @@ pair<int,int> bfs(int start, graph::graph<int> graph) {
 //    range::parallel_for(0, frontier_size, [&] (int l, int r) { return (r == frontier_size ? nr : counts[r]) - counts[l]; }, [&] (int i) {
 //    cilk_for (int i = 0; i < frontier_size; i++) {
 //    for (int i = 0; i < frontier_size; i++) {
-     range::parallel_for(0, frontier_size, [&] (int l, int r) { return (r == frontier_size ? nr : counts_ptr[r]) - counts_ptr[l]; }, [&, frontier_next_ptr, frontier_ptr, g, visited_ptr] (int i) {
+     range::parallel_for(0, frontier_size, [&] (int l, int r) { return (r == frontier_size ? nr : counts_ptr[r]) - counts_ptr[l] + (r - l); }, [&, frontier_next_ptr, frontier_ptr, g, visited_ptr] (int i) {
        int k = 0;
        int v = frontier_ptr[i];
        int o = counts_ptr[i];
@@ -147,7 +147,7 @@ pair<int,int> bfs(int start, graph::graph<int> graph) {
 
         for (int j = 0; j < g[v].degree; j++) {
           int ngh = g[v].Neighbors[j];
-          if (visited_ptr[ngh] == 0 && utils::CAS(&visited_ptr[ngh], 0, 1)) {
+          if (visited_ptr[ngh] == 0 && !__sync_val_compare_and_swap(&visited_ptr[ngh], 0, 1)) {
             frontier_next_ptr[o + j] = g[v].Neighbors[k++] = ngh;
           }
           else frontier_next_ptr[o + j] = -1;

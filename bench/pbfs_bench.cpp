@@ -1,6 +1,6 @@
 /*!
- * \file bfs_bench.cpp
- * \brief Benchmarking script for parallel bread-first search
+ * \file pbfs_bench.cpp
+ * \brief Benchmarking script for parallel breadth-first search
  * \date 2016
  * \copyright COPYRIGHT (c) 2015 Umut Acar, Arthur Chargueraud, and
  * Michael Rainey. All rights reserved.
@@ -12,9 +12,9 @@
 #include <functional>
 #include <stdlib.h>
 #include "bench.hpp"
-#include "bfs.hpp"
+#include "pbfs.hpp"
 #include "loaders.hpp"
-#include "bfs.h"
+#include "pbfs.h"
 
 /***********************************************************************/
 
@@ -36,11 +36,11 @@ void pbbs_pctl_call(pbbs::measured_type measured, pasl::pctl::graph::graph<int>&
   if (lib_type == "pbbs") {
     pbbs::graph::graph<int> y = to_pbbs(x);
     measured([&] {
-      pbbs::BFS(1, y);
+      pbbs::pBFS(1, y);
     });
   } else {
     measured([&] {
-      pasl::pctl::bfs(1, x);
+      pasl::pctl::pbfs(1, x);
     });
   }
 }

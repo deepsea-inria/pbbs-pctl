@@ -592,6 +592,90 @@ let all () = select make run check plot
 end
 
 (*****************************************************************************)
+(** Merkle Tree experiment *)
+
+module ExpMerkleTree = struct
+
+let name = "merkletree"
+
+let prog = "./merkletree.virtual"
+
+let make() =
+  build "." ["merkletree_bench.unke100";"merkletree_bench.manc";] arg_virtual_build
+
+let mk_digests = mk_list string "digest" ["pbbs32";"sha256";"sha384";"sha512";]
+
+let mk_numa_interleave = mk int "numa_interleave" 1
+
+let mk_proc = mk int "proc" 40
+
+let mk_parallel_common = mk_proc & mk_numa_interleave & (mk string "algorithm" "parallel")
+
+let mk_sequential_common = mk string "algorithm" "sequential"
+
+let mk_block_szb_lg n = mk int "block_szb_lg" n
+
+let mk_nb_blocks_lg n = mk int "nb_blocks_lg" n
+
+let sizes = [(9, 21); (10, 20); (*(17, 13);*) (20, 10); (24, 6)]
+
+let mk_modes = mk_list string "mode" ["manual"; "oracle";]
+
+let mk_sizes =
+  let mks = List.map (fun (bs, nbs) -> (mk_block_szb_lg bs) & (mk_nb_blocks_lg nbs)) sizes in
+  List.fold_left (fun acc x -> x ++ acc) (List.hd mks) (List.tl mks)
+                                                        
+let run() =
+  Mk_runs.(call (run_modes @ [
+    Output (file_results name);
+    Timeout 400;
+    Args (
+     mk_prog prog 
+   & mk_digests
+   & mk_sizes
+   & (mk_parallel_common & mk_modes)
+      )]))
+
+let check = nothing  (* do something here *)
+
+let formatter =
+ Env.format (Env.(
+  [
+    ("proc", Format_custom (fun n -> sprintf "Nb. cores %s" n));
+    ("use_hash", Format_custom (fun n -> ""));
+    ("digest", Format_custom (fun n -> ""));
+    ("mode", Format_custom (fun n -> if n = "manual" then "cilk_for" else "oracle guided"));
+    ("block_szb_lg", Format_custom (fun n -> sprintf "B=2^%s" n));
+    ("nb_blocks_lg", Format_custom (fun n -> sprintf "N=2^%s" n));
+   ]
+  ))            
+
+let plot() =
+  Mk_bar_plot.(call ([
+      Chart_opt Chart.([
+            Legend_opt Legend.([
+               Legend_pos Top_left
+               ])]);
+      Bar_plot_opt Bar_plot.([
+         X_titles_dir Vertical;
+         Y_axis [ Axis.Is_log false; Axis.Lower (Some 0.); Axis.Upper(Some 3.0);] ]);
+      Formatter formatter;
+      Charts mk_digests;
+      Series mk_modes;
+      X mk_sizes;
+      Input (file_results name);
+      Output (file_plots name);
+      Y_label "Time (s)";
+      Y eval_exectime;
+      Y_whiskers eval_exectime_stddev;
+  ]))
+
+
+let all () = select make run check plot
+
+end
+
+(*****************************************************************************)
 (** Main *)
 
 let _ =
@@ -603,6 +687,7 @@ let _ =
     "oracle_guided", ExpOracleGuided.all;
     "nested_single_byte", ExpNestedSingleByte.all;
     "nested_oracle_guided", ExpNestedOracleGuided.all;
+    "merkletree", ExpMerkleTree.all;
   ]
   in
   Pbench.execute_from_only_skip arg_actions [] bindings;

@@ -139,19 +139,40 @@ void parse_filename(std::string fname, std::string& base, std::string& extension
 }
 
 template <class Item>
+struct load_struct {
+  Item operator()(std::string infile, std::string base, std::string extension) {
+    if (extension == "txt") {
+      return io::read_from_txt_file<Item>(infile);
+    } else if (extension == "bin") {
+      return io::read_from_file<Item>(infile);
+    } else {
+      assert(false);
+    }
+  }
+};
+
+template <class intT>
+struct load_struct<graph::graph<intT>> {
+  graph::graph<intT> operator()(std::string infile, std::string base, std::string extension) {
+    if (extension == "txt") {
+      return io::read_from_txt_file<graph::graph<intT>>(infile);
+    } else if (extension == "bin") {
+      return io::read_from_file<graph::graph<intT>>(infile);
+    } else if (extension == "adj_bin") {
+      return io::read_from_pasl_file<graph::graph<intT>>(infile);
+    } else {
+      assert(false);
+    }
+  }
+};
+
+template <class Item>
 Item load(std::string infile) {
   std::string base;
   std::string extension;
   io::parse_filename(infile, base, extension);
-  if (extension == "txt") {
-    return io::read_from_txt_file<Item>(infile);
-  } else if (extension == "bin") {
-    return io::read_from_file<Item>(infile);
-  } else {
-    assert(false);
-  }
+  return load_struct<Item>()(infile, base, extension);
 }
-
 
 template <class Item>
 Item load(std::string infile, std::string infile2) {
