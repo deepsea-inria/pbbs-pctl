@@ -2,7 +2,7 @@
 
 incmd=$@
 
-outcmd="./granularity.unke100 $incmd"
+outcmd="./granularity_bench.unke100 $incmd"
 
 if [[ $incmd == *"-numa_interleave 1"* ]]
 then

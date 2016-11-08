@@ -27,6 +27,11 @@ then
   cmdline="${cmdline} -DTIMING -DTHREADS -DEASYOPTIMISTIC -DTIME_MEASURE -DUSE_CILK_PLUS_RUNTIME -DNDEBUG -fcilkplus -ltcmalloc -L/home/rainey/Installs/gperftools/lib/"
 fi
 
+if [[ $ext == "unkm" ]];
+then
+  cmdline="${cmdline} -DTIMING -DTHREADS -DEASYOPTIMISTIC -DTWO_MODES -DTIME_MEASURE -DUSE_CILK_PLUS_RUNTIME -DNDEBUG -fcilkplus -ltcmalloc -L/home/rainey/Installs/gperftools/lib/"
+fi
+
 if [[ $ext == "unkp" ]];
 then
   cmdline="${cmdline} -DPRUNING -DTIMING -DTHREADS -DEASYOPTIMISTIC -DTIME_MEASURE -DUSE_CILK_PLUS_RUNTIME -DNDEBUG -fcilkplus -ltcmalloc -L/home/rainey/Installs/gperftools/lib/"

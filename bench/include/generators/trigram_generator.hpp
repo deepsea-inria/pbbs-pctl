@@ -70,7 +70,6 @@ struct ngram_table {
     while (x > e.probs[j]) {
       j++;
     }
-//    std::cerr << x << " " << c0 << " " << c1 << " " << e.chars[j] << "\n";
     return e.chars[j];
   }
 
@@ -135,13 +134,6 @@ std::string trigram_string(int s, int e) {
   return t.string(s, e);
 }
 
-/*void gen_trigram_string(std::string fname, int n) {
-  std::string s = trigram_string(0, n);
-  std::ofstream out(fname, std::ofstream::binary);
-  io::write_to_file(out, s);
-  out.close();
-}*/
-
 parray<char*> trigram_words(int s, int e) { 
   int n = e - s;
   parray<char*> a(n);
@@ -151,13 +143,6 @@ parray<char*> trigram_words(int s, int e) {
   });
   return a;
 }
-
-/*void gen_trigram_words(std::string fname, int n) {
-  parray<char*> words = trigram_words(0, n);
-  std::ofstream out(fname, std::ofstream::binary);
-  io::write_to_file(out, words);
-  out.close();
-}*/
 
 } //end namespace
 } //end namespace

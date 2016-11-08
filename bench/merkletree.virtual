@@ -1,0 +1,17 @@
+#!/bin/bash
+
+incmd=$@
+
+if [[ $incmd == *"-mode manual"* ]]
+then
+   outcmd="./merkletree_bench.manc $incmd"
+else
+   outcmd="./merkletree_bench.unke100 $incmd"
+fi
+
+if [[ $incmd == *"-numa_interleave 1"* ]]
+then
+    outcmd="numactl --interleave=all $outcmd"
+fi
+
+$outcmd

@@ -19,6 +19,10 @@ static constexpr
 int szb1 = 4 * 256;
 static constexpr
 int szb2 = 2*szb1;
+static constexpr
+int szb3 = 1 << 17;
+static constexpr
+int szb4 = 1 << 20;
 
 template <int szb>
 class bytes {
@@ -206,10 +210,7 @@ namespace nested_parallel_with_gc {
   int nb_occurrences(int lo, int hi, Pointer d, const Weight& w, const Predicate& p) {
     int r = 0;
     if (w(lo, hi, d) <= with_gc::threshold) {
-      for (int i = lo; i < hi; i++) {
-        auto v = d[i];
-        r += nb_occurrences_seq(v.first, v.second, p);
-      }
+      r = nb_occurrences_seq(lo, hi, d, w, p);
     } else if ((hi - lo) <= 2) {
       for (int i = lo; i < hi; i++) {
         auto v = d[i];
@@ -525,6 +526,10 @@ void determine_item_type(pbbs::measured_type measure) {
     using_item_type<bytes<szb1>>(measure);
   } else if (item_szb == szb2) {
     using_item_type<bytes<szb2>>(measure);
+  } else if (item_szb == szb3) {
+    using_item_type<bytes<szb3>>(measure);
+  } else if (item_szb == szb4) {
+    using_item_type<bytes<szb4>>(measure);
   } else {
     std::cerr << "bogus item_szb " <<  item_szb << std::endl;
     exit(0);
