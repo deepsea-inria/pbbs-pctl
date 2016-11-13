@@ -243,7 +243,7 @@ cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
 #endif
   cut_info result;
   
-  par::cstmt<kdtree_file, 2, intT>([&] { return n; }, [&] { //std::cerr << "Parallel " << n << std::endl;
+  par::cstmt<kdtree_file, 2, intT>([&] { return 5 * n; }, [&] { return n; }, [&, e] { //std::cerr << "Parallel " << n << std::endl;
 //    std::cerr << pasl::pctl::perworker::get_my_id()() << " " << estimator.privates.mine() << std::endl;
 //    std::cerr << "Parallelize " << n  << std::endl;
     if (r.max - r.min == 0.0) {
@@ -259,50 +259,18 @@ cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
     
     // count number that end before i
 #ifdef MANUAL_ALLOCATION
-   intT* upper = newA(intT, n);
-//   cilk_for (intT i = 0; i < n; i++)
-   parallel_for((intT)0, n, [&] (intT i) {
-     upper[i] = IS_END(e[i]);
-   });
-#ifdef PBBS_SEQUENCE
-   intT u = pbbs::sequence::plusScan(upper, upper, n);
+    intT* upper_ptr = newA(intT, n);
 #else
-   intT u = dps::scan(upper, upper + n, (intT)0, [&] (intT x, intT y) {
-     return x + y; }, upper, forward_exclusive_scan
-   );
+    parray<intT> upper;
+    upper.prefix_tabulate(n, 0);
+    intT* upper_ptr = upper.begin();
 #endif
-   float* cost = newA(float, n);
-//   cilk_for (intT i = 0; i < n; i++) {
-   pasl::pctl::range::parallel_for((intT)0, n, [&] (intT l, intT r) { return r - l; }, [&] (intT i) {
-     intT in_left = i - upper[i];
-     intT in_right = n / 2 - (upper[i] + IS_END(e[i]));
-     float left_length = e[i].v - r.min;
-     float left_area = orthog_area + diameter * left_length;
-     float right_length = r.max - e[i].v;
-     float right_area = orthog_area + diameter * right_length;
-     cost[i] = left_area * in_left + right_area * in_right;
-   }, [&] (intT ll, intT rr) {
-     for (int i = ll; i < rr; i++) {
-       intT in_left = i - upper[i];
-       intT in_right = n / 2 - (upper[i] + IS_END(e[i]));
-       float left_length = e[i].v - r.min;
-       float left_area = orthog_area + diameter * left_length;
-       float right_length = r.max - e[i].v;
-       float right_area = orthog_area + diameter * right_length;
-       cost[i] = left_area * in_left + right_area * in_right;
-     }
-   });
-
-#ifdef PBBS_SEQUENCE
-   intT k = pbbs::sequence::maxIndex(cost, n, std::less<float>());
-#else
-   intT k = (intT)max_index(cost, cost + n, cost[0], [&] (float x, float y) {
-     return x < y;
-   });
-#endif
-#else
-    parray<intT> upper(n, [&] (intT i) {
-      return IS_END(e[i]);
+    pasl::pctl::range::parallel_for(0, n, [&] (intT l, intT r) { return r - l; }, [&] (intT i) {
+      upper_ptr[i] = IS_END(e[i]);
+    }, [&, e, upper_ptr] (intT l, intT r) {
+      for (int i = l; i < r; i++) {
+        upper_ptr[i] = IS_END(e[i]);
+      }
     });
 #ifdef PBBS_SEQUENCE
     intT u = pbbs::sequence::plusScan(upper.begin(), upper.begin(), upper.size());
@@ -312,26 +280,31 @@ cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
     );
 #endif
     // calculate cost of each possible split location
+#ifdef MANUAL_ALLOCATION
+    float* cost_ptr = newA(float, n);
+#else
     parray<float> cost;
     cost.prefix_tabulate(n, 0);
+    float* cost_ptr = cost.begin();
+#endif
 
-    pasl::pctl::range::parallel_for(0, n, [&] (intT l, intT r) { return r - l; }, [&] (intT i) {
-      intT in_left = i - upper[i];
-      intT in_right = n / 2 - (upper[i] + IS_END(e[i]));
+    pasl::pctl::range::parallel_for(0, n, [&] (intT l, intT r) { return r - l; }, [&, e, cost_ptr, upper_ptr] (intT i) {
+      intT in_left = i - upper_ptr[i];
+      intT in_right = n / 2 - (upper_ptr[i] + IS_END(e[i]));
       float left_length = e[i].v - r.min;
       float left_area = orthog_area + diameter * left_length;
       float right_length = r.max - e[i].v;
       float right_area = orthog_area + diameter * right_length;
-      cost[i] = left_area * in_left + right_area * in_right;
-    }, [&] (intT ll, intT rr) {
+      cost_ptr[i] = left_area * in_left + right_area * in_right;
+    }, [&, e, cost_ptr, upper_ptr] (intT ll, intT rr) {
       for (intT i = ll; i < rr; i++) {
-        intT in_left = i - upper[i];
-        intT in_right = n / 2 - (upper[i] + IS_END(e[i]));
+        intT in_left = i - upper_ptr[i];
+        intT in_right = n / 2 - (upper_ptr[i] + IS_END(e[i]));
         float left_length = e[i].v - r.min;
         float left_area = orthog_area + diameter * left_length;
         float right_length = r.max - e[i].v;
         float right_area = orthog_area + diameter * right_length;
-        cost[i] = left_area * in_left + right_area * in_right;
+        cost_ptr[i] = left_area * in_left + right_area * in_right;
       }
     });
     
@@ -343,14 +316,13 @@ cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
       return x < y;
     });
 #endif
-#endif
       
-    float c = cost[k];
-    intT ln = k - upper[k];
-    intT rn = n / 2 - (upper[k] + IS_END(e[k]));
+    float c = cost_ptr[k];
+    intT ln = k - upper_ptr[k];
+    intT rn = n / 2 - (upper_ptr[k] + IS_END(e[k]));
 #ifdef MANUAL_ALLOCATION
-    free(upper);
-    free(cost);
+    free(upper_ptr);
+    free(cost_ptr);
 #endif
     result = cut_info(c, e[k].v, ln, rn);
   }, [&] {
@@ -366,27 +338,29 @@ cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
 pasl::pctl::timer split_timer;
 std::pair<intT, intT> split_events_serial(range* boxes, event* events,
                        float cut_off, intT n,
-                       event* left, event* right) {
+                       parray<event>& left, parray<event>& right) {
 #if defined(TIME_MEASURE) && defined(MANUAL_CONTROL)
 //    split_timer.start();
 #endif
   intT l = 0;
   intT r = 0;
 
-/*#ifndef PBBS_SEQUENCE  
+//#ifndef PBBS_SEQUENCE  
   left.prefix_tabulate(n, 0);
   right.prefix_tabulate(n, 0);
-#endif*/
+//#endif
+  event* left_ptr = left.begin();
+  event* right_ptr = right.begin();
 
   for (intT i = 0; i < n; i++) {
     intT b = GET_INDEX(events[i]);
     if (boxes[b].min < cut_off) {
-      left[l++] = events[i];
+      left_ptr[l++] = events[i];
       if (boxes[b].max > cut_off) {
-        right[r++] = events[i];
+        right_ptr[r++] = events[i];
       }
     } else {
-      right[r++] = events[i];
+      right_ptr[r++] = events[i];
     }
   }
 #if defined(TIME_MEASURE) && defined(MANUAL_CONTROL)
@@ -400,7 +374,7 @@ std::pair<intT, intT> split_events(range* boxes, event* events, float cut_off, i
 //  return split_events_serial(boxes, events, cut_off, n, left, right);
 #ifdef MANUAL_CONTROL
   if (n < min_parallel_size) {
-    return split_events_serial(boxes, events, cut_off, n, left.begin(), right.begin());
+    return split_events_serial(boxes, events, cut_off, n, left, right);
   }
 #endif
 #ifdef TIME_MEASURE
@@ -408,63 +382,56 @@ std::pair<intT, intT> split_events(range* boxes, event* events, float cut_off, i
 #endif
   std::pair<intT, intT> result;
   
-  par::cstmt<kdtree_file, 3, intT>([&] { return n; }, [&] {
+  par::cstmt<kdtree_file, 3, intT>([&] { return 5 * n; }, [&] { return n; }, [&, boxes, events] {
 #ifdef MANUAL_ALLOCATION
-    bool* lower = newA(bool, n);
-    bool* upper = newA(bool, n);
-//    cilk_for (intT i = 0; i < n; i++) {
-    pasl::pctl::range::parallel_for((intT)0, n, [&] (int l, int r) { return r - l; }, [&] (intT i) {
-      intT b = GET_INDEX(events[i]);
-      lower[i] = boxes[b].min < cut_off;
-      upper[i] = boxes[b].max > cut_off;
-    }, [&] (intT l, intT r) {
-      for (intT i = l; i < r; i++) {
-        intT b = GET_INDEX(events[i]);
-        lower[i] = boxes[b].min < cut_off;
-        upper[i] = boxes[b].max > cut_off;
-      }
-    });
-    const event* events2 = (const event*)events;
-
-#ifdef PBBS_SEQUENCE
-    result.first = pbbs::sequence::pack(events, left.begin(), lower, n);
-    result.second = pbbs::sequence::pack(events, right.begin(), upper, n);
-#else
-    result.first = pasl::pctl::dps::pack(lower, events2, events2 + n, left.begin());
-    result.second = pasl::pctl::dps::pack(upper, events2, events2 + n, right.begin());
-#endif
-    free(lower);
-    free(upper);
+    bool* lower_ptr = newA(bool, n);
+    bool* upper_ptr = newA(bool, n);
 #else
     parray<bool> lower;
     lower.prefix_tabulate(n, 0);
+    bool* lower_ptr = lower.begin();
     parray<bool> upper;
     upper.prefix_tabulate(n, 0);
-    pasl::pctl::range::parallel_for(0, n, [&] (intT l, intT r) { return r - l; }, [&] (intT i) {
-      intT b = GET_INDEX(events[i]);      lower[i] = boxes[b].min < cut_off;
-      upper[i] = boxes[b].max > cut_off;
-    }, [&] (intT l, intT r) {
+    bool* upper_ptr = upper.begin();
+#endif
+
+    pasl::pctl::range::parallel_for(0, n, [&] (intT l, intT r) { return r - l; }, [&, events, boxes, lower_ptr, upper_ptr] (intT i) {
+      intT b = GET_INDEX(events[i]);      lower_ptr[i] = boxes[b].min < cut_off;
+      upper_ptr[i] = boxes[b].max > cut_off;
+    }, [&, events, boxes, lower_ptr, upper_ptr] (intT l, intT r) {
       for (intT i = l; i < r; i++) {
         intT b = GET_INDEX(events[i]);
-        lower[i] = boxes[b].min < cut_off;
-        upper[i] = boxes[b].max > cut_off;
+        lower_ptr[i] = boxes[b].min < cut_off;
+        upper_ptr[i] = boxes[b].max > cut_off;
       }
     });
     const event* events2 = (const event*)events;
 
 #ifdef PBBS_SEQUENCE
-    result.first = pbbs::sequence::pack(events, left.begin(), lower, n);
-    result.second = pbbs::sequence::pack(events, right.begin(), upper, n);
-#else
-    result.first = pasl::pctl::dps::pack(lower.begin(), events2, events2 + n, left.begin());
-    result.second = pasl::pctl::dps::pack(upper.begin(), events2, events2 + n, right.begin());
-#endif
-#endif
+    left.prefix_tabulate(0, n);
+    right.prefix_tabulate(0, n);
+    result.first = pbbs::sequence::pack(events, left.begin(), lower_ptr, n);
+    result.second = pbbs::sequence::pack(events, right.begin(), upper_ptr, n);
     left.resize(result.first, result.first, event());
-    right.resize(result.second, result.second, event());
+    right.resize(result.second, results.second, event());
+#else
+//    result.first = pasl::pctl::dps::pack(lower_ptr, events2, events2 + n, left_ptr);
+//    result.second = pasl::pctl::dps::pack(upper_ptr, events2, events2 + n, right_ptr);
+    left = pasl::pctl::pack(events2, events2 + n, lower_ptr);
+    right = pasl::pctl::pack(events2, events2 + n, upper_ptr);
+    result = make_pair(left.size(), right.size());
+#endif
+
+//    left.resize(result.first, result.first, event());
+//    right.resize(result.second, result.second, event());
+#ifdef MANUAL_ALLOCATION
+      free(lower_ptr);
+      free(upper_ptr);
+#endif
   }, [&] {
-    result = split_events_serial(boxes, events, cut_off, n, left.begin(), right.begin());
+    result = split_events_serial(boxes, events, cut_off, n, left, right);
   });
+
 #ifdef TIME_MEASURE
 //    split_timer.end();
 #endif
@@ -528,11 +495,16 @@ tree_node* generate_node(boxes bxs, events& evts, bounding_box b,
     events xl;
     events xr;
     std::pair<intT, intT> sizes[3];
+//    for (int i = 0; i < d; i++) {
+//      xl[i].prefix_tabulate(n, 0);
+//      xr[i].prefix_tabulate(n, 0);
+//    }
+
 //    cilk_for (int d = 0; d < 3; d++) {
     pasl::pctl::range::parallel_for(0, 3, [&] (int l, int r) { return (r - l) * n; }, [&] (int d) {
 //#ifdef PBBS_SEQUENCE
-      xl[d].prefix_tabulate(n, 0);
-      xr[d].prefix_tabulate(n, 0);
+//      xl[d].prefix_tabulate(n, 0);
+//      xr[d].prefix_tabulate(n, 0);
 //#endif
       sizes[d] = split_events(cut_dim_ranges, evts[d].begin(), cut_off, n, xl[d], xr[d]);
     });
@@ -652,8 +624,12 @@ intT find_ray(rayT r, tree_node* tree, trianglesT tri) {
 void process_rays(trianglesT tri, rayT* rays, intT num_rays,
                  tree_node* tree, intT* results) {
 //  cilk_for (intT i = 0; i < num_rays; i++)
-  parallel_for((intT)0, num_rays, [&] (intT i) {
+  pasl::pctl::range::parallel_for((intT)0, num_rays, [&] (intT l, intT r) { return r - l; }, [&] (intT i) {
     results[i] = find_ray(rays[i], tree, tri);
+  }, [&, rays, results, tree] (intT l, intT r) {
+    for (int i = l; i < r; i++) {
+      results[i] = find_ray(rays[i], tree, tri);
+    }
   });
 }
 
@@ -672,19 +648,20 @@ parray<intT> ray_cast(triangles<pointT> tri, ray<pointT>* rays, int num_rays) {
     bxs[d] = newA(range, n);
   }
   pointT* p = tri.p;
+  triangle* t = tri.t;
 //  cilk_for (intT i = 0; i < n; i++) {
-  pasl::pctl::range::parallel_for((intT)0, n, [&] (intT l, intT r) { return r - l; }, [&] (intT i) {
-    pointT p0 = p[tri.t[i].vertices[0]];
-    pointT p1 = p[tri.t[i].vertices[1]];
-    pointT p2 = p[tri.t[i].vertices[2]];
+  pasl::pctl::range::parallel_for((intT)0, n, [&] (intT l, intT r) { return r - l; }, [&, p, t, bxs] (intT i) {
+    pointT p0 = p[t[i].vertices[0]];
+    pointT p1 = p[t[i].vertices[1]];
+    pointT p2 = p[t[i].vertices[2]];
     bxs[0][i] = fix_range(std::min(p0.x, std::min(p1.x, p2.x)), std::max(p0.x, std::max(p1.x, p2.x)));
     bxs[1][i] = fix_range(std::min(p0.y, std::min(p1.y, p2.y)), std::max(p0.y, std::max(p1.y, p2.y)));
     bxs[2][i] = fix_range(std::min(p0.z, std::min(p1.z, p2.z)), std::max(p0.z, std::max(p1.z, p2.z)));
-  }, [&] (intT l, intT r) {
+  }, [&, p, t, bxs] (intT l, intT r) {
     for (intT i = l; i < r; i++) {
-      pointT p0 = p[tri.t[i].vertices[0]];
-      pointT p1 = p[tri.t[i].vertices[1]];
-      pointT p2 = p[tri.t[i].vertices[2]];
+      pointT p0 = p[t[i].vertices[0]];
+      pointT p1 = p[t[i].vertices[1]];
+      pointT p2 = p[t[i].vertices[2]];
       bxs[0][i] = fix_range(std::min(p0.x, std::min(p1.x, p2.x)), std::max(p0.x, std::max(p1.x, p2.x)));
       bxs[1][i] = fix_range(std::min(p0.y, std::min(p1.y, p2.y)), std::max(p0.y, std::max(p1.y, p2.y)));
       bxs[2][i] = fix_range(std::min(p0.z, std::min(p1.z, p2.z)), std::max(p0.z, std::max(p1.z, p2.z)));
@@ -707,14 +684,21 @@ parray<intT> ray_cast(triangles<pointT> tri, ray<pointT>* rays, int num_rays) {
 //    evts[d] = newA(event, 2 * n); // freed while generating tree
 //    tmp_evts[d] = newA(event, 2 * n);
     evts[d].prefix_tabulate(2 * n, 0);
-    parallel_for((intT)0, n, [&] (intT i) {
-      evts[d][2 * i] = event(bxs[d][i].min, i, START);
-      evts[d][2 * i + 1] = event(bxs[d][i].max, i, END);
+    event* evts_ptr = evts[d].begin();
+    range* cur_box = bxs[d];
+    pasl::pctl::range::parallel_for((intT)0, n, [&] (int l, int r) { return r - l; }, [&] (intT i) {
+      evts_ptr[2 * i] = event(cur_box[i].min, i, START);
+      evts_ptr[2 * i + 1] = event(cur_box[i].max, i, END);
+    }, [&, cur_box, evts_ptr] (intT l, intT r) {
+      for (int i = l; i < r; i++) {
+        evts_ptr[2 * i] = event(cur_box[i].min, i, START);
+        evts_ptr[2 * i + 1] = event(cur_box[i].max, i, END);
+      }
     });
-    sample_sort(evts[d].begin(), 2 * n, cmpVal());
+    sample_sort(evts_ptr, 2 * n, cmpVal());
 //    quick_sort(evts[d], 2 * n, cmpVal());
 //    std::sort(evts[d], evts[d] + 2 * n, cmpVal());
-    box[d] = range(evts[d][0].v, evts[d][2 * n - 1].v);
+    box[d] = range(evts_ptr[0].v, evts_ptr[2 * n - 1].v);
   }
 
 #ifdef TIME_MEASURE
