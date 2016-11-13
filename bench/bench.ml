@@ -272,6 +272,49 @@ let generators_list = function
   | "bfs" | "pbfs" -> (function n -> function typ -> [])
   | _ -> Pbench.error "invalid benchmark"
 
+let graphfile_of n = "_data/" ^ n ^ ".bin"
+
+let pretty_graph_name n =
+  if (graphfile_of "europe") = n then
+    "europe"
+  else if (graphfile_of "rgg") = n then
+    "rgg"
+  else if (graphfile_of "twitter") = n then
+    "twitter"
+  else if (graphfile_of "delaunay") = n then
+    "delaunay"
+  else if (graphfile_of "usa") = n then
+    "usa"
+  else if (graphfile_of "livejournal") = n then
+    "livejournal"
+  else if (graphfile_of "wikipedia") = n then
+    "wikipedia-2007"
+  else if (graphfile_of "grid_sq_large") = n then
+    "square-grid"
+  else if (graphfile_of "paths_100_phases_1_large") = n then
+    "par-chains-100"
+  else if (graphfile_of "phased_524288_single_large") = n then
+    "trees_524k"
+  else if (graphfile_of "phased_low_50_large") = n then
+    "phases-50-d-5"
+  else if (graphfile_of "phased_mix_10_large") = n then
+    "phases-10-d-2"
+  else if (graphfile_of "random_arity_100_large") = n then
+    "random-arity-100"
+  else if (graphfile_of "tree_2_512_1024_large") = n then
+    "trees-512-1024"
+  else if (graphfile_of "unbalanced_tree_trunk_first_large") = n then
+    "unbalanced-tree" 
+  else
+    n
+
+                                      
+let graphfiles = List.map graphfile_of
+  ["europe";"rgg";"twitter";"delaunay";"usa";"livejournal";(*"wikipedia";*)"grid_sq_large";
+   "paths_100_phases_1_large";"phased_524288_single_large";"phased_low_50_large";
+   "phased_mix_10_large";"random_arity_100_large";"tree_2_512_1024_large"; "unbalanced_tree_trunk_first_large"
+  ]
+
 let mk_generate_sequence_inputs benchmark : Params.t =
   let load = function
     | Small -> 1000000
@@ -332,7 +375,7 @@ let mk_files_inputs benchmark : Params.t =
     ((mk_infile "data/3Dgrid_J_10000000.txt" & mk_outfile "_data/3Dgrid_J_10000000.bin") ++
      (mk_infile "data/randLocalGraph_J_5_10000000.txt" & mk_outfile "_data/randLocalGraph_J_5_10000000.bin") ++
      (mk_infile "data/rMatGraph_J_5_10000000.txt" & mk_outfile "_data/rMatGraph_J_5_10000000.bin") ++
-     
+   
      (let mk_input graph size = mk string "infile" (sprintf "/home/rainey/new-sc15-graph/graph/bench/_data/%s_%s.adj_bin" graph size) in
       let mk_output graph size = mk string "outfile" (sprintf "_data/%s_%s.bin" graph size) in
       Params.concat(~~ List.map arg_sizes (fun size ->
@@ -340,6 +383,7 @@ let mk_files_inputs benchmark : Params.t =
         (mk_input graph size & mk_output graph size)
      ))))) ++
 
+     (* real *)
      (mk_infile "/home/rainey/graphdata/livejournal1.adj_bin" & mk_outfile "_data/livejournal.bin") ++
      (mk_infile "/home/rainey/graphdata/europe.adj_bin" & mk_outfile "_data/europe.bin") ++
      (mk_infile "/home/rainey/graphdata/rgg.adj_bin" & mk_outfile "_data/rgg.bin") ++
@@ -347,8 +391,10 @@ let mk_files_inputs benchmark : Params.t =
      (mk_infile "/home/rainey/graphdata/wikipedia-20070206.adj_bin" & mk_outfile "_data/wikipedia-20070206.bin") ++
      (mk_infile "/home/rainey/graphdata/twitter.adj_bin" & mk_outfile "_data/twitter.bin") ++
      (mk_infile "/home/rainey/graphdata/usa.adj_bin" & mk_outfile "_data/usa.bin") ++
-
+       
+       (* new *)
      (mk_infile "/home/rainey/new-sc15-graph/graph/bench/_data/unbalanced_tree_trunk_first_large.adj_bin" & mk_outfile "_data/unbalanced_tree_trunk_first_large.bin")
+
 
      (*(mk_infile "/home/rainey/pasl/graph/bench/graph/paths_2_phases_1_large.adj_bin" & mk_outfile "_data/paths_2_phases_1_large.bin") ++
      (mk_infile "/home/rainey/pasl/graph/bench/graph/paths_3percent_large.adj_bin" & mk_outfile "_data/paths_3percent_large.bin") ++
@@ -445,7 +491,7 @@ let run() =
       Output (file_results benchmark);
       Timeout 400;
       Args (
-        mk_prog ("numactl --interleave=all " ^ (prog benchmark))
+          mk_prog ((*"numactl --interleave=all " ^*) (prog benchmark))
       & (
         mk_sequence_input_names benchmark
       )
@@ -510,7 +556,7 @@ let extensions = XCmd.parse_or_default_list_string "exts" [ "manc"; "norm"; "unk
 let no_pbbs = XCmd.mem_flag "nopbbs"
 
 let prog benchmark extension =
-  sprintf "./%s_bench.%s" (prog_names benchmark) extension
+  sprintf "%s_bench.%s" (prog_names benchmark) extension
 
 let make() =
   List.iter (fun benchmark ->
@@ -521,8 +567,8 @@ let make() =
 
 let mk_progs benchmark = 
   ((mk_list string "prog" (
-     List.map (fun ext -> "numactl --interleave=all " ^ (prog benchmark ext)) extensions)) & (mk string "lib_type" "pctl")) ++
-  (if no_pbbs then (fun e -> []) else ((mk_prog ("numactl --interleave=all " ^ (prog benchmark "manc"))) & (mk string "lib_type" "pbbs")))
+              List.map (fun ext -> (*"numactl --interleave=all " ^ *) (prog benchmark ext)) extensions)) & (mk string "lib_type" "pctl")) ++
+    (if no_pbbs then (fun e -> []) else ((mk_prog ((*"numactl --interleave=all " ^*) (prog benchmark "manc"))) & (mk string "lib_type" "pbbs")))
 
 let run() =
   List.iter (fun benchmark ->
@@ -537,18 +583,104 @@ let run() =
 
 let check = nothing
 
-let plot() =
+let mk_graphs = mk_list string "infile" graphfiles
+
+let pretty_graph_name n =
+  if (graphfile_of "europe") = n then
+    "europe"
+  else if (graphfile_of "rgg") = n then
+    "rgg"
+  else if (graphfile_of "twitter") = n then
+    "twitter"
+  else if (graphfile_of "delaunay") = n then
+    "delaunay"
+  else if (graphfile_of "usa") = n then
+    "usa"
+  else if (graphfile_of "livejournal") = n then
+    "livejournal"
+  else if (graphfile_of "wikipedia") = n then
+    "wikipedia-2007"
+  else if (graphfile_of "grid_sq_large") = n then
+    "square-grid"
+  else if (graphfile_of "paths_100_phases_1_large") = n then
+    "par-chains-100"
+  else if (graphfile_of "phased_524288_single_large") = n then
+    "trees_524k"
+  else if (graphfile_of "phased_low_50_large") = n then
+    "phases-50-d-5"
+  else if (graphfile_of "phased_mix_10_large") = n then
+    "phases-10-d-2"
+  else if (graphfile_of "random_arity_100_large") = n then
+    "random-arity-100"
+  else if (graphfile_of "tree_2_512_1024_large") = n then
+    "trees-512-1024"
+  else if (graphfile_of "unbalanced_tree_trunk_first_large") = n then
+    "unbalanced-tree"
+  else
+    n
+
+let mk_progs =
+(*  ((mk string "lib_type" "pbbs") & (mk string "prog" "bfs_bench.manc"))
+  ++*)   ((mk string "lib_type" "pctl") & (mk string "prog" "bfs_bench.unke30"))
+         ++ ((mk string "lib_type" "pctl") & (mk string "prog" "bfs_bench.unke100"))
+         ++ ((mk string "lib_type" "pctl") & (mk string "prog" "pbfs_bench.unke30"))
+         ++ ((mk string "lib_type" "pctl") & (mk string "prog" "pbfs_bench.unke100"))
+         ++ ((mk string "lib_type" "pbbs") & (mk string "prog" "pbfs_bench.manc"))
+
+let eval_relative = fun env all_results results ->
+  let pbbs_results = ~~ Results.filter_by_params all_results (
+                          from_env (Env.add (
+                                        Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))
+                                            "prog" (Env.Vstring "bfs_bench.manc"))
+                        ) in
+  if pbbs_results = [] then Pbench.error ("no results for pbbs library");
+  let v = Results.get_mean_of "exectime" results in
+  let b = Results.get_mean_of "exectime" pbbs_results in
+  100.0 *. (v /. b -. 1.0)
+
+let eval_relative_stddev = fun env all_results results ->
+  let pbbs_results = ~~ Results.filter_by_params all_results (
+                          from_env (Env.add (
+                                        Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))
+                                            "prog" (Env.Vstring "bfs_bench.manc"))
+                        ) in
+  if pbbs_results = [] then Pbench.error ("no results for pbbs library");
+  try 
+  let b = Results.get_mean_of "exectime" pbbs_results in
+  let times = Results.get Env.as_float "exectime" results in
+  let rels = List.map (fun v -> 100.0 *. (v /. b -. 1.0)) times in
+  XFloat.list_stddev rels
+  with Results.Missing_key _ -> nan
+
+let pretty_prog p =
+  if p = "bfs_bench.unke30" then
+    "Seq. neighbor list, oracle guided, kappa := 30usec"
+  else if p = "bfs_bench.unke100" then
+    "Seq. neighbor list, oracle guided, kappa := 100usec"
+  else if p = "pbfs_bench.unke30" then
+    "Par. neighbor list, oracle guided, kappa := 30usec"
+  else if p = "pbfs_bench.unke100" then
+    "Par. neighbor list, oracle guided, kappa := 100usec"
+  else if p = "bfs_bench.manc" then
+    "Seq. neighbor list, PBBS BFS"
+  else if p = "pbfs_bench.manc" then
+    "Par. neighbor list PBBS BFS"
+  else
+    p
+
+let bfs_formatter =
+ Env.format (Env.(
+  [
+   ("proc", Format_custom (fun n -> ""));
+   ("lib_type", Format_custom (fun n -> ""));
+   ("infile", Format_custom pretty_graph_name);
+   ("prog", Format_custom pretty_prog);
+   ]
+  ))
+
+let plot() = (
   List.iter (fun benchmark ->
-    let eval_relative = fun env all_results results ->
-      let pbbs_results = ~~ Results.filter_by_params all_results (
-        from_env (Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))
-      ) in
-      if pbbs_results = [] then Pbench.error ("no results for pbbs library");
-      let v = Results.get_mean_of "exectime" results in
-      let b = Results.get_mean_of "exectime" pbbs_results in
-      v /. b
-      in
-    let formatter = 
+    (*let formatter = 
      Env.format (Env.(
      [ ("prog", Format_custom (fun prog ->
          
@@ -557,8 +689,9 @@ let plot() =
        ("lib_type", Format_custom (fun lib_type ->
          Printf.sprintf "%s" lib_type
        ));
-     ])) in
-
+     ])) in *)
+    ();
+    (*
     Mk_bar_plot.(call ([
       Bar_plot_opt Bar_plot.([
          X_titles_dir Vertical;
@@ -570,10 +703,31 @@ let plot() =
       Input (Printf.sprintf "_results/results_%s.txt" benchmark);
       Output (Printf.sprintf "_plots/plots_%s.pdf" benchmark);
       Y_label "relative to pbbs";
+      Y eval_relative;     
+    ])); *) 
+            (*    system (Printf.sprintf "cp _results/chart-all.r _results/charts-%s.r" benchmark) arg_virtual_run;*)
+    ) arg_benchmarks;
+  (* BFS plotting *)
+  Mk_bar_plot.(call ([
+                      Chart_opt Chart.([
+            Legend_opt Legend.([
+               Legend_pos Top_left
+               ])]);
+      Bar_plot_opt Bar_plot.([
+                              Chart_opt Chart.([Dimensions (13.,8.) ]);
+         X_titles_dir Vertical;
+         Y_axis [Axis.Lower (Some (-100.0)); Axis.Upper (Some (200.0))] ]);
+      Formatter bfs_formatter;
+      Charts mk_proc;
+      Series mk_progs;
+      X mk_graphs;
+      Input "_results/results_bfs_main.txt";
+      Output "plots_bfs.pdf";
+      Y_label "% relative to original PBBS BFS";
       Y eval_relative;
-    ]));
-    system (Printf.sprintf "cp _results/chart-all.r _results/charts-%s.r" benchmark) arg_virtual_run;
-  ) arg_benchmarks
+      Y_whiskers eval_relative_stddev;
+            (*      Y eval_exectime;*)
+    ])))
 
 let all () = select make run check plot
 
