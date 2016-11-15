@@ -145,7 +145,7 @@ pair<int,int> pbfs(int start, graph::graph<int> graph) {
 
          for (int j = 0; j < g[v].degree; j++) {
            int ngh = g[v].Neighbors[j];
-           if (visited_ptr[ngh] == 0 && utils::CAS(&visited_ptr[ngh], 0, 1)) {
+           if (visited_ptr[ngh] == 0 && !__sync_val_compare_and_swap(&visited_ptr[ngh], 0, 1)) {
              frontier_next_ptr[o + j] = ngh;
            }
            else frontier_next_ptr[o + j] = -1;
