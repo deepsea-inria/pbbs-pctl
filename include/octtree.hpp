@@ -333,10 +333,8 @@ constexpr char octtree_file[] = "octtree";
     void sort_blocks_small(vertex** v, int cnt, point center, int* offsets) {
       vertex* start = v[0];
       int quadrants = 1 << center.dimension();
-      parray<std::pair<int, vertex*>> blk(cnt, [&] {
-        for (int i = 0; i < cnt; i++) {
-          blk[i] = make_pair((v[i]->pt).quadrant(center), v[i]);
-        }
+      parray<std::pair<int, vertex*>> blk(cnt, [&] (intT i) {
+        return make_pair((v[i]->pt).quadrant(center), v[i]);
       });
       std::sort(blk, blk + cnt);
       int j = -1;
