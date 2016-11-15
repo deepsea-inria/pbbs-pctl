@@ -565,9 +565,12 @@ let make() =
     ) ("manc" :: extensions)
   ) arg_benchmarks
 
-let mk_progs benchmark = 
+let mk_pctl_progs benchmark = 
   ((mk_list string "prog" (
-              List.map (fun ext -> (*"numactl --interleave=all " ^ *) (prog benchmark ext)) extensions)) & (mk string "lib_type" "pctl")) ++
+              List.map (fun ext -> (*"numactl --interleave=all " ^ *) (prog benchmark ext)) extensions)) & (mk string "lib_type" "pctl"))
+    
+let mk_progs benchmark = 
+   (mk_pctl_progs benchmark) ++
     (if no_pbbs then (fun e -> []) else ((mk_prog ((*"numactl --interleave=all " ^*) (prog benchmark "manc"))) & (mk string "lib_type" "pbbs")))
 
 let run() =
@@ -619,7 +622,7 @@ let pretty_graph_name n =
   else
     n
 
-let mk_progs =
+let my_mk_progs =
 (*  ((mk string "lib_type" "pbbs") & (mk string "prog" "bfs_bench.manc"))
   ++*)   ((mk string "lib_type" "pctl") & (mk string "prog" "bfs_bench.unke30"))
          ++ ((mk string "lib_type" "pctl") & (mk string "prog" "bfs_bench.unke100"))
@@ -627,22 +630,43 @@ let mk_progs =
          ++ ((mk string "lib_type" "pctl") & (mk string "prog" "pbfs_bench.unke100"))
          ++ ((mk string "lib_type" "pbbs") & (mk string "prog" "pbfs_bench.manc"))
 
-let eval_relative = fun env all_results results ->
+let eval_relative baseline_prog = fun env all_results results ->
+  let _ = Printf.printf "p=%s\n" (Env.get_as_string env "prog") in
   let pbbs_results = ~~ Results.filter_by_params all_results (
                           from_env (Env.add (
                                         Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))
-                                            "prog" (Env.Vstring "bfs_bench.manc"))
+                                            "prog" (Env.Vstring baseline_prog))
                         ) in
   if pbbs_results = [] then Pbench.error ("no results for pbbs library");
   let v = Results.get_mean_of "exectime" results in
   let b = Results.get_mean_of "exectime" pbbs_results in
   100.0 *. (v /. b -. 1.0)
 
-let eval_relative_stddev = fun env all_results results ->
+let eval_relative_stddev baseline_prog = fun env all_results results ->
   let pbbs_results = ~~ Results.filter_by_params all_results (
                           from_env (Env.add (
                                         Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))
-                                            "prog" (Env.Vstring "bfs_bench.manc"))
+                                            "prog" (Env.Vstring baseline_prog))
+                        ) in
+  if pbbs_results = [] then Pbench.error ("no results for pbbs library");
+  try 
+  let b = Results.get_mean_of "exectime" pbbs_results in
+  let times = Results.get Env.as_float "exectime" results in
+  let rels = List.map (fun v -> 100.0 *. (v /. b -. 1.0)) times in
+  XFloat.list_stddev rels
+  with Results.Missing_key _ -> nan
+
+let eval_relative_main = fun env all_results results ->
+  let pbbs_results = ~~ Results.filter_by_params all_results (
+                          from_env (Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))) in
+  if pbbs_results = [] then Pbench.error ("no results for pbbs library");
+  let v = Results.get_mean_of "exectime" results in
+  let b = Results.get_mean_of "exectime" pbbs_results in
+  100.0 *. (v /. b -. 1.0)
+
+let eval_relative_stddev_main = fun env all_results results ->
+  let pbbs_results = ~~ Results.filter_by_params all_results (
+                          from_env (Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))
                         ) in
   if pbbs_results = [] then Pbench.error ("no results for pbbs library");
   try 
@@ -676,38 +700,100 @@ let bfs_formatter =
    ("infile", Format_custom pretty_graph_name);
    ("prog", Format_custom pretty_prog);
    ]
+              ))
+
+let inputfile_of n = "_data/" ^ n ^ "_large.bin"
+
+let pretty_input_name n =
+  if (inputfile_of "array_double_random") = n then
+    "random"
+  else if (inputfile_of "array_double_exponential") = n then
+    "exponential"
+  else if (inputfile_of "array_double_almost_sorted_10000") = n then
+    "almost sorted"
+  else if (inputfile_of "array_string_trigrams") = n then
+    "trigrams"
+      
+  else if (inputfile_of "array_int_exponential") = n then
+    "exponential"
+  else if (inputfile_of "array_pair_int_int_random_256") = n then
+    "random int pair 256"
+  else if (inputfile_of "array_pair_int_int_random_100000000") = n then
+    "random int pair 10 million"
+  else if (inputfile_of "array_int_random") = n then
+    "random"
+
+  else if (inputfile_of "array_string_trigrams") = n then
+    "trigrams"
+  else if (inputfile_of "array_int_random") = n then
+    "random"
+  else if (inputfile_of "array_int_random_bounded_100000") = n then
+    "random unbounded"
+  else if (inputfile_of "array_int_exponential") = n then
+    "exponential"
+
+  else if "_data/chr22.dna.bin" = n then
+    "dna"
+  else if "_data/etext99.bin" = n then
+    "text"
+  else if "_data/string_trigrams_large.bin" = n then
+    "trigrams"
+  else if "_data/wikisamp.xml.bin" = n then
+    "wiki"
+      
+  else if (inputfile_of "array_point2d_in_circle") = n then
+    "random distribution in circle"
+  else if (inputfile_of "array_point2d_kuzmin") = n then
+    "kuzmin distribution"
+  else if (inputfile_of "array_point2d_on_circle") = n then
+    "random distribution on circle"
+
+  else if (inputfile_of "array_point2d_in_square") = n then
+    "random distribution in square"
+  else if (inputfile_of "array_point2d_kuzmin") = n then
+    "kuzmin distribution"
+  else if (inputfile_of "array_point3d_in_cube") = n then
+    "random distribution in cube"
+  else if (inputfile_of "array_point3d_plummer") = n then
+    "plummer distribution"
+  else if (inputfile_of "array_point3d_on_sphere") = n then
+    "random points on sphere"
+
+  else if "_data/happy_ray_cast_dataset.bin" = n then
+    "happy"
+  else if "_data/angel_ray_cast_dataset.bin" = n then
+    "angel"
+  else if "_data/dragon_ray_cast_dataset.bin" = n then
+    "dragon"
+
+  else if "_data/array_point2d_in_square_medium.bin" = n then
+    "random distribution in square"
+  else if "_data/array_point2d_kuzmin_medium.bin" = n then
+    "kuzmin distribution"
+
+  else if "_data/triangles_point2d_delaunay_in_square_small.bin" = n then
+    "triangles in square"
+  else if "_data/triangles_point2d_delaunay_kuzmin_small.bin" = n then
+    "kuzmin distribution"
+
+  else
+    n
+            
+let main_formatter =
+ Env.format (Env.(
+  [
+   ("proc", Format_custom (fun n -> ""));
+   ("lib_type", Format_custom (fun n -> ""));
+   ("infile", Format_custom pretty_input_name);
+   ("prog", Format_custom (fun n -> ""));
+   ("type", Format_custom (fun n -> ""));
+   ]
   ))
 
+
 let plot() = (
-  List.iter (fun benchmark ->
-    (*let formatter = 
-     Env.format (Env.(
-     [ ("prog", Format_custom (fun prog ->
-         
-         String.sub prog (String.rindex prog '.') ((String.length prog) - (String.rindex prog '.'))
-       ));
-       ("lib_type", Format_custom (fun lib_type ->
-         Printf.sprintf "%s" lib_type
-       ));
-     ])) in *)
-    ();
-    (*
-    Mk_bar_plot.(call ([
-      Bar_plot_opt Bar_plot.([
-         X_titles_dir Vertical;
-         Y_axis [Axis.Lower (Some 0.)] ]);
-      Formatter formatter;
-      Charts mk_proc;
-      Series (mk_progs benchmark);
-      X (mk_sequence_input_names benchmark);
-      Input (Printf.sprintf "_results/results_%s.txt" benchmark);
-      Output (Printf.sprintf "_plots/plots_%s.pdf" benchmark);
-      Y_label "relative to pbbs";
-      Y eval_relative;     
-    ])); *) 
-            (*    system (Printf.sprintf "cp _results/chart-all.r _results/charts-%s.r" benchmark) arg_virtual_run;*)
-    ) arg_benchmarks;
-  (* BFS plotting *)
+  (* BFS plotting *) (*
+  let baseline_bfs_prog = "bfs_bench.manc" in
   Mk_bar_plot.(call ([
                       Chart_opt Chart.([
             Legend_opt Legend.([
@@ -716,18 +802,51 @@ let plot() = (
       Bar_plot_opt Bar_plot.([
                               Chart_opt Chart.([Dimensions (13.,8.) ]);
          X_titles_dir Vertical;
-         Y_axis [Axis.Lower (Some (-100.0)); Axis.Upper (Some (200.0))] ]);
+         Y_axis [Axis.Lower (Some (-100.0)); Axis.Upper (Some (100.0))] ]);
       Formatter bfs_formatter;
       Charts mk_proc;
-      Series mk_progs;
+      Series my_mk_progs;
       X mk_graphs;
       Input "_results/results_bfs_main.txt";
       Output "plots_bfs.pdf";
       Y_label "% relative to original PBBS BFS";
-      Y eval_relative;
-      Y_whiskers eval_relative_stddev;
-            (*      Y eval_exectime;*)
-    ])))
+      Y (eval_relative baseline_bfs_prog);
+      Y_whiskers (eval_relative_stddev baseline_bfs_prog);
+                    ])); *)
+  (************)
+  (* Main plot *)
+  (*
+  let mk_inputs = (mk_sequence_input_names "suffix_array")
+                  ++ (mk_sequence_input_names "blockradix_sort")
+  in
+  let mk_suffixarray =
+    ((mk string "lib_type" "pctl") & (mk string "prog" "suffixarray_bench.unke100"))
+    ++     ((mk string "lib_type" "pctl") & (mk string "prog" "blockradixsort_bench.unke100"))
+  in
+  let mk_progs = mk_suffixarray in *)
+  
+  List.iter (fun benchmark -> 
+    Mk_bar_plot.(call ([
+                        Chart_opt Chart.([
+              Legend_opt Legend.([
+                 Legend_pos Top_left
+                 ])]);
+        Bar_plot_opt Bar_plot.([
+                                Chart_opt Chart.([Dimensions (6.,8.) ]);
+           X_titles_dir Vertical;
+           Y_axis [Axis.Lower (Some (-40.0)); Axis.Upper (Some (40.0))] ]);
+        Formatter main_formatter;
+        Charts mk_proc;
+        Series (mk_sequence_input_names benchmark);
+      X (mk_pctl_progs benchmark);
+      Input (Printf.sprintf "_results/results_%s.txt" benchmark);
+      Output (Printf.sprintf "plots_%s.pdf" benchmark);
+        Y_label "% relative to original PBBS";
+        Y eval_relative_main;
+        Y_whiskers eval_relative_stddev_main;
+                      ])) ) arg_benchmarks;
+ ()  
+)
 
 let all () = select make run check plot
 

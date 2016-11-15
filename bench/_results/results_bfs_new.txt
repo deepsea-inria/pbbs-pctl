@@ -1,0 +1,6534 @@
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 1
+---
+timeout 400
+exectime 3.237
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.481
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.369
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.329
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.335
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.335
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 1
+---
+timeout 400
+exectime 6.606
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.669
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.401
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.346
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.273
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.294
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 1
+---
+timeout 400
+exectime 7.322
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.761
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.468
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.394
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.344
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.329
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 1
+---
+timeout 400
+exectime 21.942
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 10
+---
+timeout 400
+exectime 4.528
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 20
+---
+timeout 400
+exectime 3.486
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 30
+---
+timeout 400
+exectime 3.196
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 39
+---
+timeout 400
+exectime 2.988
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 40
+---
+timeout 400
+exectime 3.087
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 1
+---
+timeout 400
+exectime 23.897
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 10
+---
+timeout 400
+exectime 12.514
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 20
+---
+timeout 400
+exectime 13.642
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 30
+---
+timeout 400
+exectime 12.448
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 39
+---
+timeout 400
+exectime 12.493
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 40
+---
+timeout 400
+exectime 12.712
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 1
+---
+timeout 400
+exectime 18.067
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 10
+---
+timeout 400
+exectime 1.792
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 20
+---
+timeout 400
+exectime 0.993
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 30
+---
+timeout 400
+exectime 0.776
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 39
+---
+timeout 400
+exectime 0.689
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 40
+---
+timeout 400
+exectime 0.739
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 1
+---
+timeout 400
+exectime 15.742
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 10
+---
+timeout 400
+exectime 2.240
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 20
+---
+timeout 400
+exectime 1.561
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 30
+---
+timeout 400
+exectime 1.819
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 39
+---
+timeout 400
+exectime 1.858
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 40
+---
+timeout 400
+exectime 1.878
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 1
+---
+timeout 400
+exectime 1.685
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 10
+---
+timeout 400
+exectime 0.189
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 20
+---
+timeout 400
+exectime 0.135
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 30
+---
+timeout 400
+exectime 0.129
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 39
+---
+timeout 400
+exectime 0.124
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 40
+---
+timeout 400
+exectime 0.104
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 1
+---
+timeout 400
+exectime 11.872
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 10
+---
+timeout 400
+exectime 1.357
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 20
+---
+timeout 400
+exectime 0.905
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 30
+---
+timeout 400
+exectime 0.850
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 39
+---
+timeout 400
+exectime 0.807
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 40
+---
+timeout 400
+exectime 0.768
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 1
+---
+timeout 400
+exectime 20.949
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 10
+---
+timeout 400
+exectime 18.282
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 20
+---
+timeout 400
+exectime 20.488
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 30
+---
+timeout 400
+exectime 20.769
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 39
+---
+timeout 400
+exectime 20.745
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 40
+---
+timeout 400
+exectime 20.090
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 1
+---
+timeout 400
+exectime 7.732
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 10
+---
+timeout 400
+exectime 7.717
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 20
+---
+timeout 400
+exectime 7.771
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 30
+---
+timeout 400
+exectime 7.966
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 39
+---
+timeout 400
+exectime 8.003
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 40
+---
+timeout 400
+exectime 8.367
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 1
+---
+timeout 400
+exectime 3.308
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.499
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.361
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.311
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.279
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.292
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 1
+---
+timeout 400
+exectime 6.616
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.675
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.442
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.322
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.283
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.284
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 1
+---
+timeout 400
+exectime 7.356
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.760
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.445
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.397
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.353
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.369
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 1
+---
+timeout 400
+exectime 21.865
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 10
+---
+timeout 400
+exectime 4.000
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 20
+---
+timeout 400
+exectime 2.982
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 30
+---
+timeout 400
+exectime 2.661
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 39
+---
+timeout 400
+exectime 2.503
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 40
+---
+timeout 400
+exectime 2.611
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 1
+---
+timeout 400
+exectime 24.203
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 10
+---
+timeout 400
+exectime 12.577
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 20
+---
+timeout 400
+exectime 12.575
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 30
+---
+timeout 400
+exectime 12.669
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 39
+---
+timeout 400
+exectime 12.297
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 40
+---
+timeout 400
+exectime 12.909
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 1
+---
+timeout 400
+exectime 18.289
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 10
+---
+timeout 400
+exectime 1.798
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 20
+---
+timeout 400
+exectime 0.999
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 30
+---
+timeout 400
+exectime 0.764
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 39
+---
+timeout 400
+exectime 0.690
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 40
+---
+timeout 400
+exectime 0.696
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 1
+---
+timeout 400
+exectime 15.854
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 10
+---
+timeout 400
+exectime 2.211
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 20
+---
+timeout 400
+exectime 1.609
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 30
+---
+timeout 400
+exectime 1.507
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 39
+---
+timeout 400
+exectime 1.410
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 40
+---
+timeout 400
+exectime 1.444
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 1
+---
+timeout 400
+exectime 1.694
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 10
+---
+timeout 400
+exectime 0.185
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 20
+---
+timeout 400
+exectime 0.125
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 30
+---
+timeout 400
+exectime 0.119
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 39
+---
+timeout 400
+exectime 0.121
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 40
+---
+timeout 400
+exectime 0.108
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 1
+---
+timeout 400
+exectime 11.899
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 10
+---
+timeout 400
+exectime 1.370
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 20
+---
+timeout 400
+exectime 0.893
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 30
+---
+timeout 400
+exectime 0.816
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 39
+---
+timeout 400
+exectime 0.786
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 40
+---
+timeout 400
+exectime 0.841
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 1
+---
+timeout 400
+exectime 20.998
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 10
+---
+timeout 400
+exectime 16.776
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 20
+---
+timeout 400
+exectime 16.924
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 30
+---
+timeout 400
+exectime 17.217
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 39
+---
+timeout 400
+exectime 17.135
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 40
+---
+timeout 400
+exectime 14.440
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 1
+---
+timeout 400
+exectime 7.726
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 10
+---
+timeout 400
+exectime 7.716
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 20
+---
+timeout 400
+exectime 7.877
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 30
+---
+timeout 400
+exectime 7.698
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 39
+---
+timeout 400
+exectime 7.725
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 40
+---
+timeout 400
+exectime 7.770
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 1
+---
+timeout 400
+exectime 3.315
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.413
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.319
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.301
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.259
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.268
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 1
+---
+timeout 400
+exectime 6.830
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.675
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.395
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.328
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.280
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.267
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 1
+---
+timeout 400
+exectime 7.541
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.769
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.440
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.367
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.348
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.348
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/grid_sq_large.bin
+proc 1
+---
+timeout 400
+exectime 22.256
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/grid_sq_large.bin
+proc 10
+---
+timeout 400
+exectime 4.827
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/grid_sq_large.bin
+proc 20
+---
+timeout 400
+exectime 4.016
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/grid_sq_large.bin
+proc 30
+---
+timeout 400
+exectime 3.700
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/grid_sq_large.bin
+proc 39
+---
+timeout 400
+exectime 3.982
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/grid_sq_large.bin
+proc 40
+---
+timeout 400
+exectime 3.855
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_524288_single_large.bin
+proc 1
+---
+timeout 400
+exectime 23.671
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_524288_single_large.bin
+proc 10
+---
+timeout 400
+exectime 12.446
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_524288_single_large.bin
+proc 20
+---
+timeout 400
+exectime 11.955
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_524288_single_large.bin
+proc 30
+---
+timeout 400
+exectime 11.887
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_524288_single_large.bin
+proc 39
+---
+timeout 400
+exectime 12.162
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_524288_single_large.bin
+proc 40
+---
+timeout 400
+exectime 12.651
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_low_50_large.bin
+proc 1
+---
+timeout 400
+exectime 18.126
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_low_50_large.bin
+proc 10
+---
+timeout 400
+exectime 1.754
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_low_50_large.bin
+proc 20
+---
+timeout 400
+exectime 0.965
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_low_50_large.bin
+proc 30
+---
+timeout 400
+exectime 0.765
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_low_50_large.bin
+proc 39
+---
+timeout 400
+exectime 0.739
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_low_50_large.bin
+proc 40
+---
+timeout 400
+exectime 0.655
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_mix_10_large.bin
+proc 1
+---
+timeout 400
+exectime 16.030
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_mix_10_large.bin
+proc 10
+---
+timeout 400
+exectime 2.256
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_mix_10_large.bin
+proc 20
+---
+timeout 400
+exectime 1.582
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_mix_10_large.bin
+proc 30
+---
+timeout 400
+exectime 1.541
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_mix_10_large.bin
+proc 39
+---
+timeout 400
+exectime 1.793
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_mix_10_large.bin
+proc 40
+---
+timeout 400
+exectime 1.767
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/random_arity_100_large.bin
+proc 1
+---
+timeout 400
+exectime 1.659
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/random_arity_100_large.bin
+proc 10
+---
+timeout 400
+exectime 0.182
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/random_arity_100_large.bin
+proc 20
+---
+timeout 400
+exectime 0.114
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/random_arity_100_large.bin
+proc 30
+---
+timeout 400
+exectime 0.107
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/random_arity_100_large.bin
+proc 39
+---
+timeout 400
+exectime 0.114
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/random_arity_100_large.bin
+proc 40
+---
+timeout 400
+exectime 0.104
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 1
+---
+timeout 400
+exectime 11.945
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 10
+---
+timeout 400
+exectime 1.400
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 20
+---
+timeout 400
+exectime 1.016
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 30
+---
+timeout 400
+exectime 0.714
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 39
+---
+timeout 400
+exectime 0.718
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 40
+---
+timeout 400
+exectime 0.788
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 1
+---
+timeout 400
+exectime 23.167
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 10
+---
+timeout 400
+exectime 48.795
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 20
+---
+timeout 400
+exectime 62.261
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 30
+---
+timeout 400
+exectime 66.957
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 39
+---
+timeout 400
+exectime 64.291
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 40
+---
+timeout 400
+exectime 64.196
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 1
+---
+timeout 400
+exectime 8.359
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 10
+---
+timeout 400
+exectime 14.221
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 20
+---
+timeout 400
+exectime 13.691
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 30
+---
+timeout 400
+exectime 16.664
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 39
+---
+timeout 400
+exectime 14.796
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 40
+---
+timeout 400
+exectime 16.735
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 1
+---
+timeout 400
+exectime 3.245
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.491
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.369
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.321
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.313
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.327
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 1
+---
+timeout 400
+exectime 6.610
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.677
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.429
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.330
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.307
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.279
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 1
+---
+timeout 400
+exectime 7.337
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.760
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.468
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.383
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.347
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.328
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 1
+---
+timeout 400
+exectime 21.949
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 10
+---
+timeout 400
+exectime 4.438
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 20
+---
+timeout 400
+exectime 3.467
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 30
+---
+timeout 400
+exectime 3.158
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 39
+---
+timeout 400
+exectime 3.095
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 40
+---
+timeout 400
+exectime 3.072
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 1
+---
+timeout 400
+exectime 24.019
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 10
+---
+timeout 400
+exectime 12.475
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 20
+---
+timeout 400
+exectime 12.144
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 30
+---
+timeout 400
+exectime 12.661
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 39
+---
+timeout 400
+exectime 13.241
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 40
+---
+timeout 400
+exectime 13.570
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 1
+---
+timeout 400
+exectime 18.203
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 10
+---
+timeout 400
+exectime 1.845
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 20
+---
+timeout 400
+exectime 1.001
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 30
+---
+timeout 400
+exectime 0.775
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 39
+---
+timeout 400
+exectime 0.679
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 40
+---
+timeout 400
+exectime 0.686
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 1
+---
+timeout 400
+exectime 15.795
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 10
+---
+timeout 400
+exectime 2.316
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 20
+---
+timeout 400
+exectime 1.726
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 30
+---
+timeout 400
+exectime 1.419
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 39
+---
+timeout 400
+exectime 1.576
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 40
+---
+timeout 400
+exectime 1.341
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 1
+---
+timeout 400
+exectime 1.692
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 10
+---
+timeout 400
+exectime 0.186
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 20
+---
+timeout 400
+exectime 0.127
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 30
+---
+timeout 400
+exectime 0.162
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 39
+---
+timeout 400
+exectime 0.144
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 40
+---
+timeout 400
+exectime 0.120
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 1
+---
+timeout 400
+exectime 11.731
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 10
+---
+timeout 400
+exectime 1.367
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 20
+---
+timeout 400
+exectime 1.120
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 30
+---
+timeout 400
+exectime 0.817
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 39
+---
+timeout 400
+exectime 0.764
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 40
+---
+timeout 400
+exectime 0.796
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 1
+---
+timeout 400
+exectime 20.940
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 10
+---
+timeout 400
+exectime 20.648
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 20
+---
+timeout 400
+exectime 20.761
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 30
+---
+timeout 400
+exectime 15.647
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 39
+---
+timeout 400
+exectime 18.172
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 40
+---
+timeout 400
+exectime 20.186
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 1
+---
+timeout 400
+exectime 7.756
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 10
+---
+timeout 400
+exectime 7.663
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 20
+---
+timeout 400
+exectime 7.674
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 30
+---
+timeout 400
+exectime 7.965
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 39
+---
+timeout 400
+exectime 8.149
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 40
+---
+timeout 400
+exectime 9.877
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 1
+---
+timeout 400
+exectime 3.291
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.474
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.329
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.311
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.280
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.278
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 1
+---
+timeout 400
+exectime 6.573
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.665
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.431
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.343
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.316
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.303
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 1
+---
+timeout 400
+exectime 7.322
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.767
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.509
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.343
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.340
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.329
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 1
+---
+timeout 400
+exectime 21.851
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 10
+---
+timeout 400
+exectime 4.124
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 20
+---
+timeout 400
+exectime 3.033
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 30
+---
+timeout 400
+exectime 2.632
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 39
+---
+timeout 400
+exectime 2.576
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 40
+---
+timeout 400
+exectime 2.505
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 1
+---
+timeout 400
+exectime 24.148
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 10
+---
+timeout 400
+exectime 12.884
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 20
+---
+timeout 400
+exectime 12.451
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 30
+---
+timeout 400
+exectime 12.644
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 39
+---
+timeout 400
+exectime 13.188
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 40
+---
+timeout 400
+exectime 13.276
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 1
+---
+timeout 400
+exectime 18.385
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 10
+---
+timeout 400
+exectime 1.765
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 20
+---
+timeout 400
+exectime 0.975
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 30
+---
+timeout 400
+exectime 0.785
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 39
+---
+timeout 400
+exectime 0.722
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 40
+---
+timeout 400
+exectime 0.661
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 1
+---
+timeout 400
+exectime 15.829
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 10
+---
+timeout 400
+exectime 2.147
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 20
+---
+timeout 400
+exectime 1.663
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 30
+---
+timeout 400
+exectime 1.599
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 39
+---
+timeout 400
+exectime 1.516
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 40
+---
+timeout 400
+exectime 1.358
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 1
+---
+timeout 400
+exectime 1.689
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 10
+---
+timeout 400
+exectime 0.185
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 20
+---
+timeout 400
+exectime 0.114
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 30
+---
+timeout 400
+exectime 0.119
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 39
+---
+timeout 400
+exectime 0.119
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 40
+---
+timeout 400
+exectime 0.126
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 1
+---
+timeout 400
+exectime 11.990
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 10
+---
+timeout 400
+exectime 1.360
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 20
+---
+timeout 400
+exectime 0.884
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 30
+---
+timeout 400
+exectime 0.830
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 39
+---
+timeout 400
+exectime 0.767
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 40
+---
+timeout 400
+exectime 0.832
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 1
+---
+timeout 400
+exectime 21.080
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 10
+---
+timeout 400
+exectime 17.637
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 20
+---
+timeout 400
+exectime 17.508
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 30
+---
+timeout 400
+exectime 17.089
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 39
+---
+timeout 400
+exectime 17.098
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 40
+---
+timeout 400
+exectime 16.181
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 1
+---
+timeout 400
+exectime 7.730
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 10
+---
+timeout 400
+exectime 7.703
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 20
+---
+timeout 400
+exectime 7.731
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 30
+---
+timeout 400
+exectime 7.757
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 39
+---
+timeout 400
+exectime 7.941
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 40
+---
+timeout 400
+exectime 7.757
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 1
+---
+timeout 400
+exectime 3.337
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.462
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.346
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.291
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.275
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.269
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 1
+---
+timeout 400
+exectime 6.859
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.708
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.403
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.319
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.295
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.301
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 1
+---
+timeout 400
+exectime 7.615
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.772
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.435
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.367
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.340
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.306
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/grid_sq_large.bin
+proc 1
+---
+timeout 400
+exectime 22.233
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/grid_sq_large.bin
+proc 10
+---
+timeout 400
+exectime 4.882
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/grid_sq_large.bin
+proc 20
+---
+timeout 400
+exectime 3.998
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/grid_sq_large.bin
+proc 30
+---
+timeout 400
+exectime 3.750
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/grid_sq_large.bin
+proc 39
+---
+timeout 400
+exectime 3.964
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/grid_sq_large.bin
+proc 40
+---
+timeout 400
+exectime 3.918
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_524288_single_large.bin
+proc 1
+---
+timeout 400
+exectime 23.749
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_524288_single_large.bin
+proc 10
+---
+timeout 400
+exectime 12.415
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_524288_single_large.bin
+proc 20
+---
+timeout 400
+exectime 11.979
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_524288_single_large.bin
+proc 30
+---
+timeout 400
+exectime 12.290
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_524288_single_large.bin
+proc 39
+---
+timeout 400
+exectime 12.157
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_524288_single_large.bin
+proc 40
+---
+timeout 400
+exectime 12.589
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_low_50_large.bin
+proc 1
+---
+timeout 400
+exectime 18.235
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_low_50_large.bin
+proc 10
+---
+timeout 400
+exectime 1.755
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_low_50_large.bin
+proc 20
+---
+timeout 400
+exectime 0.978
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_low_50_large.bin
+proc 30
+---
+timeout 400
+exectime 0.774
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_low_50_large.bin
+proc 39
+---
+timeout 400
+exectime 0.686
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_low_50_large.bin
+proc 40
+---
+timeout 400
+exectime 0.644
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_mix_10_large.bin
+proc 1
+---
+timeout 400
+exectime 16.004
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_mix_10_large.bin
+proc 10
+---
+timeout 400
+exectime 1.862
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_mix_10_large.bin
+proc 20
+---
+timeout 400
+exectime 1.708
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_mix_10_large.bin
+proc 30
+---
+timeout 400
+exectime 1.677
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_mix_10_large.bin
+proc 39
+---
+timeout 400
+exectime 1.671
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_mix_10_large.bin
+proc 40
+---
+timeout 400
+exectime 1.514
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/random_arity_100_large.bin
+proc 1
+---
+timeout 400
+exectime 1.661
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/random_arity_100_large.bin
+proc 10
+---
+timeout 400
+exectime 0.180
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/random_arity_100_large.bin
+proc 20
+---
+timeout 400
+exectime 0.131
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/random_arity_100_large.bin
+proc 30
+---
+timeout 400
+exectime 0.107
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/random_arity_100_large.bin
+proc 39
+---
+timeout 400
+exectime 0.114
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/random_arity_100_large.bin
+proc 40
+---
+timeout 400
+exectime 0.101
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 1
+---
+timeout 400
+exectime 11.875
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 10
+---
+timeout 400
+exectime 1.303
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 20
+---
+timeout 400
+exectime 0.883
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 30
+---
+timeout 400
+exectime 0.988
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 39
+---
+timeout 400
+exectime 0.727
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 40
+---
+timeout 400
+exectime 0.717
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 1
+---
+timeout 400
+exectime 23.259
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 10
+---
+timeout 400
+exectime 48.679
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 20
+---
+timeout 400
+exectime 62.286
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 30
+---
+timeout 400
+exectime 66.099
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 39
+---
+timeout 400
+exectime 62.471
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 40
+---
+timeout 400
+exectime 70.723
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 1
+---
+timeout 400
+exectime 8.312
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 10
+---
+timeout 400
+exectime 12.654
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 20
+---
+timeout 400
+exectime 14.372
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 30
+---
+timeout 400
+exectime 16.380
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 39
+---
+timeout 400
+exectime 16.577
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 40
+---
+timeout 400
+exectime 13.905
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 1
+---
+timeout 400
+exectime 3.262
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.493
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.361
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.321
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.284
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.294
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 1
+---
+timeout 400
+exectime 6.640
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.669
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.383
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.321
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.299
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.290
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 1
+---
+timeout 400
+exectime 7.334
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.760
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.414
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.385
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.368
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.339
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 1
+---
+timeout 400
+exectime 21.970
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 10
+---
+timeout 400
+exectime 4.443
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 20
+---
+timeout 400
+exectime 3.479
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 30
+---
+timeout 400
+exectime 3.140
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 39
+---
+timeout 400
+exectime 2.956
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 40
+---
+timeout 400
+exectime 2.941
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 1
+---
+timeout 400
+exectime 23.846
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 10
+---
+timeout 400
+exectime 12.656
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 20
+---
+timeout 400
+exectime 12.902
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 30
+---
+timeout 400
+exectime 12.117
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 39
+---
+timeout 400
+exectime 12.581
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 40
+---
+timeout 400
+exectime 12.542
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 1
+---
+timeout 400
+exectime 18.251
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 10
+---
+timeout 400
+exectime 1.770
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 20
+---
+timeout 400
+exectime 1.015
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 30
+---
+timeout 400
+exectime 0.770
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 39
+---
+timeout 400
+exectime 0.723
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 40
+---
+timeout 400
+exectime 0.715
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 1
+---
+timeout 400
+exectime 15.824
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 10
+---
+timeout 400
+exectime 1.896
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 20
+---
+timeout 400
+exectime 1.630
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 30
+---
+timeout 400
+exectime 1.844
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 39
+---
+timeout 400
+exectime 1.510
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 40
+---
+timeout 400
+exectime 1.939
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 1
+---
+timeout 400
+exectime 1.689
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 10
+---
+timeout 400
+exectime 0.188
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 20
+---
+timeout 400
+exectime 0.112
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 30
+---
+timeout 400
+exectime 0.115
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 39
+---
+timeout 400
+exectime 0.134
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 40
+---
+timeout 400
+exectime 0.118
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 1
+---
+timeout 400
+exectime 11.948
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 10
+---
+timeout 400
+exectime 1.353
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 20
+---
+timeout 400
+exectime 0.981
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 30
+---
+timeout 400
+exectime 0.830
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 39
+---
+timeout 400
+exectime 0.766
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 40
+---
+timeout 400
+exectime 0.784
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 1
+---
+timeout 400
+exectime 20.956
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 10
+---
+timeout 400
+exectime 18.228
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 20
+---
+timeout 400
+exectime 20.225
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 30
+---
+timeout 400
+exectime 14.602
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 39
+---
+timeout 400
+exectime 20.699
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 40
+---
+timeout 400
+exectime 19.866
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 1
+---
+timeout 400
+exectime 7.779
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 10
+---
+timeout 400
+exectime 7.317
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 20
+---
+timeout 400
+exectime 7.703
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 30
+---
+timeout 400
+exectime 7.737
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 39
+---
+timeout 400
+exectime 7.853
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke100
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 40
+---
+timeout 400
+exectime 8.496
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 1
+---
+timeout 400
+exectime 3.310
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.496
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.361
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.314
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.305
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.299
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 1
+---
+timeout 400
+exectime 6.585
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.670
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.413
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.339
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.302
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.292
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 1
+---
+timeout 400
+exectime 7.388
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.772
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.484
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.343
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.363
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.346
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 1
+---
+timeout 400
+exectime 21.894
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 10
+---
+timeout 400
+exectime 4.197
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 20
+---
+timeout 400
+exectime 3.000
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 30
+---
+timeout 400
+exectime 2.626
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 39
+---
+timeout 400
+exectime 2.490
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/grid_sq_large.bin
+proc 40
+---
+timeout 400
+exectime 2.559
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 1
+---
+timeout 400
+exectime 23.907
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 10
+---
+timeout 400
+exectime 13.574
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 20
+---
+timeout 400
+exectime 12.727
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 30
+---
+timeout 400
+exectime 12.905
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 39
+---
+timeout 400
+exectime 12.576
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_524288_single_large.bin
+proc 40
+---
+timeout 400
+exectime 13.478
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 1
+---
+timeout 400
+exectime 18.311
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 10
+---
+timeout 400
+exectime 1.824
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 20
+---
+timeout 400
+exectime 0.996
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 30
+---
+timeout 400
+exectime 0.800
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 39
+---
+timeout 400
+exectime 0.679
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_low_50_large.bin
+proc 40
+---
+timeout 400
+exectime 0.710
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 1
+---
+timeout 400
+exectime 15.905
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 10
+---
+timeout 400
+exectime 2.086
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 20
+---
+timeout 400
+exectime 1.743
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 30
+---
+timeout 400
+exectime 1.548
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 39
+---
+timeout 400
+exectime 1.388
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/phased_mix_10_large.bin
+proc 40
+---
+timeout 400
+exectime 2.099
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 1
+---
+timeout 400
+exectime 1.704
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 10
+---
+timeout 400
+exectime 0.189
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 20
+---
+timeout 400
+exectime 0.138
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 30
+---
+timeout 400
+exectime 0.117
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 39
+---
+timeout 400
+exectime 0.113
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/random_arity_100_large.bin
+proc 40
+---
+timeout 400
+exectime 0.126
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 1
+---
+timeout 400
+exectime 11.998
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 10
+---
+timeout 400
+exectime 1.342
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 20
+---
+timeout 400
+exectime 0.923
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 30
+---
+timeout 400
+exectime 0.875
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 39
+---
+timeout 400
+exectime 0.843
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 40
+---
+timeout 400
+exectime 0.888
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 1
+---
+timeout 400
+exectime 18.784
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 10
+---
+timeout 400
+exectime 17.519
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 20
+---
+timeout 400
+exectime 16.831
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 30
+---
+timeout 400
+exectime 17.127
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 39
+---
+timeout 400
+exectime 17.325
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 40
+---
+timeout 400
+exectime 17.084
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 1
+---
+timeout 400
+exectime 7.912
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 10
+---
+timeout 400
+exectime 7.680
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 20
+---
+timeout 400
+exectime 7.728
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 30
+---
+timeout 400
+exectime 8.138
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 39
+---
+timeout 400
+exectime 7.312
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.unke30
+lib_type pctl
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 40
+---
+timeout 400
+exectime 7.979
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 1
+---
+timeout 400
+exectime 3.338
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.478
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.349
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.295
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.266
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/3Dgrid_J_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.271
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 1
+---
+timeout 400
+exectime 6.865
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.683
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.425
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.304
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.293
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/randLocalGraph_J_5_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.277
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 1
+---
+timeout 400
+exectime 7.645
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 10
+---
+timeout 400
+exectime 0.781
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 20
+---
+timeout 400
+exectime 0.469
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 30
+---
+timeout 400
+exectime 0.367
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 39
+---
+timeout 400
+exectime 0.325
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/rMatGraph_J_5_10000000.bin
+proc 40
+---
+timeout 400
+exectime 0.315
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/grid_sq_large.bin
+proc 1
+---
+timeout 400
+exectime 22.298
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/grid_sq_large.bin
+proc 10
+---
+timeout 400
+exectime 4.608
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/grid_sq_large.bin
+proc 20
+---
+timeout 400
+exectime 3.918
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/grid_sq_large.bin
+proc 30
+---
+timeout 400
+exectime 3.549
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/grid_sq_large.bin
+proc 39
+---
+timeout 400
+exectime 3.722
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/grid_sq_large.bin
+proc 40
+---
+timeout 400
+exectime 4.016
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_524288_single_large.bin
+proc 1
+---
+timeout 400
+exectime 23.781
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_524288_single_large.bin
+proc 10
+---
+timeout 400
+exectime 12.474
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_524288_single_large.bin
+proc 20
+---
+timeout 400
+exectime 12.389
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_524288_single_large.bin
+proc 30
+---
+timeout 400
+exectime 12.198
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_524288_single_large.bin
+proc 39
+---
+timeout 400
+exectime 12.550
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_524288_single_large.bin
+proc 40
+---
+timeout 400
+exectime 12.082
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_low_50_large.bin
+proc 1
+---
+timeout 400
+exectime 18.006
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_low_50_large.bin
+proc 10
+---
+timeout 400
+exectime 1.748
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_low_50_large.bin
+proc 20
+---
+timeout 400
+exectime 0.987
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_low_50_large.bin
+proc 30
+---
+timeout 400
+exectime 0.767
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_low_50_large.bin
+proc 39
+---
+timeout 400
+exectime 0.727
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_low_50_large.bin
+proc 40
+---
+timeout 400
+exectime 0.647
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_mix_10_large.bin
+proc 1
+---
+timeout 400
+exectime 16.209
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_mix_10_large.bin
+proc 10
+---
+timeout 400
+exectime 2.066
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_mix_10_large.bin
+proc 20
+---
+timeout 400
+exectime 1.719
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_mix_10_large.bin
+proc 30
+---
+timeout 400
+exectime 1.656
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_mix_10_large.bin
+proc 39
+---
+timeout 400
+exectime 1.679
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/phased_mix_10_large.bin
+proc 40
+---
+timeout 400
+exectime 1.917
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/random_arity_100_large.bin
+proc 1
+---
+timeout 400
+exectime 1.670
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/random_arity_100_large.bin
+proc 10
+---
+timeout 400
+exectime 0.188
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/random_arity_100_large.bin
+proc 20
+---
+timeout 400
+exectime 0.133
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/random_arity_100_large.bin
+proc 30
+---
+timeout 400
+exectime 0.100
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/random_arity_100_large.bin
+proc 39
+---
+timeout 400
+exectime 0.101
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/random_arity_100_large.bin
+proc 40
+---
+timeout 400
+exectime 0.096
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 1
+---
+timeout 400
+exectime 11.650
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 10
+---
+timeout 400
+exectime 1.324
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 20
+---
+timeout 400
+exectime 0.897
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 30
+---
+timeout 400
+exectime 0.732
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 39
+---
+timeout 400
+exectime 0.754
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/tree_2_512_1024_large.bin
+proc 40
+---
+timeout 400
+exectime 0.750
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 1
+---
+timeout 400
+exectime 23.164
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 10
+---
+timeout 400
+exectime 42.747
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 20
+---
+timeout 400
+exectime 56.772
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 30
+---
+timeout 400
+exectime 62.906
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 39
+---
+timeout 400
+exectime 65.118
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/paths_100_phases_1_large.bin
+proc 40
+---
+timeout 400
+exectime 64.917
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 1
+---
+timeout 400
+exectime 8.384
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 10
+---
+timeout 400
+exectime 14.183
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 20
+---
+timeout 400
+exectime 13.181
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 30
+---
+timeout 400
+exectime 16.679
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 39
+---
+timeout 400
+exectime 14.911
+killed 0
+==========
+machine teraram
+prog numactl --interleave=all ./bfs_bench.manc
+lib_type pbbs
+type graph
+infile _data/unbalanced_tree_trunk_first_large.bin
+proc 40
+---
+timeout 400
+exectime 15.590
+killed 0
+==========
