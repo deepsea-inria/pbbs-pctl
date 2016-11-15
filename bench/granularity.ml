@@ -643,31 +643,50 @@ let formatter =
   [
     ("proc", Format_custom (fun n -> sprintf "Nb. cores %s" n));
     ("use_hash", Format_custom (fun n -> ""));
-    ("digest", Format_custom (fun n -> ""));
-    ("mode", Format_custom (fun n -> if n = "manual" then "cilk_for" else "oracle guided"));
+    ("digest", Format_custom (function | "pbbs32" -> "PBBS hash" | "sha256" -> "SHA256" | "sha384" -> "SHA384" | "sha512" -> "SHA512" | _ -> ""));
+    ("mode", Format_custom (fun n -> "")(*(fun n -> if n = "manual" then "cilk_for" else "oracle guided")*));
     ("block_szb_lg", Format_custom (fun n -> sprintf "B=2^%s" n));
     ("nb_blocks_lg", Format_custom (fun n -> sprintf "N=2^%s" n));
    ]
   ))            
 
+let eval_relative = fun env all_results results ->
+  let cilk_results = ~~ Results.filter_by_params all_results (
+                          from_env (Env.add (Env.filter_keys ["digest"; "block_szb_lg"; "nb_blocks_lg"] env) "mode" (Env.Vstring "manual"))) in
+  if cilk_results = [] then Pbench.error ("no results for manual mode");
+  let v = Results.get_mean_of "exectime" results in
+  let b = Results.get_mean_of "exectime" cilk_results in
+  100.0 *. (v /. b -. 1.0)
+
+let eval_relative_stddev = fun env all_results results ->
+  let cilk_results = ~~ Results.filter_by_params all_results (
+                          from_env (Env.add (Env.filter_keys ["digest"; "block_szb_lg"; "nb_blocks_lg"] env) "mode" (Env.Vstring "manual"))) in
+  if cilk_results = [] then Pbench.error ("no results from manual mode");
+  try
+  let b = Results.get_mean_of "exectime" cilk_results in
+  let times = Results.get Env.as_float "exectime" results in
+  let rels = List.map (fun v -> 100.0 *. (v /. b -. 1.0)) times in
+  XFloat.list_stddev rels
+  with Results.Missing_key _ -> nan
+
 let plot() =
   Mk_bar_plot.(call ([
       Chart_opt Chart.([
             Legend_opt Legend.([
-               Legend_pos Top_left
+               Legend_pos Bottom_left
                ])]);
       Bar_plot_opt Bar_plot.([
          X_titles_dir Vertical;
-         Y_axis [ Axis.Is_log false; Axis.Lower (Some 0.); Axis.Upper(Some 3.0);] ]);
+         Y_axis [ Axis.Is_log false; Axis.Lower (Some (-100.0)); Axis.Upper(Some (30.0));] ]);
       Formatter formatter;
-      Charts mk_digests;
-      Series mk_modes;
+      Charts mk_unit;(*mk_digests;*)
+      Series ((mk_list string "mode" ["oracle"]) & mk_digests);
       X mk_sizes;
       Input (file_results name);
       Output (file_plots name);
-      Y_label "Time (s)";
-      Y eval_exectime;
-      Y_whiskers eval_exectime_stddev;
+      Y_label "% relative to algorithm with cilk_for";
+      Y eval_relative;
+      Y_whiskers eval_relative_stddev;
   ]))
 
 
