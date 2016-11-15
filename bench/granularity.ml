@@ -617,7 +617,7 @@ let mk_block_szb_lg n = mk int "block_szb_lg" n
 
 let mk_nb_blocks_lg n = mk int "nb_blocks_lg" n
 
-let sizes = [(9, 21); (10, 20); (*(17, 13);*) (20, 10); (24, 6)]
+let sizes = [(9, 21); (13, 17); (*(17, 13);*) (18, 12); (24, 6)]
 
 let mk_modes = mk_list string "mode" ["manual"; "oracle";]
 

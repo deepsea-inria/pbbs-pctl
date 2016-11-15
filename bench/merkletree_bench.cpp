@@ -294,17 +294,23 @@ static constexpr int lg_one_kb = 10;
 static constexpr int lg_ten_kb = 17;
 static constexpr int lg_one_mb = 20;
 static constexpr int lg_sixteen_mb = 24;
+static constexpr int lg_sixty_five_kb = 13;
+static constexpr int lg_two_hundred_kb = 18;
 static constexpr int half_kb = 1 << lg_half_kb;
 static constexpr int one_kb = 1 << lg_one_kb;
 static constexpr int ten_kb = 1 << lg_ten_kb;
 static constexpr int one_mb = 1 << lg_one_mb;
 static constexpr int sixteen_mb = 1 << lg_sixteen_mb;
+static constexpr int sixty_five_kb = 1 << lg_sixty_five_kb;
+static constexpr int two_hundred_kb = 1 << lg_two_hundred_kb;
 
 using half_kb_block = byte_array<half_kb>;
 using one_kb_block = byte_array<one_kb>;
 using ten_kb_block = byte_array<ten_kb>;
 using one_mb_block = byte_array<one_mb>;
 using sixteen_mb_block = byte_array<sixteen_mb>;
+using sixty_five_kb_block = byte_array<sixty_five_kb>;
+using two_hundred_kb_block = byte_array<two_hundred_kb>;
   
 void initialize_block(int i, unsigned char* lo, unsigned char* hi) {
   int j = 0;
@@ -353,6 +359,16 @@ void merkletree(pbbs::measured_type measure, const Hash_policy& hash_policy) {
   });
   d.add(std::to_string(lg_sixteen_mb), [&] {
     std::vector<sixteen_mb_block> blocks(nb_blocks);
+    initialize_blocks(blocks.begin(), blocks.end());
+    merkle = merkletree(measure, blocks.begin(), blocks.end(), hash_policy, nb);
+  });
+  d.add(std::to_string(lg_sixty_five_kb), [&] {
+    std::vector<sixty_five_kb_block> blocks(nb_blocks);
+    initialize_blocks(blocks.begin(), blocks.end());
+    merkle = merkletree(measure, blocks.begin(), blocks.end(), hash_policy, nb);
+  });
+  d.add(std::to_string(lg_two_hundred_kb), [&] {
+    std::vector<two_hundred_kb_block> blocks(nb_blocks);
     initialize_blocks(blocks.begin(), blocks.end());
     merkle = merkletree(measure, blocks.begin(), blocks.end(), hash_policy, nb);
   });
