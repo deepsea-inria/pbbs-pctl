@@ -617,7 +617,7 @@ let mk_block_szb_lg n = mk int "block_szb_lg" n
 
 let mk_nb_blocks_lg n = mk int "nb_blocks_lg" n
 
-let sizes = [(9, 21); (10, 20); (*(17, 13);*) (20, 10); (24, 6)]
+let sizes = [(9, 21); (13, 17); (*(17, 13);*) (18, 12); (24, 6)]
 
 let mk_modes = mk_list string "mode" ["manual"; "oracle";]
 
@@ -658,7 +658,7 @@ let plot() =
                ])]);
       Bar_plot_opt Bar_plot.([
          X_titles_dir Vertical;
-         Y_axis [ Axis.Is_log false; Axis.Lower (Some 0.); Axis.Upper(Some 3.0);] ]);
+         Y_axis [ Axis.Is_log false; Axis.Lower (Some 0.); Axis.Upper(Some 4.0);] ]);
       Formatter formatter;
       Charts mk_digests;
       Series mk_modes;
