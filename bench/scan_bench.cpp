@@ -12,7 +12,7 @@
 #include <functional>
 #include <stdlib.h>
 #include "bench.hpp"
-#include "dpsdatapar.hpp"
+#include "datapar.hpp"
 #include "loaders.hpp"
 #include "sequence.h"
 

@@ -233,13 +233,17 @@ struct write_to_file_struct<graph::graph<intT>> {
     out.write(reinterpret_cast<char*>(&graph.n), sizeof(intT));
     out.write(reinterpret_cast<char*>(&graph.m), sizeof(intT));
     intT* degree = new int[graph.n];
+
     for (int i = 0; i < graph.n; i++) {
       degree[i] = graph.V[i].degree;
     }
     out.write(reinterpret_cast<char*>(degree), sizeof(intT) * graph.n);
+
     delete [] degree;
     for (int i = 0; i < graph.n; i++) {
-      out.write(reinterpret_cast<char*>(graph.V[i].Neighbors), sizeof(intT) * graph.V[i].degree);
+      if (graph.V[i].degree > 0) {
+        out.write(reinterpret_cast<char*>(graph.V[i].Neighbors), sizeof(intT) * graph.V[i].degree);
+      }
     }
   }
 };
@@ -264,6 +268,68 @@ template <class Item>
 void write_to_file(std::string file, Item& x) {
   std::ofstream out(file, std::ofstream::binary);
   write_to_file(out, x);
+}
+
+/* ------------------ PASL ------------------*/
+
+template <class Item>
+struct read_from_pasl_file_struct {
+};
+
+template <class intT>
+struct read_from_pasl_file_struct<graph::graph<intT>> {
+  template <class VertexType>
+  void initialize(std::ifstream& in, int n, int m, intT* e, graph::vertex<intT>* v) {
+    std::cerr << n << " " << m << std::endl;
+    VertexType* offsets = new VertexType[n + 1];
+    in.read(reinterpret_cast<char*>(offsets), sizeof(VertexType) * (n + 1));
+
+    VertexType* eor = new VertexType[m];
+    in.read(reinterpret_cast<char*>(eor), sizeof(VertexType) * m);
+
+    for (int i = 0; i < m; i++) {
+      e[i] = (intT)eor[i];
+    }
+    for (int i = 0; i < n; i++) {
+      v[i] = graph::vertex<intT>(e + offsets[i], offsets[i + 1] - offsets[i]);
+    }
+    delete [] eor;
+    delete [] offsets;
+  }
+
+  graph::graph<intT> operator()(std::ifstream& in) {
+    uint64_t header[5];
+    in.read(reinterpret_cast<char*>(header), sizeof(header));
+    intT n = (intT)header[2];
+    intT m = (intT)header[3];
+
+    graph::vertex<intT>* v = (graph::vertex<intT>*)malloc(sizeof(graph::vertex<intT>) * n);
+    intT* e = (intT*)malloc(sizeof(intT) * m);
+
+    in.seekg(0, in.end);
+    long long contents_size = (long long)in.tellg() - sizeof(header);
+    in.seekg(sizeof(header), in.beg);
+    long long vertex_type = contents_size / (n + 1 + m);
+
+    if (vertex_type == 8) {
+      initialize<long>(in, n, m, e, v);
+    } else {
+      initialize<int>(in, n, m, e, v);
+    }
+    return graph::graph<intT>(v, n, m, e);
+  }
+};
+
+template <class Item>
+Item read_from_pasl_file(std::ifstream& in) {
+  return read_from_pasl_file_struct<Item>()(in);
+}
+
+template <class Item>
+Item read_from_pasl_file(std::string file) {
+  std::cerr << file << std::endl;
+  std::ifstream in(file, std::ifstream::binary);
+  return read_from_pasl_file<Item>(in);
 }
 
 } //end namespace

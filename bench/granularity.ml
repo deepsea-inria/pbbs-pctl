@@ -658,7 +658,7 @@ let plot() =
                ])]);
       Bar_plot_opt Bar_plot.([
          X_titles_dir Vertical;
-         Y_axis [ Axis.Is_log false; Axis.Lower (Some 0.); Axis.Upper(Some 4.0);] ]);
+         Y_axis [ Axis.Is_log false; Axis.Lower (Some 0.); Axis.Upper(Some 3.0);] ]);
       Formatter formatter;
       Charts mk_digests;
       Series mk_modes;
