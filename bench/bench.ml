@@ -108,6 +108,12 @@ let file_results exp_name =
 let file_plots exp_name =
   Printf.sprintf "_plots/plots_%s_%s.pdf" exp_name arg_extension
 
+let file_tables_src exp_name =
+  Printf.sprintf "tables_%s.tex" (wrap_name_size exp_name)
+
+let file_tables exp_name =
+  Printf.sprintf "tables_%s.pdf" (wrap_name_size exp_name)
+                 
 (** Evaluation functions *)
 
 let eval_exectime = fun env all_results results ->
@@ -824,10 +830,33 @@ let plot() = (
     ++     ((mk string "lib_type" "pctl") & (mk string "prog" "blockradixsort_bench.unke100"))
   in
   let mk_progs = mk_suffixarray in *)
-  
+
+  let experiment_name = "pbbs" in
+
+  let tex_file = file_tables_src experiment_name in
+  let pdf_file = file_tables experiment_name in
+    Mk_table.build_table tex_file pdf_file (fun add ->
+      ~~ List.iter envs_rows (fun env_rows ->
+        ~~ List.iter arg_benchmarks (fun benchmark ->
+          let all_results = Results.from_file (file_results benchmark) in
+          let results = all_results in
+          let env = Env.empty in
+          let mk_rows =
+            (*Params.from_envs (Results.get_distinct_values_for_several arg_rows all_results) in*)
+          let mk_cols = Params.from_envs (Results.get_distinct_values_for_several arg_cols all_results) in
+          ~~ List.iter envs_rows (fun env_rows ->
+            let results = Results.filter env_rows results in
+            let env = Env.append env env_rows in
+            let row_title = Env.format formatter env_rows in
+            ~~ List.iter envs_cols (fun env_cols ->
+              let env = Env.append env env_cols in
+              let results = Results.filter env_cols results in
+              let v = eval_cell env all_results results in
+              Printf.printf "%.5f" v
+                        
   List.iter (fun benchmark -> 
     Mk_bar_plot.(call ([
-                        Chart_opt Chart.([
+             Chart_opt Chart.([
               Legend_opt Legend.([
                  Legend_pos Top_left
                  ])]);
