@@ -109,10 +109,10 @@ let file_plots exp_name =
   Printf.sprintf "_plots/plots_%s_%s.pdf" exp_name arg_extension
 
 let file_tables_src exp_name =
-  Printf.sprintf "tables_%s.tex" (wrap_name_size exp_name)
+  Printf.sprintf "tables_%s.tex" exp_name
 
 let file_tables exp_name =
-  Printf.sprintf "tables_%s.pdf" (wrap_name_size exp_name)
+  Printf.sprintf "tables_%s.pdf" exp_name
                  
 (** Evaluation functions *)
 
@@ -233,12 +233,12 @@ let generators_list = function
     function
     | "array_point2d" -> [
         mk_generator "in_square";
-        mk_generator "kuzmin";
+        (*        mk_generator "kuzmin";*)
       ]
     | "array_point3d" -> [
-        mk_generator "in_cube";
+(*        mk_generator "in_cube";
         mk_generator "on_sphere";
-        mk_generator "plummer";
+        mk_generator "plummer"; *)
       ]
     | _ -> Pbench.error "invalid_type")
   | "ray_cast" -> (function n -> function typ -> [])
@@ -575,6 +575,14 @@ let extensions = XCmd.parse_or_default_list_string "exts" [ "manc"; "norm"; "unk
 
 let no_pbbs = XCmd.mem_flag "nopbbs"
 
+let my_mk_progs =
+(*  ((mk string "lib_type" "pbbs") & (mk string "prog" "bfs_bench.manc"))
+  ++*)   ((mk string "lib_type" "pctl") & (mk string "prog" "bfs_bench.unkm30"))
+         ++ ((mk string "lib_type" "pctl") & (mk string "prog" "bfs_bench.unkm100"))
+         ++ ((mk string "lib_type" "pctl") & (mk string "prog" "pbfs_bench.unkm30"))
+         ++ ((mk string "lib_type" "pctl") & (mk string "prog" "pbfs_bench.unkm100"))
+         ++ ((mk string "lib_type" "pbbs") & (mk string "prog" "pbfs_bench.manc"))
+                            
 let prog benchmark extension =
   sprintf "%s_bench.%s" (prog_names benchmark) extension
 
@@ -587,8 +595,8 @@ let make() =
 
 let mk_pctl_progs benchmark = 
   ((mk_list string "prog" (
-              List.map (fun ext -> "numactl --interleave=all " ^ (prog benchmark ext)) extensions)) & (mk string "lib_type" "pctl")) ++
-    (if no_pbbs then (fun e -> []) else ((mk_prog ("numactl --interleave=all " ^ (prog benchmark "manc"))) & (mk string "lib_type" "pbbs")))
+              List.map (fun ext -> (*"numactl --interleave=all " ^ *) (prog benchmark ext)) extensions)) & (mk string "lib_type" "pctl")) ++
+    (if no_pbbs then (fun e -> []) else ((mk_prog ((*"numactl --interleave=all " ^ *) (prog benchmark "manc"))) & (mk string "lib_type" "pbbs")))
 
 let run() =
   List.iter (fun benchmark ->
@@ -596,7 +604,7 @@ let run() =
       Output (Printf.sprintf "_results/results_%s.txt" benchmark);
       Timeout 400;
       Args (
-        (mk_progs benchmark)
+        (mk_pctl_progs benchmark)
       & (mk_sequence_input_names benchmark)
       & mk_proc)]))
     ) arg_benchmarks
@@ -650,14 +658,6 @@ let pretty_graph_name n =
     "rmat27"
   else
     n
-
-let my_mk_progs =
-(*  ((mk string "lib_type" "pbbs") & (mk string "prog" "bfs_bench.manc"))
-  ++*)   ((mk string "lib_type" "pctl") & (mk string "prog" "bfs_bench.unkm30"))
-         ++ ((mk string "lib_type" "pctl") & (mk string "prog" "bfs_bench.unkm100"))
-         ++ ((mk string "lib_type" "pctl") & (mk string "prog" "pbfs_bench.unkm30"))
-         ++ ((mk string "lib_type" "pctl") & (mk string "prog" "pbfs_bench.unkm100"))
-         ++ ((mk string "lib_type" "pbbs") & (mk string "prog" "pbfs_bench.manc"))
 
 let eval_relative baseline_prog = fun env all_results results ->
   let _ = Printf.printf "p=%s\n" (Env.get_as_string env "prog") in
@@ -742,15 +742,15 @@ let pretty_input_name n =
     "almost sorted"
   else if (inputfile_of "array_string_trigrams") = n then
     "trigrams"
-      
+
+  else if (inputfile_of "array_int_random") = n then
+    "random"
   else if (inputfile_of "array_int_exponential") = n then
     "exponential"
   else if (inputfile_of "array_pair_int_int_random_256") = n then
-    "random int pair 256"
+    "random kvp 256"
   else if (inputfile_of "array_pair_int_int_random_100000000") = n then
-    "random int pair 10 million"
-  else if (inputfile_of "array_int_random") = n then
-    "random"
+    "random kvp 10^6"
 
   else if (inputfile_of "array_string_trigrams") = n then
     "trigrams"
@@ -771,22 +771,22 @@ let pretty_input_name n =
     "wiki"
       
   else if (inputfile_of "array_point2d_in_circle") = n then
-    "random distribution in circle"
+    "in circle"
   else if (inputfile_of "array_point2d_kuzmin") = n then
-    "kuzmin distribution"
+    "kuzmin"
   else if (inputfile_of "array_point2d_on_circle") = n then
-    "random distribution on circle"
+    "on circle"
 
   else if (inputfile_of "array_point2d_in_square") = n then
-    "random distribution in square"
+    "in square"
   else if (inputfile_of "array_point2d_kuzmin") = n then
-    "kuzmin distribution"
+    "kuzmin"
   else if (inputfile_of "array_point3d_in_cube") = n then
-    "random distribution in cube"
+    "in cube"
   else if (inputfile_of "array_point3d_plummer") = n then
-    "plummer distribution"
+    "plummer"
   else if (inputfile_of "array_point3d_on_sphere") = n then
-    "random points on sphere"
+    "on sphere"
 
   else if "_data/happy_ray_cast_dataset.bin" = n then
     "happy"
@@ -796,14 +796,14 @@ let pretty_input_name n =
     "dragon"
 
   else if "_data/array_point2d_in_square_medium.bin" = n then
-    "random distribution in square"
+    "in square"
   else if "_data/array_point2d_kuzmin_medium.bin" = n then
-    "kuzmin distribution"
+    "kuzmin"
 
   else if "_data/triangles_point2d_delaunay_in_square_small.bin" = n then
-    "triangles in square"
+    "in square"
   else if "_data/triangles_point2d_delaunay_kuzmin_small.bin" = n then
-    "kuzmin distribution"
+    "kuzmin"
 
   else
     n
@@ -854,29 +854,66 @@ let plot() = (
   in
   let mk_progs = mk_suffixarray in *)
 
-  let experiment_name = "pbbs" in
+  (* 
+     - manc : authors' manual control  
+     - norm<x> : without bootstrapping / kappa := x
+     - unke<x> : some mode that doesn't seem to be relevant anymore
+     - unkm<x> : oracle guided / kappa := x
+   *)
 
+  let mk_pctl_prog benchmark extension lib_type = 
+    (mk string "prog" (prog benchmark extension)) & (mk string "lib_type" lib_type)
+  in
+
+  let nb_benchmarks = List.length arg_benchmarks in
+  let experiment_name = "pbbs" in
+  let nb_cols = 4 in
   let tex_file = file_tables_src experiment_name in
   let pdf_file = file_tables experiment_name in
     Mk_table.build_table tex_file pdf_file (fun add ->
-      ~~ List.iter envs_rows (fun env_rows ->
-        ~~ List.iter arg_benchmarks (fun benchmark ->
-          let all_results = Results.from_file (file_results benchmark) in
-          let results = all_results in
-          let env = Env.empty in
-          let mk_rows =
-            (*Params.from_envs (Results.get_distinct_values_for_several arg_rows all_results) in*)
-          let mk_cols = Params.from_envs (Results.get_distinct_values_for_several arg_cols all_results) in
-          ~~ List.iter envs_rows (fun env_rows ->
-            let results = Results.filter env_rows results in
-            let env = Env.append env env_rows in
-            let row_title = Env.format formatter env_rows in
-            ~~ List.iter envs_cols (fun env_cols ->
-              let env = Env.append env env_cols in
-              let results = Results.filter env_cols results in
-              let v = eval_cell env all_results results in
-              Printf.printf "%.5f" v
-                        
+      add (Latex.tabular_begin "p{1cm}l|l|l");                                    
+      Mk_table.cell ~escape:true ~last:false add (Latex.tabular_multicol 2 "l|" "Application/input");
+      Mk_table.cell ~escape:true ~last:false add "Time (s) \\ original"; 
+      Mk_table.cell ~escape:true ~last:true add "Oracle guided"; add Latex.tabular_newline;
+      ~~ List.iteri arg_benchmarks (fun benchmark_i benchmark ->
+        Mk_table.cell add (Latex.tabular_multicol 2 "l|" (sprintf "\\textbf{%s}" (Latex.escape benchmark)));
+        add Latex.tabular_newline;
+        let results_file = Printf.sprintf "_results/results_%s.txt" benchmark in
+        let all_results = Results.from_file results_file in
+        let results = all_results in
+        let env = Env.empty in
+        let mk_rows = mk_sequence_input_names benchmark in
+        let env_rows = mk_rows env in
+        ~~ List.iter env_rows (fun env_rows ->  (* loop over each input for current benchmark *)
+          let results = Results.filter env_rows results in
+          let env = Env.append env env_rows in
+          let row_title = main_formatter env_rows in
+          let _ = Mk_table.cell ~escape:true ~last:false add "" in
+          let _ = Mk_table.cell ~escape:true ~last:false add row_title in
+          let pbbs_str = 
+            let [col] = (mk_pctl_prog benchmark "manc" "pbbs") env in
+            let env = Env.append env col in
+            let results = Results.filter col results in
+            let v = eval_exectime env all_results results in 
+            Printf.sprintf "%.3f " v
+          in
+          let _ = Mk_table.cell ~escape:false ~last:false add pbbs_str in
+          let pctl_str = 
+            let [col] = (mk_pctl_prog benchmark "unkm100" "pctl") env in
+            let env = Env.append env col in
+            let results = Results.filter col results in
+            let v = eval_relative_main env all_results results in
+            let s = if v < 0.0 then "" else "+" in
+            let e = eval_relative_stddev_main env all_results results in
+            Printf.sprintf "%s%.2f%s (%.2f)" s v "\\%" e 
+          in
+          let _ = Mk_table.cell ~escape:false ~last:true add pctl_str in
+          add Latex.tabular_newline);
+        ());
+      add Latex.tabular_end;
+      add Latex.new_page;
+      ());
+                         
   List.iter (fun benchmark -> 
     Mk_bar_plot.(call ([
              Chart_opt Chart.([
