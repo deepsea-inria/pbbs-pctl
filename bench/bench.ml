@@ -750,7 +750,7 @@ let pretty_input_name n =
   else if (inputfile_of "array_pair_int_int_random_256") = n then
     "random kvp 256"
   else if (inputfile_of "array_pair_int_int_random_100000000") = n then
-    "random kvp 10^6"
+    "random kvp $10^6$"
 
   else if (inputfile_of "array_string_trigrams") = n then
     "trigrams"
