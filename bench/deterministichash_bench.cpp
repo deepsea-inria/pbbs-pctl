@@ -15,7 +15,7 @@
 #include "deterministichash.hpp"
 #include "loaders.hpp"
 #include "deterministicHash.h"
-
+#undef parallel_for
 /***********************************************************************/
 
 /*---------------------------------------------------------------------*/
