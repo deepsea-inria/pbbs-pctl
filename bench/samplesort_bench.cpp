@@ -15,7 +15,7 @@
 #include "samplesort.hpp"
 #include "loaders.hpp"
 #include "sampleSort.h"
-
+#undef parallel_for // later: understand how this macro is leaking into this module...
 /***********************************************************************/
 
 /*---------------------------------------------------------------------*/
