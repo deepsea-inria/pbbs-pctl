@@ -30,6 +30,9 @@
 #include "ray.hpp"
 #include "timer.hpp"
 #include "sequence.h"
+
+#undef parallel_for
+
 #ifndef _PCTL_KDTREE_H_
 #define _PCTL_KDTREE_H_
 
