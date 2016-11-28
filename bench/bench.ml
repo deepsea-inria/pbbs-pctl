@@ -875,7 +875,7 @@ let plot() = (
     Mk_table.build_table tex_file pdf_file (fun add ->
       add (Latex.tabular_begin "p{1cm}l|l|l");                                    
       Mk_table.cell ~escape:true ~last:false add (Latex.tabular_multicol 2 "l|" "Application/input");
-      Mk_table.cell ~escape:true ~last:false add "Time (s) original"; 
+      Mk_table.cell ~escape:true ~last:false add "\\begin{tabular}[x]{@{}c@{}}Time (s)\\\\original\\end{tabular}"; 
       Mk_table.cell ~escape:true ~last:true add "Oracle guided"; add Latex.tabular_newline;
       ~~ List.iteri arg_benchmarks (fun benchmark_i benchmark ->
         Mk_table.cell add (Latex.tabular_multicol 2 "l|" (sprintf "\\textbf{%s}" (Latex.escape benchmark)));
@@ -907,7 +907,7 @@ let plot() = (
             let v = eval_relative_main env all_results results in
             let s = if v < 0.0 then "" else "+" in
             let e = eval_relative_stddev_main env all_results results in
-            Printf.sprintf "%s%.2f%s (+/- %.2f%s)" s v "\\%" e "\\%"
+            Printf.sprintf "%s%.2f%s (%.2f%s)" s v "\\%" e "$\\sigma$"
           in
           let _ = Mk_table.cell ~escape:false ~last:true add pctl_str in
           add Latex.tabular_newline);
