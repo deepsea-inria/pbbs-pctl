@@ -63,20 +63,18 @@ let system = XSys.command_must_succeed_or_virtual
 let arg_virtual_run = XCmd.mem_flag "virtual_run"
 let arg_virtual_build = XCmd.mem_flag "virtual_build"
 let arg_nb_runs = XCmd.parse_or_default_int "runs" 1
-let arg_mode = "replace"   (* later: document the purpose of "mode" *)
+let arg_mode = Mk_runs.mode_from_command_line "mode"
 let arg_skips = XCmd.parse_or_default_list_string "skip" []
 let arg_onlys = XCmd.parse_or_default_list_string "only" []
 let arg_sizes = XCmd.parse_or_default_list_string "size" ["all"]
 let arg_benchmarks = XCmd.parse_or_default_list_string "benchmark" ["all"]
 let arg_proc = XCmd.parse_or_default_list_int "proc" [1; 10; 39]
 let arg_extension = XCmd.parse_or_default_string "ext" "norm"
-            
-let run_modes =
-  Mk_runs.([
-    Mode (mode_of_string arg_mode);
-    Virtual arg_virtual_run;
-    Runs arg_nb_runs; ])
 
+let run_modes = Mk_runs.([
+	 Mode arg_mode;
+	 Virtual arg_virtual_run;
+	 Runs arg_nb_runs; ])
 
 (*****************************************************************************)
 (** Steps *)
@@ -264,15 +262,15 @@ let generators_list = function
   | "delaunay" -> (function n -> 
     function
     | "array_point2d" -> [
-        mk_generator "in_square";
-        mk_generator "kuzmin";
+        mk_generator "in_square_delaunay";
+        mk_generator "kuzmin_delaunay";
       ]
     | _ -> Pbench.error "invalid_type")
   | "delaunay_refine" -> (function n ->
     function
     | "triangles_point2d" -> [
-        mk_generator "delaunay_in_square";
-        mk_generator "delaunay_kuzmin";
+        mk_generator "delaunay_in_square_refine";
+        mk_generator "delaunay_kuzmin_refine";
       ]
     | _ -> Pbench.error "invalid_type")
   | "bfs" | "pbfs" -> (function n -> function typ -> [])
@@ -781,6 +779,10 @@ let pretty_input_name n =
     "in square"
   else if (inputfile_of "array_point2d_kuzmin") = n then
     "kuzmin"
+  else if (inputfile_of "array_point2d_in_square_delaunay") = n then
+    "in square"
+  else if (inputfile_of "array_point2d_kuzmin_delaunay") = n then
+    "kuzmin"
   else if (inputfile_of "array_point3d_in_cube") = n then
     "in cube"
   else if (inputfile_of "array_point3d_plummer") = n then
@@ -800,9 +802,9 @@ let pretty_input_name n =
   else if "_data/array_point2d_kuzmin_medium.bin" = n then
     "kuzmin"
 
-  else if "_data/triangles_point2d_delaunay_in_square_small.bin" = n then
+  else if "_data/triangles_point2d_delaunay_in_square_refine_large.bin" = n then
     "in square"
-  else if "_data/triangles_point2d_delaunay_kuzmin_small.bin" = n then
+  else if "_data/triangles_point2d_delaunay_kuzmin_refine_large.bin" = n then
     "kuzmin"
 
   else
