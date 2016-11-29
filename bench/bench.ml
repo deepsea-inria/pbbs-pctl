@@ -871,16 +871,29 @@ let plot() = (
     (mk string "prog" (prog benchmark extension)) & (mk string "lib_type" lib_type)
   in
 
+  let pretty_extension ext =
+    match ext with
+    | "unkm100" -> "Oracle guided"
+    | "unkm30" -> sprintf "Oracle guided (30%s)" "$\\mu$"
+    | _ -> "<<bogus extension>>"
+  in
+
   let nb_benchmarks = List.length arg_benchmarks in
   let experiment_name = "pbbs" in
-  let nb_cols = 4 in
+  let nb_extensions = List.length extensions in
   let tex_file = file_tables_src experiment_name in
   let pdf_file = file_tables experiment_name in
     Mk_table.build_table tex_file pdf_file (fun add ->
-      add (Latex.tabular_begin "p{1cm}l|l|l");                                    
+      let ls = String.concat "|" (XList.init nb_extensions (fun _ -> "l")) in
+      let hdr = Printf.sprintf "p{1cm}l|%s" ls in
+      add (Latex.tabular_begin hdr);                                    
       Mk_table.cell ~escape:true ~last:false add (Latex.tabular_multicol 2 "l|" "Application/input");
-      Mk_table.cell ~escape:true ~last:false add "\\begin{tabular}[x]{@{}c@{}}Time (s)\\\\original\\end{tabular}"; 
-      Mk_table.cell ~escape:true ~last:true add "Oracle guided"; add Latex.tabular_newline;
+      Mk_table.cell ~escape:true ~last:false add "\\begin{tabular}[x]{@{}c@{}}Time (s)\\\\original\\end{tabular}";
+      ~~ List.iteri extensions (fun i ext ->
+        let last = i + 1 = nb_extensions in
+        let label = pretty_extension ext in
+        Mk_table.cell ~escape:true ~last:last add label);
+      add Latex.tabular_newline;
       ~~ List.iteri arg_benchmarks (fun benchmark_i benchmark ->
         Mk_table.cell add (Latex.tabular_multicol 2 "l|" (sprintf "\\textbf{%s}" (Latex.escape benchmark)));
         add Latex.tabular_newline;
@@ -905,17 +918,18 @@ let plot() = (
             Printf.sprintf "%.3f (%.2f%s) " v e "$\\sigma$"
           in
           let _ = Mk_table.cell ~escape:false ~last:false add pbbs_str in
-          let pctl_str = 
-            let [col] = (mk_pctl_prog benchmark "unkm100" "pctl") env in
-            let env = Env.append env col in
-            let results = Results.filter col results in
-            let v = eval_relative_main env all_results results in
-            let s = if v < 0.0 then "" else "+" in
-            let e = eval_exectime_stddev env all_results results in 
-            (*            let e = eval_relative_stddev_main env all_results results in*)
-            Printf.sprintf "%s%.2f%s (%.2f%s)" s v "\\%" e "$\\sigma$"
-          in
-          let _ = Mk_table.cell ~escape:false ~last:true add pctl_str in
+          ~~ List.iteri extensions (fun i ext ->
+            let last = i + 1 = nb_extensions in
+            let pctl_str = 
+              let [col] = (mk_pctl_prog benchmark ext "pctl") env in
+              let env = Env.append env col in
+              let results = Results.filter col results in
+              let v = eval_relative_main env all_results results in
+              let s = if v < 0.0 then "" else "+" in
+              let e = eval_exectime_stddev env all_results results in 
+              Printf.sprintf "%s%.2f%s (%.2f%s)" s v "\\%" e "$\\sigma$"
+            in
+            Mk_table.cell ~escape:false ~last:last add pctl_str);
           add Latex.tabular_newline);
         ());
       add Latex.tabular_end;
