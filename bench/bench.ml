@@ -115,7 +115,11 @@ let file_tables exp_name =
 (** Evaluation functions *)
 
 let eval_exectime = fun env all_results results ->
-   Results.get_mean_of "exectime" results
+  Results.get_mean_of "exectime" results
+
+let eval_exectime_stddev = fun env all_results results ->
+  Results.get_stddev_of "exectime" results
+
 
 let default_formatter =
  Env.format (Env.(format_values  [ "size"; ]))
@@ -896,8 +900,9 @@ let plot() = (
             let [col] = (mk_pctl_prog benchmark "manc" "pbbs") env in
             let env = Env.append env col in
             let results = Results.filter col results in
-            let v = eval_exectime env all_results results in 
-            Printf.sprintf "%.3f " v
+            let v = eval_exectime env all_results results in
+            let e = eval_exectime_stddev env all_results results in 
+            Printf.sprintf "%.3f (%.2f%s) " v e "$\\sigma$"
           in
           let _ = Mk_table.cell ~escape:false ~last:false add pbbs_str in
           let pctl_str = 
