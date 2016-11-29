@@ -885,7 +885,7 @@ let plot() = (
   let pdf_file = file_tables experiment_name in
     Mk_table.build_table tex_file pdf_file (fun add ->
       let ls = String.concat "|" (XList.init nb_extensions (fun _ -> "l")) in
-      let hdr = Printf.sprintf "p{1cm}l|%s" ls in
+      let hdr = Printf.sprintf "p{1cm}l|l|%s" ls in
       add (Latex.tabular_begin hdr);                                    
       Mk_table.cell ~escape:true ~last:false add (Latex.tabular_multicol 2 "l|" "Application/input");
       Mk_table.cell ~escape:true ~last:false add "\\begin{tabular}[x]{@{}c@{}}Time (s)\\\\original\\end{tabular}";
