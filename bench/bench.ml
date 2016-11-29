@@ -911,7 +911,8 @@ let plot() = (
             let results = Results.filter col results in
             let v = eval_relative_main env all_results results in
             let s = if v < 0.0 then "" else "+" in
-            let e = eval_relative_stddev_main env all_results results in
+            let e = eval_exectime_stddev env all_results results in 
+            (*            let e = eval_relative_stddev_main env all_results results in*)
             Printf.sprintf "%s%.2f%s (%.2f%s)" s v "\\%" e "$\\sigma$"
           in
           let _ = Mk_table.cell ~escape:false ~last:true add pctl_str in
