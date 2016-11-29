@@ -73,7 +73,7 @@ include $(TOOLS_BUILD_FOLDER)/Makefile_options
 # (If extending the list, need to add cases for the definition
 # of COMPILE_OPTIONS_FOR further below, and also for "clean".
 
-MODES=dbg log sta opt seq cilk norm manc unko unkh clog norc manb unke unkp unkt norm30 unko30 unke30 unkp30 unkt30 norm100 unko100 unke100 unkp100 unkt100 unkm unkm100
+MODES=dbg log sta opt seq cilk norm manc  unkm100 unkm30 # unko unkh clog norc manb unke unkp unkt norm30 unko30 unke30 unkp30 unkt30 norm100 unko100 unke100 unkp100 unkt100 unkm
 
 # Compilation options for each mode
 
@@ -102,6 +102,7 @@ COMPILE_OPTIONS_FOR_unko30=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DOPTIMISTIC -DK
 COMPILE_OPTIONS_FOR_unke30=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DEASYOPTIMISTIC -DKAPPA30
 COMPILE_OPTIONS_FOR_unkp30=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DEASYOPTIMISTIC -DPRUNING -DKAPPA30
 COMPILE_OPTIONS_FOR_unkt30=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DEASYOPTIMISTIC -DTIMEPRUING -DKAPPA30
+COMPILE_OPTIONS_FOR_unkm30=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DEASYOPTIMISTIC -DTWO_MODES -DKAPPA30
 
 COMPILE_OPTIONS_FOR_norm100=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DKAPPA100
 COMPILE_OPTIONS_FOR_unko100=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DOPTIMISTIC -DKAPPA100
