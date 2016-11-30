@@ -73,7 +73,7 @@ include $(TOOLS_BUILD_FOLDER)/Makefile_options
 # (If extending the list, need to add cases for the definition
 # of COMPILE_OPTIONS_FOR further below, and also for "clean".
 
-MODES=dbg log sta opt seq cilk norm manc  unkm100 unkm30 # unko unkh clog norc manb unke unkp unkt norm30 unko30 unke30 unkp30 unkt30 norm100 unko100 unke100 unkp100 unkt100 unkm
+MODES=dbg log sta opt seq cilk norm manc  unkm100 unkm30 unkm150 # unko unkh clog norc manb unke unkp unkt norm30 unko30 unke30 unkp30 unkt30 norm100 unko100 unke100 unkp100 unkt100 unkm
 
 # Compilation options for each mode
 
@@ -110,6 +110,8 @@ COMPILE_OPTIONS_FOR_unke100=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DEASYOPTIMISTI
 COMPILE_OPTIONS_FOR_unkm100=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DEASYOPTIMISTIC -DTWO_MODES -DKAPPA100
 COMPILE_OPTIONS_FOR_unkp100=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DEASYOPTIMISTIC -DPRUNING -DKAPPA100
 COMPILE_OPTIONS_FOR_unkt100=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DEASYOPTIMISTIC -DTIMEPRUNING -DKAPPA100
+
+COMPILE_OPTIONS_FOR_unkm150=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DEASYOPTIMISTIC -DTWO_MODES -DKAPPA150
 
 # Folders where to find all the header files and main sources
 

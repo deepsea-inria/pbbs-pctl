@@ -875,6 +875,7 @@ let plot() = (
     match ext with
     | "unkm100" -> "Oracle guided"
     | "unkm30" -> sprintf "Oracle guided (30%s)" "$\\mu$"
+    | "unkm150" -> sprintf "Oracle guided (150%s)" "$\\mu$"
     | _ -> "<<bogus extension>>"
   in
 
