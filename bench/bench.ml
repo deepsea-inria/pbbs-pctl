@@ -811,6 +811,13 @@ let pretty_input_name n =
   else if "_data/triangles_point2d_delaunay_kuzmin_refine_large.bin" = n then
     "kuzmin"
 
+  else if "_data/cube_large.bin" = n then
+    "cube-grid"
+  else if "_data/rmat24_large.bin" = n then
+    "rMat24"
+  else if "_data/rmat27_large.bin" = n then
+    "rMat27"
+      
   else
     n
             
@@ -872,11 +879,16 @@ let plot() = (
   in
 
   let pretty_extension ext =
-    match ext with
-    | "unkm100" -> "Oracle guided"
-    | "unkm30" -> sprintf "Oracle guided (30%s)" "$\\mu$"
-    | "unkm150" -> sprintf "Oracle guided (150%s)" "$\\mu$"
-    | _ -> "<<bogus extension>>"
+    let l = String.length ext in
+    let plen = 4 in
+    if l < plen then
+      "<unknown extension>"
+    else if l = plen then
+      sprintf "Oracle guided (%d %s)" 300 "$\\mu$"
+    else
+      let p = String.sub ext 0 plen in
+      let mu = int_of_string (String.sub ext plen (l - plen)) in
+      sprintf "Oracle guided (%d %s)" mu "$\\mu$"
   in
 
   let nb_benchmarks = List.length arg_benchmarks in
