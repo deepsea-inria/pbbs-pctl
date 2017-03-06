@@ -273,7 +273,7 @@ cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
       }
     });
 #ifdef PBBS_SEQUENCE
-    intT u = pbbs::sequence::plusScan(upper.begin(), upper.begin(), upper.size());
+    intT u = pbbs::sequence::plusScan(upper_ptr, upper_ptr, n);
 #else
     intT u = dps::scan(upper.begin(), upper.end(), (intT)0, [&] (intT x, intT y) {
       return x + y; }, upper.begin(), forward_exclusive_scan
@@ -310,7 +310,7 @@ cut_info best_cut(event* e, range r, range r1, range r2, intT n) {
     
     // find minimum across all (maxIndex with less is minimum)
 #ifdef PBBS_SEQUENCE
-    intT k = pbbs::sequence::maxIndex(cost.begin(), cost.size(), std::less<float>());
+    intT k = pbbs::sequence::maxIndex(cost_ptr, n, std::less<float>());
 #else
     intT k = (intT)max_index(cost.cbegin(), cost.cend(), cost[0], [&] (float x, float y) {
       return x < y;
@@ -396,24 +396,33 @@ std::pair<intT, intT> split_events(range* boxes, event* events, float cut_off, i
 #endif
 
     pasl::pctl::range::parallel_for(0, n, [&] (intT l, intT r) { return r - l; }, [&, events, boxes, lower_ptr, upper_ptr] (intT i) {
-      intT b = GET_INDEX(events[i]);      lower_ptr[i] = boxes[b].min < cut_off;
-      upper_ptr[i] = boxes[b].max > cut_off;
+      intT b = GET_INDEX(events[i]);
+      lower_ptr[i] = boxes[b].min < cut_off;
+      upper_ptr[i] = boxes[b].max > cut_off || boxes[b].min >= cut_off;
     }, [&, events, boxes, lower_ptr, upper_ptr] (intT l, intT r) {
       for (intT i = l; i < r; i++) {
         intT b = GET_INDEX(events[i]);
         lower_ptr[i] = boxes[b].min < cut_off;
-        upper_ptr[i] = boxes[b].max > cut_off;
+        upper_ptr[i] = boxes[b].max > cut_off || boxes[b].min >= cut_off;
       }
     });
     const event* events2 = (const event*)events;
 
 #ifdef PBBS_SEQUENCE
-    left.prefix_tabulate(0, n);
-    right.prefix_tabulate(0, n);
+//    pbbs::_seq<event> L = pbbs::sequence::pack(events, lower_ptr, n);
+//    pbbs::_seq<event> R = pbbs::sequence::pack(events, upper_ptr, n);
+//    left.prefix_tabulate(L.n, 0);
+//    pasl::pctl::pmem::copy(L.A, L.A + L.n, left.begin());
+//    right.prefix_tabulate(R.n, 0);
+//    pasl::pctl::pmem::copy(R.A, R.A + R.n, right.begin());
+//    result = make_pair(L.n, R.n);
+
+    left.prefix_tabulate(n, 0);
+    right.prefix_tabulate(n, 0);
     result.first = pbbs::sequence::pack(events, left.begin(), lower_ptr, n);
     result.second = pbbs::sequence::pack(events, right.begin(), upper_ptr, n);
     left.resize(result.first, result.first, event());
-    right.resize(result.second, results.second, event());
+    right.resize(result.second, result.second, event());
 #else
 //    result.first = pasl::pctl::dps::pack(lower_ptr, events2, events2 + n, left_ptr);
 //    result.second = pasl::pctl::dps::pack(upper_ptr, events2, events2 + n, right_ptr);
