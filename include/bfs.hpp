@@ -25,6 +25,7 @@
 #include "graph.hpp"
 #include "timer.hpp"
 #include "sequence.h"
+#undef parallel_for
 namespace pasl {
 namespace pctl {
 

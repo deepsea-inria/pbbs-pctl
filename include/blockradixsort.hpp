@@ -7,6 +7,7 @@
 #ifdef PBBS_SEQUENCE
 #include "sequence.h"
 #endif
+#undef parallel_for
 
 #ifndef _PCTL_PBBS_BLOCKRADIXSORT_H_
 #define _PCTL_PBBS_BLOCKRADIXSORT_H_
