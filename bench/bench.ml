@@ -329,26 +329,36 @@ let graphfiles = List.map graphfile_of
   ]
 
 let mk_generate_sequence_inputs benchmark : Params.t =
-  let load = function
-    | Small -> 1000000
-    | Medium -> 10000000
-    | Large -> 100000000
-  in
-  let mk_outfile size typ mk_generator =
-    mk string "outfile" (sprintf "_data/%s_%s_%s.bin" typ (XList.to_string "_" (fun (k, v) -> sprintf "%s" (Env.string_of_value v)) (Params.to_env mk_generator)) size) in
-  let mk_type typ = mk string "type" typ in
-  let mk_n n = mk int "n" n in
-  let mk_size size = (mk_n (load size)) & (mk string "!size" (string_of_size size)) in
-  let use_types = types_list benchmark in
-  let mk_generators = generators_list benchmark in
-  Params.concat (~~ List.map use_sizes (fun size ->
-  Params.concat (~~ List.map use_types (fun typ ->
-  let n = load size in
-  Params.concat (~~ List.map (mk_generators n typ) (fun mk_generator ->
-  (   mk_type typ
-    & mk_size size
-    & mk_generator
-    & (mk_outfile (string_of_size size) typ mk_generator) )))))))
+  match benchmark with
+  | "ray_cast" ->
+    (mk string "type" "ray_cast_test") &
+    (((mk int "n" 1000000) & (mk string "generator" "in_cube") & (mk string "outfile" "_data/incube_ray_cast_1m.bin")) ++
+     ((mk int "n" 2000000) & (mk string "generator" "in_cube") & (mk string "outfile" "_data/incube_ray_cast_2m.bin")) ++
+     ((mk int "n" 1000000) & (mk string "generator" "on_sphere") & (mk string "outfile" "_data/onsphere_ray_cast_1m.bin")) ++
+     ((mk int "n" 2000000) & (mk string "generator" "on_sphere") & (mk string "outfile" "_data/onsphere_ray_cast_2m.bin")) ++
+     ((mk int "n" 5000000) & (mk string "generator" "on_sphere") & (mk string "outfile" "_data/onsphere_ray_cast_5m.bin")) ++
+     ((mk int "n" 10000000) & (mk string "generator" "on_sphere") & (mk string "outfile" "_data/onsphere_ray_cast_10m.bin")))
+  | _ ->
+    let load = function
+      | Small -> 1000000
+      | Medium -> 10000000
+      | Large -> 100000000
+    in
+    let mk_outfile size typ mk_generator =
+      mk string "outfile" (sprintf "_data/%s_%s_%s.bin" typ (XList.to_string "_" (fun (k, v) -> sprintf "%s" (Env.string_of_value v)) (Params.to_env mk_generator)) size) in
+    let mk_type typ = mk string "type" typ in
+    let mk_n n = mk int "n" n in
+    let mk_size size = (mk_n (load size)) & (mk string "!size" (string_of_size size)) in
+    let use_types = types_list benchmark in
+    let mk_generators = generators_list benchmark in
+    Params.concat (~~ List.map use_sizes (fun size ->
+    Params.concat (~~ List.map use_types (fun typ ->
+    let n = load size in
+    Params.concat (~~ List.map (mk_generators n typ) (fun mk_generator ->
+    (   mk_type typ
+      & mk_size size
+      & mk_generator
+      & (mk_outfile (string_of_size size) typ mk_generator) )))))))
 
 (*let graphs = ["chain"; "cube"; "grid_sq"; "paths_100_phases_1"; "paths_20_phases_1"; "paths_524288_phases_1"; "paths_8_phases_1";
     "phased_524288_single"; "phased_low_50"; "phased_mix_10"; "random_arity_100"; "random_arity_3"; "random_arity_8"; "rmat24"; "rmat27";
@@ -372,7 +382,11 @@ let mk_files_inputs benchmark : Params.t =
     (mk_type "ray_cast_test" &
     ((mk_infile "data/happyTriangles.txt" & mk_infile2 "data/happyRays.txt" & mk_outfile "_data/happy_ray_cast_dataset.bin") ++
      (mk_infile "data/angelTriangles.txt" & mk_infile2 "data/angelRays.txt" & mk_outfile "_data/angel_ray_cast_dataset.bin") ++
-     (mk_infile "data/dragonTriangles.txt" & mk_infile2 "data/dragonRays.txt" & mk_outfile "_data/dragon_ray_cast_dataset.bin")))
+     (mk_infile "data/dragonTriangles.txt" & mk_infile2 "data/dragonRays.txt" & mk_outfile "_data/dragon_ray_cast_dataset.bin") ++
+(*     (mk_infile "data/xyzrgb_dragon_triangles.txt" & mk_infile2 "data/xyzrgb_dragon_rays.txt" & mk_outfile "_data/xyzrgb_dragon_ray_cast_dataset.bin") ++*)
+     (mk_infile "data/xyzrgb_manuscript_triangles.txt" & mk_infile2 "data/xyzrgb_manuscript_rays.txt" & mk_outfile "_data/xyzrgb_manuscript_ray_cast_dataset.bin") ++
+     (mk_infile "data/turbine_triangles.txt" & mk_infile2 "data/turbine_rays.txt" & mk_outfile "_data/turbine_ray_cast_dataset.bin")
+         ))
   | "loop" ->
     (mk_type "pair_int_int" &
     ((mk_infile "data/loop_109_10.txt" & mk_outfile "_data/loop_109_10.bin") ++
@@ -590,7 +604,7 @@ let run() =
       Output (Printf.sprintf "_results/results_%s.txt" benchmark);
       Timeout 400;
       Args (
-        (mk_progs benchmark)
+        (mk_pctl_progs benchmark)
       & (mk_sequence_input_names benchmark)
       & mk_proc)]))
     ) arg_benchmarks
