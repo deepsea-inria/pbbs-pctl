@@ -10,6 +10,12 @@ TARGET=$1
 
     pctl/script/get-dependencies.sh $TARGET
 
-    git clone http://software.legiasoft.com/git/quickcheck.git
+    git clone https://github.com/deepsea-inria/pasl.git
+
+    git clone https://github.com/deepsea-inria/pbench.git
+
+    git clone https://github.com/deepsea-inria/pbbs-include.git
+
+    ipfs get QmUvGoyv8hBprTqjFnhD5m4HGkcxqS4FoNteKEbYmyLj9n -o=quickcheck
     
 )
