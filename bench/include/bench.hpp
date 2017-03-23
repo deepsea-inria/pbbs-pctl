@@ -12,6 +12,10 @@
 #include "pcmdline.hpp"
 #endif
 
+#ifdef HAVE_HWLOC
+#include <hwloc.h>
+#endif
+
 #ifdef PCTL_CILK_PLUS
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
@@ -21,6 +25,10 @@
 #define _PBBS_PCTL_BENCH_H_
 
 namespace pbbs {
+
+#ifdef HAVE_HWLOC
+hwloc_topology_t    topology;
+#endif
   
 #ifdef USE_CILK_RUNTIME
   static long seq_fib (long n){
@@ -34,7 +42,7 @@ namespace pbbs {
   namespace {
     
     template <class Body>
-    void launch(const Body& body) {
+    void launch(const Body& body) {  
     #if defined(USE_CILK_RUNTIME)
       // hack that seems to be required to initialize cilk runtime cleanly
       cilk_spawn seq_fib(2);
@@ -68,6 +76,21 @@ namespace pbbs {
   __cilkrts_set_param("nworkers", std::to_string(proc).c_str());
   std::cerr << "Number of workers: " << __cilkrts_get_nworkers() << std::endl;pasl::pctl::granularity::nb_proc = proc;
 #endif
+#if defined(HAVE_HWLOC) && defined(USE_CILK_PLUS_RUNTIME)
+  hwloc_topology_init (&topology);
+  hwloc_topology_load (topology);
+  bool numa_alloc_interleaved = (proc == 0) ? false : true;
+  numa_alloc_interleaved =
+    deepsea::cmdline::parse_or_default_bool("numa_alloc_interleaved", numa_alloc_interleaved, false);
+  if (numa_alloc_interleaved) {
+    hwloc_cpuset_t all_cpus =
+      hwloc_bitmap_dup (hwloc_topology_get_topology_cpuset (topology));
+    int err = hwloc_set_membind(topology, all_cpus, HWLOC_MEMBIND_INTERLEAVE, 0);
+    if (err < 0)
+      printf("Warning: failed to set NUMA round-robin allocation policy\n");
+  }
+#endif
+
     auto f = [&] (thunk_type measured) {
       auto start = std::chrono::system_clock::now();
       measured();
