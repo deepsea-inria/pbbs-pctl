@@ -10,7 +10,6 @@ PBENCH_PATH=../../pbench
 
 include $(PBENCH_PATH)/Makefile_common
 
-
 ####################################################################
 # Mandatory options
 
@@ -22,7 +21,7 @@ USE_MATH=1
 # Default options
 
 USE_ALLOCATOR=
-USE_HWLOC=0
+USE_HWLOC=1
 USE_NUMA=0
 
 # todo activate? USE_ANSI=1
@@ -65,7 +64,6 @@ PROGRAMS=\
 
 include $(TOOLS_BUILD_FOLDER)/Makefile_options
 
-
 ####################################################################
 # Modes
 
@@ -77,7 +75,9 @@ MODES=manc unkm25 unkm50 unkm100 unkm400 unkm500 unkm unks25 unks50 unks100 unks
 
 # Compilation options for each mode
 
-COMPILE_OPTIONS_COMMON=-DDISABLE_INTERRUPTS -DSTATS_IDLE  -lssl -lcrypto $(OPTIONS_ALL)
+LIBCRYPTO_OPTIONS=-L$(LIB_OPENSSL_PATH) -lssl -lcrypto
+
+COMPILE_OPTIONS_COMMON=-DDISABLE_INTERRUPTS -DSTATS_IDLE $(LIBCRYPTO_OPTIONS)  $(OPTIONS_ALL)
 COMPILE_OPTIONS_FOR_cilk=$(OPTIONS_cilk) -DUSE_CILK_PLUS_RUNTIME $(OPTIONS_O2)
 
 COMPILE_OPTIONS_FOR_manc=$(COMPILE_OPTIONS_FOR_cilk) -DTIMING -DMANUAL_CONTROL
@@ -131,7 +131,6 @@ opt: $(PROGRAMS:.cpp=.opt)
 
 
 clean: clean_build clean_modes
-
 
 ####################################################################
 # Main rules for the makefile
