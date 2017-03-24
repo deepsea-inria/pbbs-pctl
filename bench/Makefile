@@ -73,7 +73,7 @@ include $(TOOLS_BUILD_FOLDER)/Makefile_options
 # (If extending the list, need to add cases for the definition
 # of COMPILE_OPTIONS_FOR further below, and also for "clean".
 
-MODES=manc unkm25 unkm50 unkm100 unkm400 unkm500 unkm unks25 unks100 unks400 unks500 unks
+MODES=manc unkm25 unkm50 unkm100 unkm400 unkm500 unkm unks25 unks50 unks100 unks400 unks500 unks
 
 # Compilation options for each mode
 
