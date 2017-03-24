@@ -84,7 +84,7 @@ namespace pbbs {
 #ifdef PLOGGING
     pasl::pctl::logging::dump();
 #endif
-#if defined(PLOGGING) || defined(THREADS)
+#if defined(PLOGGING) || defined(THREADS_CREATED)
     printf("number of created threads: %d\n", pasl::pctl::granularity::threads_created());
 #endif
 #if defined(USE_PASL_RUNTIME)
