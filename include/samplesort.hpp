@@ -222,7 +222,34 @@ void sample_sort (E* a, intT n, BinPred compare) {
 #endif
 
     // sort the columns
+    parray<intT> complexities(pivots_size + 1, [&] (int i) {
+      return offset_b[(2 * i + 1) * rows] - offset_b[2 * i * rows];
+    });
+    dps::scan(complexities.begin(), complexities.end(), (intT)0, plus, complexities.begin(), forward_exclusive_scan);
+
     auto complexity_fct = [&] (intT lo, intT hi) {
+      if (lo == hi) {
+        return 0;
+      } else if (hi <= pivots_size) {
+        return complexities[hi] - complexities[lo];//(int) ((offset_b[(2 * hi + 1) * rows] - offset_b[2 * lo * rows]) * log(offset_b[(2 * hi + 1) * rows] - offset_b[2 * lo * rows]));
+      } else {
+        return n - complexities[lo];//(int) ((n - offset_b[2 * lo * rows]) * log(n - offset_b[2 * lo * rows]));
+      }
+    };
+
+    range::parallel_for((intT)0, (intT)(pivots_size + 1), complexity_fct, [&] (intT i) {
+      intT offset = offset_b[(2 * i) * rows];
+      if (i == 0) {
+          sample_sort(a, offset_b[rows], compare); // first segment
+      } else if (i < pivots_size) { // middle segments
+        if (compare(pivots[i - 1], pivots[i])) {
+          sample_sort(a + offset, offset_b[(2 * i + 1) * rows] - offset, compare);
+        }
+      } else { // last segment
+        sample_sort(a + offset, n - offset, compare);
+      }
+    });
+/*    auto complexity_fct = [&] (intT lo, intT hi) {
       if (lo == hi) {
         return 0;
       } else if (hi < pivots_size) {
@@ -247,7 +274,7 @@ void sample_sort (E* a, intT n, BinPred compare) {
           sample_sort(a + offset, n - offset, compare);
 //          std::sort(a + offset, a + n, compare);
       }
-    });
+    });*/
     //nextTime("last sort");
 #ifdef MANUAL_ALLOCATION
     free(pivots);

@@ -320,6 +320,7 @@ triangles<point2d> delaunay(parray<point2d> p) {
   vv.prefix_tabulate(num_vertices, 0);
   
   // The points are psuedorandomly permuted
+  
   hashID hash(n);
   parallel_for((intT)0, n, [&] (intT i) {
     v[i] = new (&vv[i]) vertex(p[hash.get(i)], i);

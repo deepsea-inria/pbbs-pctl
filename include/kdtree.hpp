@@ -807,4 +807,3 @@ parray<intT> ray_cast_seq(triangles<pointT> tri, ray<pointT>* rays, int num_rays
 } // end namespace
 
 #endif /*! _PCTL_KDTREE_H_ */
-
