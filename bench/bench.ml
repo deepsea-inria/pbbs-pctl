@@ -611,8 +611,8 @@ let make() =
 
 let mk_pctl_progs benchmark = 
   ((mk_list string "prog" (
-              List.map (fun ext -> (*"numactl --interleave=all " ^ *) (prog benchmark ext)) extensions)) & (mk string "lib_type" "pctl")) ++
-    (if no_pbbs then (fun e -> []) else ((mk_prog ((*"numactl --interleave=all " ^ *) (prog benchmark "manc"))) & (mk string "lib_type" "pbbs")))
+              List.map (fun ext -> (prog benchmark ext)) extensions)) & (mk string "lib_type" "pctl")) ++
+    (if no_pbbs then (fun e -> []) else ((mk_prog ((prog benchmark "manc"))) & (mk string "lib_type" "pbbs")))
 
 let run() =
   List.iter (fun benchmark ->
