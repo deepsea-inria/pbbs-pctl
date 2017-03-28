@@ -122,7 +122,9 @@ let eval_exectime_stddev = fun env all_results results ->
 
 
 let default_formatter =
- Env.format (Env.(format_values  [ "size"; ]))
+  Env.format (Env.(format_values  [ "size"; ]))
+
+let mk_proc = mk_list int "proc" arg_proc
 
 (*****************************************************************************)
 (** Input data **)
@@ -490,7 +492,7 @@ let all () = select make run check plot
 end
 
 (*****************************************************************************)
-(** Comparison-sort benchmark *)
+(** Main collection of benchmarks *)
 
 module ExpEvaluate = struct
 
@@ -569,8 +571,6 @@ let all () = select make run check plot
 end
 
 module ExpComparison = struct
-
-let mk_proc = mk_list int "proc" arg_proc
 
 let prog_names = function
   | "comparison_sort" -> "samplesort"
@@ -990,6 +990,158 @@ let all () = select make run check plot
 
 end
 
+module ExpBFS = struct
+
+let name = "bfs"
+
+  let prog = "./bfs_bench.unkm100"
+
+  let baseline_prog = "bfs_bench.manc"
+
+  let graphfile_of n = "_data/" ^ n ^ ".bin"
+					
+let graphfiles = 
+  ["livejournal"; "twitter"; "wikipedia"; "rgg"; "delaunay"; "usa"; "europe"; "tree_2_512_1024_large"; "random_arity_100_large";
+   "rmat27_large"; "phased_mix_10_large"; "rmat24_large"; "phased_low_50_large"; "cube_large";
+   "phased_524288_single_large"; "grid_sq_large"; "paths_100_phases_1_large"; "unbalanced_tree_trunk_first_large"
+  ]
+
+  let graph_renaming =
+    [
+     "grid_sq_large", "square-grid";
+     "wikipedia", "wikipedia-2007";
+     "paths_100_phases_1_large", "par-chains-100";
+     "phased_524288_single_large", "trees_524k";
+     "phased_low_50_large", "phases-50-d-5";
+     "phased_mix_10_large", "phases-10-d-2";
+     "random_arity_100_large", "random-arity-100";
+     "tree_2_512_1024_large", "trees-512-1024";
+     "unbalanced_tree_trunk_first_large", "trunk-first";
+     "randLocalGraph_J_5_10000000", "random";
+     "rMatGraph_J_5_10000000", "rMat";
+     "cube_large", "cube-grid";
+     "rmat24_large", "rmat24";
+     "rmat27_large", "rmat27";
+   ]
+
+  let pretty_graph_name n =
+    if List.mem_assoc n graph_renaming then
+      List.assoc n graph_renaming
+    else
+      n
+
+let my_mk_progs =
+  ((mk string "lib_type" "pctl") & (mk string "prog" "bfs_bench.unkm30"))
+    ++ ((mk string "lib_type" "pctl") & (mk string "prog" "bfs_bench.unkm100"))
+    ++ ((mk string "lib_type" "pbbs") & (mk string "prog" "pbfs_bench.manc"))
+    
+  let make() =
+    build "." [prog; baseline_prog;] arg_virtual_build
+
+  let mk_lib_type t =
+    mk string "lib_type" t
+
+  let mk_bfs_prog =
+    (mk_prog prog) & (mk_lib_type "pctl")
+
+  let mk_baseline_prog =
+    (mk_prog baseline_prog) & (mk_lib_type "pbbs")
+
+  let mk_infile n =
+    mk string "infile" n
+
+  let mk_infile' n =
+    mk string "infile" (graphfile_of n)
+
+  let mk_graphname n =
+    mk string "graph_name" n
+
+  let mk_input n =
+    (mk_infile' n & mk_graphname n)
+
+  let rec mk_infiles ns =
+    match ns with
+    | [] ->
+	failwith ""
+    | [n] ->
+	mk_input n
+    | n :: ns ->
+	mk_input n ++ mk_infiles ns
+      
+let run() =
+  Mk_runs.(call (run_modes @ [
+    Output (file_results name);
+    Timeout 400;
+    Args ((mk_bfs_prog ++ mk_baseline_prog) & (mk string "type" "graph") & (mk_infiles graphfiles) & mk_proc)
+          
+  ]))
+
+  let check = nothing  (* do something here *)
+
+  let main_formatter =
+    Env.format (Env.(
+		[
+		 ("proc", Format_custom (fun n -> ""));
+		 ("lib_type", Format_custom (fun n -> ""));
+		 ("infile", Format_custom (fun n -> ""));
+		 ("graphname", Format_custom pretty_graph_name);
+		 ("prog", Format_custom (fun n -> ""));
+		 ("type", Format_custom (fun n -> ""));
+	       ]
+	       ))
+let eval_relative baseline_prog = fun env all_results results ->
+  let _ = Printf.printf "p=%s\n" (Env.get_as_string env "prog") in
+  let pbbs_results = ~~ Results.filter_by_params all_results (
+                          from_env (Env.add (
+                                        Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))
+                                            "prog" (Env.Vstring baseline_prog))
+                        ) in
+  if pbbs_results = [] then Pbench.error ("no results for pbbs library");
+  let v = Results.get_mean_of "exectime" results in
+  let b = Results.get_mean_of "exectime" pbbs_results in
+  100.0 *. (v /. b -. 1.0)
+
+let eval_relative_stddev baseline_prog = fun env all_results results ->
+  let pbbs_results = ~~ Results.filter_by_params all_results (
+                          from_env (Env.add (
+                                        Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))
+                                            "prog" (Env.Vstring baseline_prog))
+                        ) in
+  if pbbs_results = [] then Pbench.error ("no results for pbbs library");
+  try 
+  let b = Results.get_mean_of "exectime" pbbs_results in
+  let times = Results.get Env.as_float "exectime" results in
+  let rels = List.map (fun v -> 100.0 *. (v /. b -. 1.0)) times in
+  XFloat.list_stddev rels
+  with Results.Missing_key _ -> nan
+      
+  let plot() = 
+  (* BFS plotting *) 
+    Mk_bar_plot.(call ([
+         Chart_opt Chart.([
+            Legend_opt Legend.([
+               Legend_pos Top_left
+               ])]);
+      Bar_plot_opt Bar_plot.([
+                              Chart_opt Chart.([Dimensions (13.,8.) ]);
+         X_titles_dir Vertical;
+         Y_axis [Axis.Lower (Some (-100.0)); Axis.Upper (Some (100.0))] ]);
+      Formatter main_formatter;
+      Charts mk_proc;
+      Series my_mk_progs;
+      X (mk_infiles graphfiles);
+      Input "_results/results_bfs.txt";
+      Output "plots_bfs.pdf";
+      Y_label "% relative to original PBBS BFS";
+      Y (eval_relative baseline_prog);
+      Y_whiskers (eval_relative_stddev baseline_prog);
+                    ]))
+
+let all () = select make run check plot
+
+end
+    
+
 (*****************************************************************************)
 (** Main *)
 
@@ -999,6 +1151,7 @@ let _ =
     "generate", ExpGenerate.all;
     "evaluate", ExpEvaluate.all;
     "compare",  ExpComparison.all;
+    "bfs",      ExpBFS.all;
   ]
   in
   system("mkdir -p _data") arg_virtual_run;
