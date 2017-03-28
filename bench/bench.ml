@@ -1002,11 +1002,24 @@ let progs = [bfs25_prog; bfs100_prog; baseline_prog]
 
   let graphfile_of n = "_data/" ^ n ^ ".bin"
 					
-let graphfiles = 
-  ["livejournal"; "twitter"; "wikipedia"; "rgg"; "delaunay"; "usa"; "europe"; "tree_2_512_1024_large"; "random_arity_100_large";
-   "rmat27_large"; "phased_mix_10_large"; "rmat24_large"; "phased_low_50_large"; "cube_large";
-   "phased_524288_single_large"; "grid_sq_large"; "paths_100_phases_1_large"; "unbalanced_tree_trunk_first_large"
-  ]
+  let graphfiles' =
+    let manual = 
+      [
+        "twitter", 1;
+        "usa", 1;
+      ]
+    in
+    let other =
+      [
+        "wikipedia"; "rgg"; "delaunay"; "europe"; "livejournal";
+        "tree_2_512_1024_large"; "random_arity_100_large"; "rmat27_large"; "phased_mix_10_large";
+        "phased_low_50_large"; "cube_large";  "phased_524288_single_large"; "grid_sq_large";
+        "paths_100_phases_1_large"; "unbalanced_tree_trunk_first_large"; "rmat24_large";
+      ]
+    in
+    List.concat [manual; List.map (fun n -> (n, 0)) other]
+
+  let graphfiles = List.map (fun (n, _) -> n) graphfiles'
 
   let graph_renaming =
     [
@@ -1041,7 +1054,6 @@ let graphfiles =
   let mk_bfs25_prog =
     (mk_prog bfs25_prog) & (mk_lib_type "pctl")
 
-
   let mk_bfs100_prog =
     (mk_prog bfs100_prog) & (mk_lib_type "pctl")
 
@@ -1052,7 +1064,8 @@ let mk_baseline_prog =
     mk string "infile" n
 
   let mk_infile' n =
-    mk string "infile" (graphfile_of n)
+    let (_, source) = List.find (fun (m, _) -> m = n) graphfiles' in
+    mk string "infile" (graphfile_of n) & mk int "source" source
 
   let mk_graphname n =
     mk string "graph_name" n
@@ -1068,7 +1081,6 @@ let mk_baseline_prog =
 	mk_input n
     | n :: ns ->
 	mk_input n ++ mk_infiles ns
-
 
   let results_filename = "_results/results_bfs.txt"
 
@@ -1091,13 +1103,22 @@ let run() =
 		 ("proc", Format_custom (fun n -> ""));
 		 ("lib_type", Format_custom (fun n -> ""));
 		 ("infile", Format_custom (fun n -> ""));
-		 ("graphname", Format_custom pretty_graph_name);
-		 ("prog", Format_custom (fun n -> ""));
+		 ("graph_name", Format_custom pretty_graph_name);
+		 ("prog", Format_custom (fun n ->
+                                        if n = bfs30_prog then
+                                             "Oracle guided, kappa := 30usec"
+                                           else if n = bfs100_prog then
+                                             "Oracle guided, kappa := 100usec"
+                                           else if n = baseline_prog then
+                                             "PBBS"
+                                           else
+                                             "<unknown>"));
 		 ("type", Format_custom (fun n -> ""));
 	       ]
-	       ))
+	         ))
+               
 let eval_relative baseline_prog = fun env all_results results ->
-  let _ = Printf.printf "p=%s\n" (Env.get_as_string env "prog") in
+  (*  let _ = Printf.printf "p=%s\n" (Env.get_as_string env "prog") in*)
   let pbbs_results = ~~ Results.filter_by_params all_results (
                           from_env (Env.add (
                                         Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))
