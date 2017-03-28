@@ -994,9 +994,11 @@ module ExpBFS = struct
 
 let name = "bfs"
 
-  let prog = "./bfs_bench.unkm100"
+let baseline_prog = "bfs_bench.manc"
+let bfs30_prog =  "./bfs_bench.unkm30"
+let bfs100_prog = "./bfs_bench.unkm100"
 
-  let baseline_prog = "bfs_bench.manc"
+let progs = [bfs30_prog; bfs100_prog; baseline_prog]
 
   let graphfile_of n = "_data/" ^ n ^ ".bin"
 					
@@ -1029,22 +1031,21 @@ let graphfiles =
       List.assoc n graph_renaming
     else
       n
-
-let my_mk_progs =
-  ((mk string "lib_type" "pctl") & (mk string "prog" "bfs_bench.unkm30"))
-    ++ ((mk string "lib_type" "pctl") & (mk string "prog" "bfs_bench.unkm100"))
-    ++ ((mk string "lib_type" "pbbs") & (mk string "prog" "pbfs_bench.manc"))
     
   let make() =
-    build "." [prog; baseline_prog;] arg_virtual_build
+    build "." progs arg_virtual_build
 
   let mk_lib_type t =
     mk string "lib_type" t
 
-  let mk_bfs_prog =
-    (mk_prog prog) & (mk_lib_type "pctl")
+  let mk_bfs30_prog =
+    (mk_prog bfs30_prog) & (mk_lib_type "pctl")
 
-  let mk_baseline_prog =
+
+  let mk_bfs100_prog =
+    (mk_prog bfs100_prog) & (mk_lib_type "pctl")
+
+let mk_baseline_prog =
     (mk_prog baseline_prog) & (mk_lib_type "pbbs")
 
   let mk_infile n =
@@ -1067,12 +1068,18 @@ let my_mk_progs =
 	mk_input n
     | n :: ns ->
 	mk_input n ++ mk_infiles ns
-      
+
+
+  let results_filename = "_results/results_bfs.txt"
+
+  let mk_progs =
+    mk_bfs30_prog ++ mk_bfs100_prog ++ mk_baseline_prog
+                                 
 let run() =
   Mk_runs.(call (run_modes @ [
-    Output (file_results name);
+    Output results_filename;
     Timeout 400;
-    Args ((mk_bfs_prog ++ mk_baseline_prog) & (mk string "type" "graph") & (mk_infiles graphfiles) & mk_proc)
+    Args (mk_progs & (mk string "type" "graph") & (mk_infiles graphfiles) & mk_proc)
           
   ]))
 
@@ -1128,9 +1135,9 @@ let eval_relative_stddev baseline_prog = fun env all_results results ->
          Y_axis [Axis.Lower (Some (-100.0)); Axis.Upper (Some (100.0))] ]);
       Formatter main_formatter;
       Charts mk_proc;
-      Series my_mk_progs;
+      Series mk_progs;
       X (mk_infiles graphfiles);
-      Input "_results/results_bfs.txt";
+      Input results_filename;
       Output "plots_bfs.pdf";
       Y_label "% relative to original PBBS BFS";
       Y (eval_relative baseline_prog);
