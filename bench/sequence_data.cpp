@@ -159,7 +159,10 @@ struct generate_struct<io::ray_cast_test> {
     if (generator == "on_sphere") {
       return generate_ray_cast_test(n, true);
     } else if (generator == "in_cube") {
-      return generate_ray_cast_test(n, false);
+      io::ray_cast_test test = generate_ray_cast_test(n, false);
+      std::cerr << "Return generate_struct: " << test.points.size() << " " << test.triangles.size() << " " << test.rays.size() << std::endl;
+      return test;
+//      return generate_ray_cast_test(n, false);
     } else {
       assert(false);
     }
@@ -213,7 +216,9 @@ void store(Item& xs, std::string outfile, std::string outfile2) {
 
 template <class Item>
 void process() {
+//  Item* result = new Item();
   Item* result = (Item*)malloc(sizeof(Item));
+  std::memset(result, 0, sizeof(Item));
   std::string generator = cmdline::parse_or_default<std::string>("generator", "");
   std::string infile = cmdline::parse_or_default<std::string>("infile", "");
   std::string outfile = cmdline::parse_string("outfile");

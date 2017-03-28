@@ -50,6 +50,7 @@ io::ray_cast_test generate_ray_cast_test(int n, int on_sphere) {
     test.triangles[i].vertices[2] = 3 * i + 2;
   }
   test.rays = generate_rays(n, test.points);
+  std::cerr << "Generation: " << test.points.size() << " " << test.triangles.size() << " " << test.rays.size() << std::endl;
   return test;
 }
 
