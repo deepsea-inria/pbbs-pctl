@@ -83,9 +83,7 @@ constexpr char samplesort_file[] = "samplesort";
 
 template<class E, class BinPred, class intT>
 void sample_sort (E* a, intT n, BinPred compare) {
-//  std::cerr << "Right here " << n << "\n";
-
-  par::cstmt<samplesort_file, E, BinPred, intT>([&] { return (n * log(n)); }, [&] {
+  par::cstmt<samplesort_file, E, BinPred, intT>([&] { return (n * log(n) + 1); }, [&] {
 #ifdef MANUAL_CONTROL
     if (n <= SSORT_THR) {
 //      comparison_sort(a, n, compare);
@@ -223,18 +221,26 @@ void sample_sort (E* a, intT n, BinPred compare) {
 
     // sort the columns
     parray<intT> complexities(pivots_size + 1, [&] (int i) {
-      return offset_b[(2 * i + 1) * rows] - offset_b[2 * i * rows];
+      double s = (i == pivots_size ? n : offset_b[(2 * i + 1) * rows]) - offset_b[2 * i * rows];
+      return s * (log(s) + 1);
+//      return (i == pivots_size ? n : offset_b[(2 * i + 1) * rows]) - offset_b[2 * i * rows];
     });
-    dps::scan(complexities.begin(), complexities.end(), (intT)0, plus, complexities.begin(), forward_exclusive_scan);
+    dps::scan(complexities.begin(), complexities.end(), (intT)0, plus, complexities.begin(), forward_inclusive_scan);
 
     auto complexity_fct = [&] (intT lo, intT hi) {
       if (lo == hi) {
         return 0;
-      } else if (hi <= pivots_size) {
+      } else if (lo == 0) {
+        return complexities[hi - 1];
+      } else {
+        return complexities[hi - 1] - complexities[lo - 1];
+      }
+
+/*      if (hi <= pivots_size) {
         return complexities[hi] - complexities[lo];//(int) ((offset_b[(2 * hi + 1) * rows] - offset_b[2 * lo * rows]) * log(offset_b[(2 * hi + 1) * rows] - offset_b[2 * lo * rows]));
       } else {
         return n - complexities[lo];//(int) ((n - offset_b[2 * lo * rows]) * log(n - offset_b[2 * lo * rows]));
-      }
+      }*/
     };
 
     range::parallel_for((intT)0, (intT)(pivots_size + 1), complexity_fct, [&] (intT i) {
