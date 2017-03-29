@@ -995,10 +995,10 @@ module ExpBFS = struct
 let name = "bfs"
 
 let baseline_prog = "bfs_bench.manc"
-let bfs30_prog =  "./bfs_bench.unkm30"
+let bfs25_prog =  "./bfs_bench.unkm25"
 let bfs100_prog = "./bfs_bench.unkm100"
 
-let progs = [bfs30_prog; bfs100_prog; baseline_prog]
+let progs = [bfs25_prog; bfs100_prog; baseline_prog]
 
   let graphfile_of n = "_data/" ^ n ^ ".bin"
 					
@@ -1051,8 +1051,8 @@ let progs = [bfs30_prog; bfs100_prog; baseline_prog]
   let mk_lib_type t =
     mk string "lib_type" t
 
-  let mk_bfs30_prog =
-    (mk_prog bfs30_prog) & (mk_lib_type "pctl")
+  let mk_bfs25_prog =
+    (mk_prog bfs25_prog) & (mk_lib_type "pctl")
 
   let mk_bfs100_prog =
     (mk_prog bfs100_prog) & (mk_lib_type "pctl")
@@ -1085,7 +1085,7 @@ let mk_baseline_prog =
   let results_filename = "_results/results_bfs.txt"
 
   let mk_progs =
-    mk_bfs30_prog ++ mk_bfs100_prog ++ mk_baseline_prog
+    mk_bfs25_prog ++ mk_bfs100_prog ++ mk_baseline_prog
                                  
 let run() =
   Mk_runs.(call (run_modes @ [
