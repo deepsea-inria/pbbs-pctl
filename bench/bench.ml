@@ -995,10 +995,14 @@ module ExpBFS = struct
 let name = "bfs"
 
 let baseline_prog = "bfs_bench.manc"
-let bfs25_prog =  "./bfs_bench.unkm25"
-let bfs100_prog = "./bfs_bench.unkm100"
+let pbaseline_prog = "pbfs_bench.manc"
+let bfs25_prog =  "bfs_bench.unkm25"
+let bfs100_prog = "bfs_bench.unkm100"
+let pbfs25_prog =  "pbfs_bench.unkm25"
+let pbfs100_prog = "pbfs_bench.unkm100"
+                   
 
-let progs = [bfs25_prog; bfs100_prog; baseline_prog]
+let progs = [bfs25_prog; bfs100_prog; pbfs25_prog; pbfs100_prog; baseline_prog; pbaseline_prog]
 
   let graphfile_of n = "_data/" ^ n ^ ".bin"
 					
@@ -1057,9 +1061,18 @@ let progs = [bfs25_prog; bfs100_prog; baseline_prog]
   let mk_bfs100_prog =
     (mk_prog bfs100_prog) & (mk_lib_type "pctl")
 
-let mk_baseline_prog =
+  let mk_pbfs25_prog =
+    (mk_prog pbfs25_prog) & (mk_lib_type "pctl")
+
+  let mk_pbfs100_prog =
+    (mk_prog pbfs100_prog) & (mk_lib_type "pctl")
+
+  let mk_baseline_prog =
     (mk_prog baseline_prog) & (mk_lib_type "pbbs")
 
+  let mk_pbaseline_prog =
+    (mk_prog pbaseline_prog) & (mk_lib_type "pbbs")
+                                
   let mk_infile n =
     mk string "infile" n
 
@@ -1085,7 +1098,8 @@ let mk_baseline_prog =
   let results_filename = "_results/results_bfs.txt"
 
   let mk_progs =
-    mk_bfs25_prog ++ mk_bfs100_prog ++ mk_baseline_prog
+    mk_bfs25_prog ++ mk_bfs100_prog ++ mk_pbfs25_prog ++ mk_pbfs100_prog ++
+      mk_baseline_prog ++ mk_baseline_prog
                                  
 let run() =
   Mk_runs.(call (run_modes @ [
@@ -1105,14 +1119,20 @@ let run() =
 		 ("infile", Format_custom (fun n -> ""));
 		 ("graph_name", Format_custom pretty_graph_name);
 		 ("prog", Format_custom (fun n ->
-                                        if n = bfs30_prog then
-                                             "Oracle guided, kappa := 30usec"
-                                           else if n = bfs100_prog then
-                                             "Oracle guided, kappa := 100usec"
-                                           else if n = baseline_prog then
-                                             "PBBS"
-                                           else
-                                             "<unknown>"));
+                                         if n = bfs25_prog then
+                                           "Oracle guided, Parallelkappa := 30usec (Seq. neighbor list)"
+                                         else if n = bfs100_prog then
+                                           "Oracle guided, kappa := 100usec (Seq. neighbor list)"
+                                         else if n = baseline_prog then
+                                           "PBBS (Seq. neighbor list)"
+                                         else if n = pbfs25_prog then
+                                           "Oracle guided, Parallelkappa := 30usec (Par. neighbor list)"
+                                         else if n = pbfs100_prog then
+                                           "Oracle guided, kappa := 100usec (Par. neighbor list)"
+                                         else if n = pbaseline_prog then
+                                           "PBBS (Par. neighbor list)"
+                                         else
+                                           "<unknown>"));
 		 ("type", Format_custom (fun n -> ""));
 	       ]
 	         ))
