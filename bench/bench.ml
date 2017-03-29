@@ -1188,7 +1188,126 @@ let eval_relative_stddev baseline_prog = fun env all_results results ->
 let all () = select make run check plot
 
 end
-    
+
+(*****************************************************************************)
+(** Merkle Tree experiment *)
+
+module ExpMerkleTree = struct
+
+  let name = "merkletree"
+
+  let file_results =
+    Printf.sprintf "_results/results_%s.txt" name
+                   
+  let file_plots =
+    Printf.sprintf "plot_%s.pdf" name
+
+let oracle_prog = "merkletree_bench.unkm100"
+
+let manual_prog = "merkletree_bench.manc"
+
+let make() =
+  build "." [oracle_prog; manual_prog;] arg_virtual_build
+
+let mk_digests = mk_list string "digest" ["pbbs32";"sha256";"sha384";"sha512";]
+
+let mk_proc = mk int "proc" 40
+
+let mk_parallel_common = mk_proc & (mk string "algorithm" "parallel")
+
+let mk_sequential_common = mk string "algorithm" "sequential"
+
+let mk_block_szb_lg n = mk int "block_szb_lg" n
+
+let mk_nb_blocks_lg n = mk int "nb_blocks_lg" n
+
+let sizes = [(9, 21); (13, 17); (*(17, 13);*) (18, 12); (24, 6)]
+
+let mk_sizes =
+  let mks = List.map (fun (bs, nbs) -> (mk_block_szb_lg bs) & (mk_nb_blocks_lg nbs)) sizes in
+  List.fold_left (fun acc x -> x ++ acc) (List.hd mks) (List.tl mks)
+
+let mk_oracle_prog =
+  mk_prog oracle_prog
+
+let mk_progs =
+  mk_oracle_prog ++ (mk_prog manual_prog)
+                                                        
+let run() =
+  Mk_runs.(call (run_modes @ [
+    Output file_results;
+    Timeout 400;
+    Args (
+     mk_progs
+   & mk_digests
+   & mk_sizes
+   & mk_parallel_common
+      )]))
+
+let check = nothing  (* do something here *)
+
+let formatter =
+ Env.format (Env.(
+  [
+    ("proc", Format_custom (fun n -> sprintf "Nb. cores %s" n));
+    ("use_hash", Format_custom (fun n -> ""));
+    ("digest", Format_custom (function | "pbbs32" -> "PBBS hash" | "sha256" -> "SHA256" | "sha384" -> "SHA384" | "sha512" -> "SHA512" | _ -> ""));
+    ("mode", Format_custom (fun n -> "")(*(fun n -> if n = "manual" then "cilk_for" else "oracle guided")*));
+    ("prog", Format_custom (fun n ->
+                             if n = manual_prog then
+                               "cilk_for"
+                             else if n = oracle_prog then
+                               "oracle guided"
+                             else
+                              "<unknown program>"));
+    ("block_szb_lg", Format_custom (fun n -> sprintf "B=2^%s" n));
+    ("nb_blocks_lg", Format_custom (fun n -> sprintf "N=2^%s" n));
+   ]
+  ))            
+
+let eval_relative = fun env all_results results ->
+  let cilk_results = ~~ Results.filter_by_params all_results (
+                          from_env (Env.add (Env.filter_keys ["digest"; "block_szb_lg"; "nb_blocks_lg"] env) "prog" (Env.Vstring manual_prog))) in
+  if cilk_results = [] then Pbench.error ("no results for manual mode");
+  let v = Results.get_mean_of "exectime" results in
+  let b = Results.get_mean_of "exectime" cilk_results in
+  100.0 *. (v /. b -. 1.0)
+
+let eval_relative_stddev = fun env all_results results ->
+  let cilk_results = ~~ Results.filter_by_params all_results (
+                          from_env (Env.add (Env.filter_keys ["digest"; "block_szb_lg"; "nb_blocks_lg"] env) "prog" (Env.Vstring manual_prog))) in
+  if cilk_results = [] then Pbench.error ("no results from manual mode");
+  try
+  let b = Results.get_mean_of "exectime" cilk_results in
+  let times = Results.get Env.as_float "exectime" results in
+  let rels = List.map (fun v -> 100.0 *. (v /. b -. 1.0)) times in
+  XFloat.list_stddev rels
+  with Results.Missing_key _ -> nan
+
+let plot() =
+  Mk_bar_plot.(call ([
+      Chart_opt Chart.([
+            Legend_opt Legend.([
+               Legend_pos Bottom_left
+               ])]);
+      Bar_plot_opt Bar_plot.([
+         X_titles_dir Vertical;
+         Y_axis [ Axis.Is_log false; Axis.Lower (Some (-100.0)); Axis.Upper(Some (30.0));] ]);
+      Formatter formatter;
+      Charts mk_unit;
+      Series (mk_oracle_prog & mk_digests);
+      X mk_sizes;
+      Input file_results;
+      Output file_plots;
+      Y_label "% relative to algorithm with cilk_for";
+      Y eval_relative;
+      Y_whiskers eval_relative_stddev;
+  ]))
+
+
+let all () = select make run check plot
+
+end
 
 (*****************************************************************************)
 (** Main *)
@@ -1196,10 +1315,11 @@ end
 let _ =
   let arg_actions = XCmd.get_others() in
   let bindings = [
-    "generate", ExpGenerate.all;
-    "evaluate", ExpEvaluate.all;
-    "compare",  ExpComparison.all;
-    "bfs",      ExpBFS.all;
+    "generate",    ExpGenerate.all;
+    "evaluate",    ExpEvaluate.all;
+    "compare",     ExpComparison.all;
+    "bfs",         ExpBFS.all;
+    "merkletree",   ExpMerkleTree.all;
   ]
   in
   system("mkdir -p _data") arg_virtual_run;

@@ -593,7 +593,9 @@ end
 
 (*****************************************************************************)
 (** Merkle Tree experiment *)
-
+(* now defunct; see new version in bench.ml *)
+                                 
+(*
 module ExpMerkleTree = struct
 
 let name = "merkletree"
@@ -699,7 +701,7 @@ let plot() =
 let all () = select make run check plot
 
 end
-
+ *)
 (*****************************************************************************)
 (** Main *)
 
@@ -712,7 +714,7 @@ let _ =
     "oracle_guided", ExpOracleGuided.all;
     "nested_single_byte", ExpNestedSingleByte.all;
     "nested_oracle_guided", ExpNestedOracleGuided.all;
-    "merkletree", ExpMerkleTree.all;
+    (*    "merkletree", ExpMerkleTree.all;*)
   ]
   in
   Pbench.execute_from_only_skip arg_actions [] bindings;
