@@ -598,18 +598,18 @@ module ExpMerkleTree = struct
 
 let name = "merkletree"
 
-let prog = "./merkletree.virtual"
+let oracle_prog = "merkletree_bench.unkm100"
+
+let manual_prog = "merkletree_bench.manc"
 
 let make() =
-  build "." ["merkletree_bench.unmk100";"merkletree_bench.manc";] arg_virtual_build
+  build "." [oracle_prog; manual_prog;] arg_virtual_build
 
 let mk_digests = mk_list string "digest" ["pbbs32";"sha256";"sha384";"sha512";]
 
-let mk_numa_interleave = mk int "numa_interleave" 1
-
 let mk_proc = mk int "proc" 40
 
-let mk_parallel_common = mk_proc & mk_numa_interleave & (mk string "algorithm" "parallel")
+let mk_parallel_common = mk_proc & (mk string "algorithm" "parallel")
 
 let mk_sequential_common = mk string "algorithm" "sequential"
 
@@ -619,21 +619,22 @@ let mk_nb_blocks_lg n = mk int "nb_blocks_lg" n
 
 let sizes = [(9, 21); (13, 17); (*(17, 13);*) (18, 12); (24, 6)]
 
-let mk_modes = mk_list string "mode" ["manual"; "oracle";]
-
 let mk_sizes =
   let mks = List.map (fun (bs, nbs) -> (mk_block_szb_lg bs) & (mk_nb_blocks_lg nbs)) sizes in
   List.fold_left (fun acc x -> x ++ acc) (List.hd mks) (List.tl mks)
+
+let mk_progs =
+  (mk_prog oracle_prog) ++ (mk_prog manual_prog)
                                                         
 let run() =
   Mk_runs.(call (run_modes @ [
     Output (file_results name);
     Timeout 400;
     Args (
-     mk_prog prog 
+     mk_progs
    & mk_digests
    & mk_sizes
-   & (mk_parallel_common & mk_modes)
+   & mk_parallel_common
       )]))
 
 let check = nothing  (* do something here *)
@@ -645,6 +646,11 @@ let formatter =
     ("use_hash", Format_custom (fun n -> ""));
     ("digest", Format_custom (function | "pbbs32" -> "PBBS hash" | "sha256" -> "SHA256" | "sha384" -> "SHA384" | "sha512" -> "SHA512" | _ -> ""));
     ("mode", Format_custom (fun n -> "")(*(fun n -> if n = "manual" then "cilk_for" else "oracle guided")*));
+    ("prog", Format_custom (fun n ->
+                             if n = oracle_prog then
+                               "cilk_for"
+                             else
+                               "oracle guided"));
     ("block_szb_lg", Format_custom (fun n -> sprintf "B=2^%s" n));
     ("nb_blocks_lg", Format_custom (fun n -> sprintf "N=2^%s" n));
    ]
@@ -652,7 +658,7 @@ let formatter =
 
 let eval_relative = fun env all_results results ->
   let cilk_results = ~~ Results.filter_by_params all_results (
-                          from_env (Env.add (Env.filter_keys ["digest"; "block_szb_lg"; "nb_blocks_lg"] env) "mode" (Env.Vstring "manual"))) in
+                          from_env (Env.add (Env.filter_keys ["digest"; "block_szb_lg"; "nb_blocks_lg"] env) "prog" (Env.Vstring manual_prog))) in
   if cilk_results = [] then Pbench.error ("no results for manual mode");
   let v = Results.get_mean_of "exectime" results in
   let b = Results.get_mean_of "exectime" cilk_results in
@@ -660,7 +666,7 @@ let eval_relative = fun env all_results results ->
 
 let eval_relative_stddev = fun env all_results results ->
   let cilk_results = ~~ Results.filter_by_params all_results (
-                          from_env (Env.add (Env.filter_keys ["digest"; "block_szb_lg"; "nb_blocks_lg"] env) "mode" (Env.Vstring "manual"))) in
+                          from_env (Env.add (Env.filter_keys ["digest"; "block_szb_lg"; "nb_blocks_lg"] env) "prog" (Env.Vstring manual_prog))) in
   if cilk_results = [] then Pbench.error ("no results from manual mode");
   try
   let b = Results.get_mean_of "exectime" cilk_results in
@@ -680,7 +686,7 @@ let plot() =
          Y_axis [ Axis.Is_log false; Axis.Lower (Some (-100.0)); Axis.Upper(Some (30.0));] ]);
       Formatter formatter;
       Charts mk_unit;(*mk_digests;*)
-      Series ((mk_list string "mode" ["oracle"]) & mk_digests);
+      Series (mk_progs & mk_digests);
       X mk_sizes;
       Input (file_results name);
       Output (file_plots name);
