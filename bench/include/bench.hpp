@@ -79,7 +79,7 @@ hwloc_topology_t    topology;
 #if defined(HAVE_HWLOC) && defined(USE_CILK_PLUS_RUNTIME)
   hwloc_topology_init (&topology);
   hwloc_topology_load (topology);
-  bool numa_alloc_interleaved = (proc == 0) ? false : true;
+  bool numa_alloc_interleaved = (proc == 1) ? false : true;
   numa_alloc_interleaved =
     deepsea::cmdline::parse_or_default_bool("numa_alloc_interleaved", numa_alloc_interleaved, false);
   if (numa_alloc_interleaved) {
