@@ -1211,7 +1211,7 @@ let make() =
 
 let mk_digests = mk_list string "digest" ["pbbs32";"sha256";"sha384";"sha512";]
 
-let mk_proc = mk int "proc" 40
+let mk_proc = mk int "proc" (List.hd (List.rev arg_proc))
 
 let mk_parallel_common = mk_proc & (mk string "algorithm" "parallel")
 
