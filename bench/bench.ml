@@ -1251,7 +1251,7 @@ let formatter =
   [
     ("proc", Format_custom (fun n -> sprintf "Nb. cores %s" n));
     ("use_hash", Format_custom (fun n -> ""));
-    ("digest", Format_custom (function | "pbbs32" -> "PBBS hash" | "sha256" -> "SHA256" | "sha384" -> "SHA384" | "sha512" -> "SHA512" | _ -> ""));
+    ("digest", Format_custom (function | "pbbs32" -> "32-bit hash" | "sha256" -> "sha256" | "sha384" -> "sha384" | "sha512" -> "sha512" | _ -> ""));
     ("mode", Format_custom (fun n -> "")(*(fun n -> if n = "manual" then "cilk_for" else "oracle guided")*));
     ("prog", Format_custom (fun n ->
                              if n = manual_prog then
