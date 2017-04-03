@@ -269,8 +269,8 @@ intT add_refining_vertices(vertex** v, intT n, intT nTotal, TriangleTable TT) {
 //        std::cerr << qs_ref[j]->vertex_queue.size() + qs_ref[j]->simplex_queue.size() << std::endl; 
       }
     });
-    //TODO: wrong complexity -> qs[j].vq.size() + qs[j].sq.size()
-/*    parallel_for(0, cnt, [&] (int i) {
+/*    //TODO: wrong complexity -> qs[j].vq.size() + qs[j].sq.size()
+    parallel_for(0, cnt, [&] (int i) {
       comp[i] = std::max((int)qs[i]->vertex_queue.size() + (int)qs[i]->simplex_queue.size(), 1);
     });
 #ifdef MANUAL_ALLOCATION
@@ -424,7 +424,8 @@ triangles<point2d> refine(triangles<point2d> Tri) {
   timer.end("refine");
   timer.start();
   // Extract Vertices for result
-  parray<bool> flag(numTriangs, [&] (intT i) {
+  parray<bool> flag;
+  flag.prefix_tabulate(numTriangs, numPoints, [&] (intT i) {
     return (vv[i].badT == NULL);
   });
   parray<long> I = pack_index(flag.cbegin(), flag.cbegin() + numPoints);

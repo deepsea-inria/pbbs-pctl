@@ -221,7 +221,9 @@ void sample_sort (E* a, intT n, BinPred compare) {
 
     // sort the columns
     parray<intT> complexities(pivots_size + 1, [&] (int i) {
-      double s = (i == pivots_size ? n : offset_b[(2 * i + 1) * rows]) - offset_b[2 * i * rows];
+      double s = (i == 0 || i == pivots_size || compare(pivots[i - 1], pivots[i])) ?
+                 (i == pivots_size ? n : offset_b[(2 * i + 1) * rows]) - offset_b[2 * i * rows] :
+                 1;
       return s * (log(s) + 1);
 //      return (i == pivots_size ? n : offset_b[(2 * i + 1) * rows]) - offset_b[2 * i * rows];
     });
@@ -235,12 +237,6 @@ void sample_sort (E* a, intT n, BinPred compare) {
       } else {
         return complexities[hi - 1] - complexities[lo - 1];
       }
-
-/*      if (hi <= pivots_size) {
-        return complexities[hi] - complexities[lo];//(int) ((offset_b[(2 * hi + 1) * rows] - offset_b[2 * lo * rows]) * log(offset_b[(2 * hi + 1) * rows] - offset_b[2 * lo * rows]));
-      } else {
-        return n - complexities[lo];//(int) ((n - offset_b[2 * lo * rows]) * log(n - offset_b[2 * lo * rows]));
-      }*/
     };
 
     range::parallel_for((intT)0, (intT)(pivots_size + 1), complexity_fct, [&] (intT i) {
