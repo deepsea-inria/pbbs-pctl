@@ -593,10 +593,10 @@ let no_pbbs = XCmd.mem_flag "nopbbs"
 
 let my_mk_progs =
 (*  ((mk string "lib_type" "pbbs") & (mk string "prog" "bfs_bench.manc"))
-  ++*)   ((mk string "lib_type" "pctl") & (mk string "prog" "bfs_bench.unkm30"))
-         ++ ((mk string "lib_type" "pctl") & (mk string "prog" "bfs_bench.unkm100"))
-         ++ ((mk string "lib_type" "pctl") & (mk string "prog" "pbfs_bench.unkm30"))
-         ++ ((mk string "lib_type" "pctl") & (mk string "prog" "pbfs_bench.unkm100"))
+  ++*)   ((mk string "lib_type" "pctl") & (mk string "prog" "bfs_bench.unks30"))
+         ++ ((mk string "lib_type" "pctl") & (mk string "prog" "bfs_bench.unks100"))
+         ++ ((mk string "lib_type" "pctl") & (mk string "prog" "pbfs_bench.unks30"))
+         ++ ((mk string "lib_type" "pctl") & (mk string "prog" "pbfs_bench.unks100"))
          ++ ((mk string "lib_type" "pbbs") & (mk string "prog" "pbfs_bench.manc"))
                             
 let prog benchmark extension =
@@ -722,13 +722,13 @@ let eval_relative_stddev_main = fun env all_results results ->
   with Results.Missing_key _ -> nan
 
 let pretty_prog p =
-  if p = "bfs_bench.unkm30" then
+  if p = "bfs_bench.unks30" then
     "Seq. neighbor list, oracle guided, kappa := 30usec"
-  else if p = "bfs_bench.unkm100" then
+  else if p = "bfs_bench.unks100" then
     "Seq. neighbor list, oracle guided, kappa := 100usec"
-  else if p = "pbfs_bench.unkm30" then
+  else if p = "pbfs_bench.unks30" then
     "Par. neighbor list, oracle guided, kappa := 30usec"
-  else if p = "pbfs_bench.unkm100" then
+  else if p = "pbfs_bench.unks100" then
     "Par. neighbor list, oracle guided, kappa := 100usec"
   else if p = "bfs_bench.manc" then
     "Seq. neighbor list, PBBS BFS"
@@ -996,10 +996,10 @@ let name = "bfs"
 
 let baseline_prog = "bfs_bench.manc"
 let pbaseline_prog = "pbfs_bench.manc"
-let bfs25_prog =  "bfs_bench.unkm25"
-let bfs100_prog = "bfs_bench.unkm100"
-let pbfs25_prog =  "pbfs_bench.unkm25"
-let pbfs100_prog = "pbfs_bench.unkm100"
+let bfs25_prog =  "bfs_bench.unks25"
+let bfs100_prog = "bfs_bench.unks100"
+let pbfs25_prog =  "pbfs_bench.unks25"
+let pbfs100_prog = "pbfs_bench.unks100"
                    
 
 let progs = [bfs25_prog; bfs100_prog; pbfs25_prog; pbfs100_prog; baseline_prog; pbaseline_prog]
@@ -1202,7 +1202,7 @@ module ExpMerkleTree = struct
   let file_plots =
     Printf.sprintf "plot_%s.pdf" name
 
-let oracle_prog = "merkletree_bench.unkm100"
+let oracle_prog = "merkletree_bench.unks100"
 
 let manual_prog = "merkletree_bench.manc"
 
