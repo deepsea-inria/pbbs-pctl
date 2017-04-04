@@ -996,13 +996,13 @@ let name = "bfs"
 
 let baseline_prog = "bfs_bench.manc"
 let pbaseline_prog = "pbfs_bench.manc"
-let bfs25_prog =  "bfs_bench.unks25"
-let bfs100_prog = "bfs_bench.unks100"
-let pbfs25_prog =  "pbfs_bench.unks25"
-let pbfs100_prog = "pbfs_bench.unks100"
+let bfs100_prog =  "bfs_bench.unks25"
+let bfs5_prog = "bfs_bench.unks5"
+let pbfs100_prog =  "pbfs_bench.unks25"
+let pbfs5_prog = "pbfs_bench.unks5"
                    
 
-let progs = [bfs25_prog; bfs100_prog; pbfs25_prog; pbfs100_prog; baseline_prog; pbaseline_prog]
+let progs = [bfs100_prog; bfs5_prog; pbfs100_prog; pbfs5_prog; baseline_prog; pbaseline_prog]
 
   let graphfile_of n = "_data/" ^ n ^ ".bin"
 					
@@ -1055,17 +1055,17 @@ let progs = [bfs25_prog; bfs100_prog; pbfs25_prog; pbfs100_prog; baseline_prog; 
   let mk_lib_type t =
     mk string "lib_type" t
 
-  let mk_bfs25_prog =
-    (mk_prog bfs25_prog) & (mk_lib_type "pctl")
-
   let mk_bfs100_prog =
     (mk_prog bfs100_prog) & (mk_lib_type "pctl")
 
-  let mk_pbfs25_prog =
-    (mk_prog pbfs25_prog) & (mk_lib_type "pctl")
+  let mk_bfs5_prog =
+    (mk_prog bfs5_prog) & (mk_lib_type "pctl")
 
   let mk_pbfs100_prog =
     (mk_prog pbfs100_prog) & (mk_lib_type "pctl")
+
+  let mk_pbfs5_prog =
+    (mk_prog pbfs5_prog) & (mk_lib_type "pctl")
 
   let mk_baseline_prog =
     (mk_prog baseline_prog) & (mk_lib_type "pbbs")
@@ -1098,7 +1098,7 @@ let progs = [bfs25_prog; bfs100_prog; pbfs25_prog; pbfs100_prog; baseline_prog; 
   let results_filename = "_results/results_bfs.txt"
 
   let mk_progs =
-    mk_bfs25_prog ++ mk_bfs100_prog ++ mk_pbfs25_prog ++ mk_pbfs100_prog ++
+    mk_bfs5_prog ++ mk_bfs100_prog ++ mk_pbfs5_prog ++ mk_pbfs100_prog ++
       mk_baseline_prog ++ mk_pbaseline_prog
                                  
 let run() =
@@ -1119,15 +1119,15 @@ let run() =
 		 ("infile", Format_custom (fun n -> ""));
 		 ("graph_name", Format_custom pretty_graph_name);
 		 ("prog", Format_custom (fun n ->
-                                         if n = bfs25_prog then
+                                         if n = bfs100_prog then
                                            "Oracle guided, kappa := 25usec (Seq. neighbor list)"
-                                         else if n = bfs100_prog then
+                                         else if n = bfs5_prog then
                                            "Oracle guided, kappa := 100usec (Seq. neighbor list)"
                                          else if n = baseline_prog then
                                            "PBBS (Seq. neighbor list)"
-                                         else if n = pbfs25_prog then
-                                           "Oracle guided, kappa := 25usec (Par. neighbor list)"
                                          else if n = pbfs100_prog then
+                                           "Oracle guided, kappa := 25usec (Par. neighbor list)"
+                                         else if n = pbfs5_prog then
                                            "Oracle guided, kappa := 100usec (Par. neighbor list)"
                                          else if n = pbaseline_prog then
                                            "PBBS (Par. neighbor list)"
