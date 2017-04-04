@@ -297,7 +297,7 @@ let pretty_graph_name n =
     "usa"
   else if (graphfile_of "livejournal") = n then
     "livejournal"
-  else if (graphfile_of "wikipedia") = n then
+  else if (graphfile_of "wikipedia-20070206") = n then
     "wikipedia-2007"
   else if (graphfile_of "grid_sq_large") = n then
     "square-grid"
@@ -332,7 +332,7 @@ let pretty_graph_name n =
 
                                       
 let graphfiles = List.map graphfile_of
-  ["livejournal"; "twitter"; "wikipedia"; "rgg"; "delaunay"; "usa"; "europe"; "tree_2_512_1024_large"; "random_arity_100_large";
+  ["livejournal"; "twitter"; "wikipedia-20070206"; "rgg"; "delaunay"; "usa"; "europe"; "tree_2_512_1024_large"; "random_arity_100_large";
    "rmat27_large"; "phased_mix_10_large"; "rmat24_large"; "phased_low_50_large"; "cube_large";
    "phased_524288_single_large"; "grid_sq_large"; "paths_100_phases_1_large"; "unbalanced_tree_trunk_first_large"(*;
    "3Dgrid_J_10000000"; "rMatGraph_J_5_10000000"; "randLocalGraph_J_5_10000000";*)
@@ -642,7 +642,7 @@ let pretty_graph_name n =
     "usa"
   else if (graphfile_of "livejournal") = n then
     "livejournal"
-  else if (graphfile_of "wikipedia") = n then
+  else if (graphfile_of "wikipedia-20070206") = n then
     "wikipedia-2007"
   else if (graphfile_of "grid_sq_large") = n then
     "square-grid"
@@ -1015,7 +1015,7 @@ let progs = [bfs25_prog; bfs100_prog; pbfs25_prog; pbfs100_prog; baseline_prog; 
     in
     let other =
       [
-        "wikipedia"; "rgg"; "delaunay"; "europe"; "livejournal";
+        "wikipedia-20070206"; "rgg"; "delaunay"; "europe"; "livejournal";
         "tree_2_512_1024_large"; "random_arity_100_large"; "rmat27_large"; "phased_mix_10_large";
         "phased_low_50_large"; "cube_large";  "phased_524288_single_large"; "grid_sq_large";
         "paths_100_phases_1_large"; "unbalanced_tree_trunk_first_large"; "rmat24_large";
@@ -1028,7 +1028,7 @@ let progs = [bfs25_prog; bfs100_prog; pbfs25_prog; pbfs100_prog; baseline_prog; 
   let graph_renaming =
     [
      "grid_sq_large", "square-grid";
-     "wikipedia", "wikipedia-2007";
+     "wikipedia-20070206", "wikipedia";
      "paths_100_phases_1_large", "par-chains-100";
      "phased_524288_single_large", "trees_524k";
      "phased_low_50_large", "phases-50-d-5";
