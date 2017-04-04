@@ -1120,13 +1120,13 @@ let run() =
 		 ("graph_name", Format_custom pretty_graph_name);
 		 ("prog", Format_custom (fun n ->
                                          if n = bfs25_prog then
-                                           "Oracle guided, Parallelkappa := 30usec (Seq. neighbor list)"
+                                           "Oracle guided, kappa := 30usec (Seq. neighbor list)"
                                          else if n = bfs100_prog then
                                            "Oracle guided, kappa := 100usec (Seq. neighbor list)"
                                          else if n = baseline_prog then
                                            "PBBS (Seq. neighbor list)"
                                          else if n = pbfs25_prog then
-                                           "Oracle guided, Parallelkappa := 30usec (Par. neighbor list)"
+                                           "Oracle guided, kappa := 30usec (Par. neighbor list)"
                                          else if n = pbfs100_prog then
                                            "Oracle guided, kappa := 100usec (Par. neighbor list)"
                                          else if n = pbaseline_prog then
