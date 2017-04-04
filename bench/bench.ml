@@ -996,9 +996,9 @@ let name = "bfs"
 
 let baseline_prog = "bfs_bench.manc"
 let pbaseline_prog = "pbfs_bench.manc"
-let bfs100_prog =  "bfs_bench.unks25"
+let bfs100_prog =  "bfs_bench.unks100"
 let bfs5_prog = "bfs_bench.unks5"
-let pbfs100_prog =  "pbfs_bench.unks25"
+let pbfs100_prog =  "pbfs_bench.unks100"
 let pbfs5_prog = "pbfs_bench.unks5"
                    
 
@@ -1120,15 +1120,15 @@ let run() =
 		 ("graph_name", Format_custom pretty_graph_name);
 		 ("prog", Format_custom (fun n ->
                                          if n = bfs100_prog then
-                                           "Oracle guided, kappa := 25usec (Seq. neighbor list)"
-                                         else if n = bfs5_prog then
                                            "Oracle guided, kappa := 100usec (Seq. neighbor list)"
+                                         else if n = bfs5_prog then
+                                           "Oracle guided, kappa := 5usec (Seq. neighbor list)"
                                          else if n = baseline_prog then
                                            "PBBS (Seq. neighbor list)"
                                          else if n = pbfs100_prog then
-                                           "Oracle guided, kappa := 25usec (Par. neighbor list)"
-                                         else if n = pbfs5_prog then
                                            "Oracle guided, kappa := 100usec (Par. neighbor list)"
+                                         else if n = pbfs5_prog then
+                                           "Oracle guided, kappa := 5usec (Par. neighbor list)"
                                          else if n = pbaseline_prog then
                                            "PBBS (Par. neighbor list)"
                                          else
