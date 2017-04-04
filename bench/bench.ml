@@ -1134,6 +1134,7 @@ let run() =
                                          else
                                            "<unknown>"));
 		 ("type", Format_custom (fun n -> ""));
+		 ("source", Format_custom (fun n -> ""));
 	       ]
 	         ))
                
@@ -1168,12 +1169,12 @@ let eval_relative_stddev baseline_prog = fun env all_results results ->
     Mk_bar_plot.(call ([
          Chart_opt Chart.([
             Legend_opt Legend.([
-               Legend_pos Top_left
+               Legend_pos Bottom_left
                ])]);
       Bar_plot_opt Bar_plot.([
                               Chart_opt Chart.([Dimensions (13.,8.) ]);
          X_titles_dir Vertical;
-         Y_axis [Axis.Lower (Some (-100.0)); Axis.Upper (Some (100.0))] ]);
+         Y_axis [Axis.Lower (Some (-250.0)); Axis.Upper (Some (250.0))] ]);
       Formatter main_formatter;
       Charts mk_proc;
       Series mk_progs;
