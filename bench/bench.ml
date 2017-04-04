@@ -1099,7 +1099,7 @@ let progs = [bfs25_prog; bfs100_prog; pbfs25_prog; pbfs100_prog; baseline_prog; 
 
   let mk_progs =
     mk_bfs25_prog ++ mk_bfs100_prog ++ mk_pbfs25_prog ++ mk_pbfs100_prog ++
-      mk_baseline_prog ++ mk_baseline_prog
+      mk_baseline_prog ++ mk_pbaseline_prog
                                  
 let run() =
   Mk_runs.(call (run_modes @ [

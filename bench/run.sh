@@ -1,5 +1,4 @@
-./bench.pbench compare -benchmark comparison_sort,blockradix_sort,remove_duplicates,suffix_array,convex_hull,nearest_neighbours,ray_cast -size large -runs 30 -proc 40 -exts unks100
-./bench.pbench compare -benchmark delaunay -size large -runs 30 -proc 40 -exts unks100
+./bench.pbench compare -benchmark comparison_sort,blockradix_sort,remove_duplicates,suffix_array,convex_hull,nearest_neighbours,ray_cast,delaunay -size large -runs 30 -proc 40 -exts unks100
 #./bench.pbench compare -benchmark delaunay_refine -size large -runs 6 -proc 40 -exts unks100
 ./bench.pbench bfs -proc 40 -runs 30
 
