@@ -306,12 +306,12 @@ module ExpOracleGuided = struct
 
 let name = "oracle_guided"
 
-let prog = "./granularity.virtual"
+let prog = "./granularity_bench.unks100"
 
 let make() =
-  build "." ["granularity_bench.unmk100"] arg_virtual_build
+  build "." [prog] arg_virtual_build
         
-let mk_common = mk_numa_interleave & mk_proc
+let mk_common = mk_proc
         
 let mk_algorithm_parallel_with_oracle_guided =
   mk string "algorithm" "parallel_with_oracle_guided"
@@ -434,9 +434,9 @@ let mk_n = mk int "n" big_n
         
 let mk_common = mk_n & mk_item_szb & mk_use_hash
 
-let mk_common_parallel = mk_common & mk_numa_interleave & mk_proc
+let mk_common_parallel = mk_common & mk_proc
                                                             
-let mk_common_sequential = mk_common & mk_numa_firsttouch
+let mk_common_sequential = mk_common 
 
 let mk_algorithm_sequential = mk_algorithm "sequential"
 
@@ -482,12 +482,12 @@ module ExpNestedOracleGuided = struct
 
 let name = "nested_oracle_guided"
 
-let prog = "./granularity.virtual300"
+let prog = "./granularity_bench.unks100"
 
 let make() =
-  build "." ["granularity_bench.unmk"] arg_virtual_build
+  build "." ["granularity_bench.unks100"] arg_virtual_build
         
-let mk_common = mk_numa_interleave & mk_proc
+let mk_common = mk_proc
 
 let mk_algorithm_parallel_with_gc =
   mk string "algorithm" "nested_parallel_with_gc"
@@ -600,7 +600,7 @@ module ExpMerkleTree = struct
 
 let name = "merkletree"
 
-let oracle_prog = "merkletree_bench.unkm100"
+let oracle_prog = "merkletree_bench.unks100"
 
 let manual_prog = "merkletree_bench.manc"
 
