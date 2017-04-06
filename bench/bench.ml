@@ -148,7 +148,7 @@ let arg_sizes =
    | _ -> arg_sizes
 
 let sequence_benchmarks = ["comparison_sort"; "blockradix_sort"; "remove_duplicates";
-                      "suffix_array"; "convex_hull"; "nearest_neighbours"; "ray_cast"; "delaunay"; "delaunay_refine"; "bfs"; ]
+                      "suffix_array"; "convex_hull"; "nearest_neighbours"; "ray_cast"; "delaunay"; (*"delaunay_refine"; "bfs"; *) ]
 
 let arg_benchmarks = 
    match arg_benchmarks with
@@ -190,8 +190,8 @@ let generators_list = function
         ((mk_generator "almost_sorted") & (mk int "nb_swaps" (nb_swaps n)));
       ]
     | "array_string" -> [
-        mk_generator "trigrams";
-      ]
+        (*mk_generator "trigrams";*)
+      ] 
     | _ -> Pbench.error "invalid type")
   | "blockradix_sort" -> (function n ->
     function
@@ -346,8 +346,9 @@ let mk_generate_sequence_inputs benchmark : Params.t =
      ((mk int "n" 2000000) & (mk string "generator" "in_cube") & (mk string "outfile" "_data/incube_ray_cast_2m.bin")) ++
      ((mk int "n" 1000000) & (mk string "generator" "on_sphere") & (mk string "outfile" "_data/onsphere_ray_cast_1m.bin")) ++
      ((mk int "n" 2000000) & (mk string "generator" "on_sphere") & (mk string "outfile" "_data/onsphere_ray_cast_2m.bin")) ++
-     ((mk int "n" 5000000) & (mk string "generator" "on_sphere") & (mk string "outfile" "_data/onsphere_ray_cast_5m.bin")) ++
-     ((mk int "n" 10000000) & (mk string "generator" "on_sphere") & (mk string "outfile" "_data/onsphere_ray_cast_10m.bin")))
+     ((mk int "n" 5000000) & (mk string "generator" "on_sphere") & (mk string "outfile" "_data/onsphere_ray_cast_5m.bin")) (*++
+     ((mk int "n" 10000000) & (mk string "generator" "on_sphere") & (mk string "outfile" "_data/onsphere_ray_cast_10m.bin")) *)
+)
   | _ ->
     let load = function
       | Small -> 1000000
