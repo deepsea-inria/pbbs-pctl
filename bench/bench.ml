@@ -343,10 +343,10 @@ let mk_generate_sequence_inputs benchmark : Params.t =
   | "ray_cast" ->
     (mk string "type" "ray_cast_test") &
     (((mk int "n" 1000000) & (mk string "generator" "in_cube") & (mk string "outfile" "_data/incube_ray_cast_1m.bin")) ++
-     ((mk int "n" 2000000) & (mk string "generator" "in_cube") & (mk string "outfile" "_data/incube_ray_cast_2m.bin")) ++
-     ((mk int "n" 1000000) & (mk string "generator" "on_sphere") & (mk string "outfile" "_data/onsphere_ray_cast_1m.bin")) ++
-     ((mk int "n" 2000000) & (mk string "generator" "on_sphere") & (mk string "outfile" "_data/onsphere_ray_cast_2m.bin")) ++
-     ((mk int "n" 5000000) & (mk string "generator" "on_sphere") & (mk string "outfile" "_data/onsphere_ray_cast_5m.bin")) (*++
+(*     ((mk int "n" 2000000) & (mk string "generator" "in_cube") & (mk string "outfile" "_data/incube_ray_cast_2m.bin")) ++ *)
+     ((mk int "n" 1000000) & (mk string "generator" "on_sphere") & (mk string "outfile" "_data/onsphere_ray_cast_1m.bin")) 
+(*     ((mk int "n" 2000000) & (mk string "generator" "on_sphere") & (mk string "outfile" "_data/onsphere_ray_cast_2m.bin")) ++ 
+     ((mk int "n" 5000000) & (mk string "generator" "on_sphere") & (mk string "outfile" "_data/onsphere_ray_cast_5m.bin")) ++
      ((mk int "n" 10000000) & (mk string "generator" "on_sphere") & (mk string "outfile" "_data/onsphere_ray_cast_10m.bin")) *)
 )
   | _ ->
@@ -673,6 +673,14 @@ let pretty_graph_name n =
     "rmat24"
   else if (graphfile_of "rmat27_large") = n then
     "rmat27"
+  else if (graphfile_of "incube_ray_cast_1m") = n then
+    "in cube"
+  else if (graphfile_of "onsphere_ray_cast_2m") = n then
+    "on sphere"
+  else if (graphfile_of "xyzrgb-manuscript-ray-cast-dataset") = n then
+    "xyz-rgb manuscript" 
+  else if (graphfile_of "turbine") = n then
+    "turbine"
   else
     n
 
