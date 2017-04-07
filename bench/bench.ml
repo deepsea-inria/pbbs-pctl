@@ -1006,14 +1006,7 @@ let name = "bfs"
 
 let baseline_prog = "bfs_bench.manc"
 let pbaseline_prog = "pbfs_bench.manc"
-let bfs100_prog =  "bfs_bench.unks100"
-let bfs5_prog = "bfs_bench.unks5"
-let pbfs100_prog =  "pbfs_bench.unks100"
-let pbfs5_prog = "pbfs_bench.unks5"
                    
-
-let progs = [bfs100_prog; bfs5_prog; pbfs100_prog; pbfs5_prog; baseline_prog; pbaseline_prog]
-
   let graphfile_of n = "_data/" ^ n ^ ".bin"
 					
   let graphfiles' =
@@ -1058,24 +1051,19 @@ let progs = [bfs100_prog; bfs5_prog; pbfs100_prog; pbfs5_prog; baseline_prog; pb
       List.assoc n graph_renaming
     else
       n
-    
+
+  let extensions = XCmd.parse_or_default_list_string "exts" [ "unks100"; ]
+
+  let prog benchmark extension =
+    sprintf "%s_bench.%s" benchmark extension
+
   let make() =
-    build "." progs arg_virtual_build
+    List.iter (fun extension ->
+      build "." [prog "bfs" extension; prog "pbfs" extension;] arg_virtual_build
+    ) ("manc" :: extensions)
 
   let mk_lib_type t =
     mk string "lib_type" t
-
-  let mk_bfs100_prog =
-    (mk_prog bfs100_prog) & (mk_lib_type "pctl")
-
-  let mk_bfs5_prog =
-    (mk_prog bfs5_prog) & (mk_lib_type "pctl")
-
-  let mk_pbfs100_prog =
-    (mk_prog pbfs100_prog) & (mk_lib_type "pctl")
-
-  let mk_pbfs5_prog =
-    (mk_prog pbfs5_prog) & (mk_lib_type "pctl")
 
   let mk_baseline_prog =
     (mk_prog baseline_prog) & (mk_lib_type "pbbs")
@@ -1107,8 +1095,18 @@ let progs = [bfs100_prog; bfs5_prog; pbfs100_prog; pbfs5_prog; baseline_prog; pb
 
   let results_filename = "_results/results_bfs.txt"
 
+  let mk_pctl_bfs_prog prog =
+    (mk_prog prog) & (mk_lib_type "pctl")
+
+  let prog_descrs = List.flatten
+    (List.map (fun (p:string) -> (List.map (fun (e:string) -> (p, e)) extensions)) ["bfs"; "pbfs";])
+
+  let prog_of (p, e) = sprintf "%s_bench.%s" p e
+
+  let pctl_progs = List.map prog_of prog_descrs
+
   let mk_progs =
-    mk_bfs5_prog ++ mk_bfs100_prog ++ mk_pbfs5_prog ++ mk_pbfs100_prog ++
+    mk_list string "prog" pctl_progs ++
       mk_baseline_prog ++ mk_pbaseline_prog
                                  
 let run() =
@@ -1128,21 +1126,22 @@ let run() =
 		 ("lib_type", Format_custom (fun n -> ""));
 		 ("infile", Format_custom (fun n -> ""));
 		 ("graph_name", Format_custom pretty_graph_name);
-		 ("prog", Format_custom (fun n ->
-                                         if n = bfs100_prog then
-                                           "Oracle guided, kappa := 100usec (Seq. neighbor list)"
-                                         else if n = bfs5_prog then
-                                           "Oracle guided, kappa := 5usec (Seq. neighbor list)"
-                                         else if n = baseline_prog then
+		 ("prog", Format_custom (fun n -> 
+                                         if n = baseline_prog then
                                            "PBBS (Seq. neighbor list)"
-                                         else if n = pbfs100_prog then
-                                           "Oracle guided, kappa := 100usec (Par. neighbor list)"
-                                         else if n = pbfs5_prog then
-                                           "Oracle guided, kappa := 5usec (Par. neighbor list)"
                                          else if n = pbaseline_prog then
                                            "PBBS (Par. neighbor list)"
                                          else
-                                           "<unknown>"));
+                                           let ps = List.map2 (fun x y -> (x, y)) (List.map prog_of prog_descrs) prog_descrs in
+                                           if List.mem_assoc n ps then
+                                             let (p, e) = List.assoc n ps in
+                                             let commonext = "unks" in
+                                             let extlength = String.length commonext in
+                                             let kappa = String.sub e (extlength ) (String.length e - extlength) in
+                                             let nghl = if p = "bfs" then "Seq. ngh. list" else "Par. ngh. list" in
+                                             sprintf "Oracle guided, kappa := %sus (%s)" kappa nghl
+                                           else "<bogus>"
+                 ));    
 		 ("type", Format_custom (fun n -> ""));
 		 ("source", Format_custom (fun n -> ""));
 	       ]
