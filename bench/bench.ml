@@ -673,14 +673,6 @@ let pretty_graph_name n =
     "rmat24"
   else if (graphfile_of "rmat27_large") = n then
     "rmat27"
-  else if (graphfile_of "incube_ray_cast_1m") = n then
-    "in cube"
-  else if (graphfile_of "onsphere_ray_cast_2m") = n then
-    "on sphere"
-  else if (graphfile_of "xyzrgb-manuscript-ray-cast-dataset") = n then
-    "xyz-rgb manuscript" 
-  else if (graphfile_of "turbine") = n then
-    "turbine"
   else
     n
 
@@ -823,6 +815,15 @@ let pretty_input_name n =
     "angel"
   else if "_data/dragon_ray_cast_dataset.bin" = n then
     "dragon"
+
+  else if "_data/incube_ray_cast_1m.bin" = n then
+    "in cube"
+  else if "_data/onsphere_ray_cast_1m.bin" = n then
+    "on sphere"
+  else if "_data/xyzrgb_manuscript_ray_cast_dataset.bin" = n then
+    "xyz-rgb manuscript" 
+  else if "_data/turbine_ray_cast_dataset.bin" = n then
+    "turbine"
 
   else if "_data/array_point2d_in_square_medium.bin" = n then
     "in square"
