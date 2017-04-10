@@ -110,6 +110,10 @@ hwloc_topology_t    topology;
 #if defined(PLOGGING) || defined(THREADS_CREATED)
     printf("number of created threads: %d\n", pasl::pctl::granularity::threads_created());
 #endif
+#if defined(PLOGGING) || defined(THREADS_CREATED)
+    printf("number of cstmt calls: %d\n", pasl::pctl::granularity::calls_created());
+#endif
+
 #if defined(USE_PASL_RUNTIME)
     STAT_IDLE(sum());
     STAT(dump(stdout));
