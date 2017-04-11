@@ -83,7 +83,7 @@ constexpr char samplesort_file[] = "samplesort";
 
 template<class E, class BinPred, class intT>
 void sample_sort (E* a, intT n, BinPred compare) {
-  par::cstmt<samplesort_file, E, BinPred, intT>([&] { return (50 * n * log(n) + 1); }, [&] { return (n * log(n) + 1); }, [&] {
+  par::cstmt<samplesort_file, E, BinPred, intT>([&] { return (90 * n * log(n) + 1); }, [&] { return (n * log(n) + 1); }, [&] {
 #ifdef MANUAL_CONTROL
     if (n <= SSORT_THR) {
 //      comparison_sort(a, n, compare);
