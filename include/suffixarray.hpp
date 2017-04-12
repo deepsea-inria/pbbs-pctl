@@ -29,7 +29,6 @@
 
 #include <iostream>
 #include "blockradixsort.hpp"
-#include "psort.hpp"
 #include "utils.hpp"
 #include "rangemin.hpp"
 #ifdef TIME_MEASURE
