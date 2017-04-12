@@ -237,7 +237,10 @@ void integer_sort(E *a, intT* bucket_offsets, intT n, intT max_value, bool botto
     pmem::fill(bucket_offsets, bucket_offsets + max_value, n);
 //    { parallel_for(intT(0), m, [&] (intT i) { bucket_offsets[i] = n; }); }
     {
-      parallel_for(intT(0), n - 1, [&] (intT i) {
+      auto comp = [&] (intT lo, intT hi) {
+	return (hi - lo) * sizeof(E);
+      };
+      range::parallel_for(intT(0), n - 1, comp, [&] (intT i) {
         intT v = f(a[i]);
         intT vn = f(a[i + 1]);
         if (v != vn) {
@@ -304,9 +307,24 @@ static void integer_sort(std::pair<uintT, T>* a, intT n) {
     return std::max(a, b);
   }, [&] (std::pair<uintT, T>& x) { return x.first; });
 #else
+  auto combine = [&] (uintT a, uintT b) {
+    return std::max(a, b);
+  };
+  auto lift_comp_rng = [&] (std::pair<uintT, T>*  lo, std::pair<uintT, T>*  hi) {
+    return hi - lo;
+  };
+  auto lift_idx = [&] (long, std::pair<uintT, T>& x) { return x.first; };
+  auto lo = a; auto hi = a + n;
+  auto seq_reduce_rng = [&] (std::pair<uintT, T>*  _lo, std::pair<uintT, T>*  _hi) {
+    pasl::pctl::level1::seq_reduce_rng_spec<std::pair<uintT, T>* , value_type_of<std::pair<uintT, T>* >> f;
+    return f.f(_lo - lo, _lo, _hi, 0, combine, lift_idx);
+  };
+  int max_value = level2::reduce(a, a + n, 0, combine, lift_comp_rng, lift_idx, seq_reduce_rng);
+  /*
   intT max_value = pasl::pctl::level1::reduce(a, a + n, 0, [&] (uintT a, uintT b) {
     return std::max(a, b);
   }, [&] (std::pair<uintT, T>& x) { return 1; }, [&] (std::pair<uintT, T>& x) { return x.first; });
+  */
 #endif
   intsort::integer_sort(a, (intT*) nullptr, n, max_value + 1, [&] (std::pair<uintT, T> x) { return x.first; });
 }
