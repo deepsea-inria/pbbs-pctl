@@ -1190,7 +1190,7 @@ let eval_relative_stddev baseline_prog = fun env all_results results ->
       X (mk_infiles graphfiles);
       Input results_filename;
       Output "plots_bfs.pdf";
-      Y_label "Percent relative to authors orig. PBBS BFS";
+      Y_label "Percent difference relative to authors orig. PBBS BFS";
       Y (eval_relative baseline_prog);
       Y_whiskers (eval_relative_stddev baseline_prog);
                     ]))
@@ -1309,7 +1309,7 @@ let plot() =
       X mk_sizes;
       Input file_results;
       Output file_plots;
-      Y_label "% relative to algorithm with cilk_for";
+      Y_label "Percent difference relative to algorithm with cilk_for";
       Y eval_relative;
       Y_whiskers eval_relative_stddev;
   ]))
