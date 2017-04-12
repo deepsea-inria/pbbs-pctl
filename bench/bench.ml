@@ -1013,14 +1013,14 @@ let pbaseline_prog = "pbfs_bench.manc"
     let manual = 
       [
         "twitter", 1;
-        "usa", 1;
+        (*        "usa", 1;*)
       ]
     in
     let other =
       [
-        "wikipedia-20070206"; "rgg"; "delaunay"; "europe"; "livejournal";
+        "wikipedia-20070206"; "rgg"; (*"delaunay";*) "europe"; "livejournal";
         "tree_2_512_1024_large"; "random_arity_100_large"; "rmat27_large"; "phased_mix_10_large";
-        "phased_low_50_large"; "cube_large";  "phased_524288_single_large"; "grid_sq_large";
+        "phased_low_50_large"; "cube_large";  "phased_524288_single_large"; (*"grid_sq_large"; *)
         "paths_100_phases_1_large"; "unbalanced_tree_trunk_first_large"; "rmat24_large";
       ]
     in
@@ -1128,7 +1128,7 @@ let run() =
 		 ("graph_name", Format_custom pretty_graph_name);
 		 ("prog", Format_custom (fun n -> 
                                          if n = baseline_prog then
-                                           "PBBS (Seq. neighbor list)"
+                                           "PBBS (Seq. neighbor list; authors orig.)"
                                          else if n = pbaseline_prog then
                                            "PBBS (Par. neighbor list)"
                                          else
@@ -1190,7 +1190,7 @@ let eval_relative_stddev baseline_prog = fun env all_results results ->
       X (mk_infiles graphfiles);
       Input results_filename;
       Output "plots_bfs.pdf";
-      Y_label "% relative to original PBBS BFS";
+      Y_label "Percent relative to authors orig. PBBS BFS";
       Y (eval_relative baseline_prog);
       Y_whiskers (eval_relative_stddev baseline_prog);
                     ]))
