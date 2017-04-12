@@ -29,6 +29,7 @@
 
 #include <iostream>
 #include "blockradixsort.hpp"
+#include "psort.hpp"
 #include "utils.hpp"
 #include "rangemin.hpp"
 #ifdef TIME_MEASURE
@@ -120,38 +121,43 @@ void suffix_array_rec(intT* s, intT n, intT K, bool find_LCP,
   intT n1 = (n + 1) / 3; //suffixes with mod 3 = 1 start position
   intT n12 = n - n0; //suffixes with mod 3 = 1,2 start positions
   intT bits = utils::logUp(K);
-  parray<pair<intT, intT>> compressed;
+  //  parray<pair<intT, intT>> compressed;
+  pair<intT,intT> *compressed = (pair<intT,intT> *) malloc(n12*sizeof(pair<intT,intT>));
   
   // if 3 chars fit into an int then just do one radix sort
   if (bits < 11) {
-    compressed.tabulate(n12, [&] (intT i) {
+    parallel_for(0, n12, [&] (intT i) {
       intT j = 1 + (i + i + i) / 2; // only mod 3 = 1, 2
-      return make_pair((s[j] << 2 * bits) + (s[j + 1] << bits) + s[j + 2], j);
+      compressed[i].first = (s[j] << 2*bits) + (s[j+1] << bits) + s[j+2];
+      compressed[i].second = j;
     });
-    radix_sort_pair(compressed.begin(), n12, (intT) 1 << 3 * bits);
+    radix_sort_pair(compressed, n12, (intT) 1 << 3 * bits);
     
     // otherwise do 3 radix sorts, one per char
   } else {
-    compressed.tabulate(n12, [&] (intT i) {
+    parallel_for(0, n12, [&] (intT i) {
       intT j = 1 + (i + i + i) / 2;
-      return make_pair(s[j + 2], j);
+      compressed[i].first = s[j+2]; 
+      compressed[i].second = j;
     });
     // radix sort based on 3 chars
-    radix_sort_pair(compressed.begin(), n12, K);
+    radix_sort_pair(compressed, n12, K);
     parallel_for((intT)0, n12, [&] (intT i) {
       compressed[i].first = s[compressed[i].second + 1];
     });
-    radix_sort_pair(compressed.begin(), n12, K);
+    radix_sort_pair(compressed, n12, K);
     parallel_for((intT)0, n12, [&] (intT i) {
       compressed[i].first = s[compressed[i].second];
     });
-    radix_sort_pair(compressed.begin(), n12, K);
+    radix_sort_pair(compressed, n12, K);
   }
   
   // copy sorted results into sorted12
   parray<intT> sorted_triples(n12, [&] (intT i) {
     return compressed[i].second;
   });
+
+  free(compressed);
   
   // generate names based on 3 chars
   parray<intT> name_triples(n12, [&] (intT i) {
@@ -189,8 +195,10 @@ void suffix_array_rec(intT* s, intT n, intT K, bool find_LCP,
         s12[sorted_triples[i] / 3 + n1] = name_triples[i];
       }
     });
+    name_triples.clear(); sorted_triples.clear();
     
     suffix_array_rec(s12.begin(), n12, names + 1, find_LCP, suffixes12, LCP12);
+    s12.clear();
     // restore proper indices into original array
     parallel_for((intT)0, n12, [&] (intT i) {
       intT l = suffixes12[i];
