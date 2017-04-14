@@ -970,19 +970,21 @@ let name = "bfs"
   let graphfiles' =
     let manual = 
       [
+        "livejournal", 0;
         "twitter", 1;
         (*        "usa", 1;*)
       ]
     in
     let other =
       [
-        "wikipedia-20070206"; "rgg"; (*"delaunay";*) "europe"; "livejournal";
-        "tree_2_512_1024_large"; "random_arity_100_large"; "rmat27_large"; "phased_mix_10_large";
-        "phased_low_50_large"; "cube_large";  "phased_524288_single_large"; (*"grid_sq_large"; *)
-        "paths_100_phases_1_large"; "unbalanced_tree_trunk_first_large"; "rmat24_large";
+        
+        "wikipedia-20070206"; "rgg"; (*"delaunay";*) "europe"; 
+        "random_arity_100_large"; "rmat27_large"; "phased_mix_10_large";
+        "phased_low_50_large"; "rmat24_large";  "tree_2_512_1024_large";"cube_large";  "phased_524288_single_large"; (*"grid_sq_large"; *)
+        "paths_100_phases_1_large"; "unbalanced_tree_trunk_first_large"; 
       ]
     in
-    List.concat [manual; List.map (fun n -> (n, 0)) [] (*other*)]
+    List.concat [manual; List.map (fun n -> (n, 0)) other]
 
   let graphfiles = List.map (fun (n, _) -> n) graphfiles'
 
@@ -991,7 +993,7 @@ let name = "bfs"
      "grid_sq_large", "square-grid";
      "wikipedia-20070206", "wikipedia";
      "paths_100_phases_1_large", "par-chains-100";
-     "phased_524288_single_large", "trees_524k";
+     "phased_524288_single_large", "trees-524k";
      "phased_low_50_large", "phases-50-d-5";
      "phased_mix_10_large", "phases-10-d-2";
      "random_arity_100_large", "random-arity-100";
@@ -1129,7 +1131,7 @@ let plot() =
     else
       let p = String.sub ext 0 plen in
       let mu = int_of_string (String.sub ext plen (l - plen)) in
-      sprintf "Ours (%d %s)" mu "$\\mu$"
+      sprintf "{\\begin{tabular}[x]{@{}c@{}}Ours\\\\($\kappa$ := %d%ssec.)\\end{tabular}}" mu "$\\mu$"
   in
 
   let experiment_name = "bfs" in
@@ -1137,21 +1139,23 @@ let plot() =
   let nb_inner_loop = List.length arg_inner_loop in
   let tex_file = file_tables_src experiment_name in
   let pdf_file = file_tables experiment_name in
-    Mk_table.build_table tex_file pdf_file (fun add ->
+  Mk_table.build_table tex_file pdf_file (fun add ->
+                                          let l = "S[table-format=2.2]" in
       let ls = String.concat "|" (XList.init ((nb_extensions+1) * nb_inner_loop) (fun _ -> "l")) in
       let hdr = Printf.sprintf "l|%s" ls in
       add (Latex.tabular_begin hdr);                                    
       let _ = Mk_table.cell ~escape:false ~last:false add "" in
       ~~ List.iteri arg_inner_loop (fun i inner_loop ->
             let last = i + 1 = nb_inner_loop in
-            let n = if inner_loop = "bfs" then "Flat" else "Nested" in
+            let n = "{" ^ (if inner_loop = "bfs" then "Flat" else "Nested") ^ "}" in
             let l = if last then "l" else "l|" in
             let label = Latex.tabular_multicol (nb_extensions+1) l n in
             Mk_table.cell ~escape:false ~last:last add label);
       add Latex.tabular_newline;
       let _ = Mk_table.cell ~escape:false ~last:false add "Graph" in
       for i=1 to nb_inner_loop do (
-        Mk_table.cell ~escape:false ~last:false add "PBBS orig.";
+        let l = "{\\begin{tabular}[x]{@{}c@{}}PBBS orig.\\\\(sec.)\\end{tabular}}" in
+        Mk_table.cell ~escape:false ~last:false add l;
         ~~ List.iteri extensions (fun ext_i ext ->
               let last = i + ext_i + 1 = nb_extensions + nb_inner_loop in
               let label = pretty_extension ext in
@@ -1177,7 +1181,7 @@ let plot() =
                 let v = eval_exectime env all_results results in
                 let e = eval_exectime_stddev env all_results results in
                 let err = if arg_print_err then Printf.sprintf "(%.2f%s)" e "$\\sigma$" else "" in
-                Printf.sprintf "%.2fsec %s" v err
+                Printf.sprintf "%.2f %s" v err
               in
               let _ = Mk_table.cell ~escape:false ~last:false add pbbs_str in
               ~~ List.iteri extensions (fun i ext ->
@@ -1190,8 +1194,7 @@ let plot() =
                   let s = if v < 0.0 then "" else "+" in
                   let e = eval_exectime_stddev env all_results results in
                   let err = if arg_print_err then Printf.sprintf "(%.2f%s)" e "$\\sigma$" else "" in
-                  let pos = if v >= 0.0 then "+" else "" in
-                  Printf.sprintf "%s%s%.1f%s %s" pos s v "\\%" err
+                  Printf.sprintf "%s%.1f%s %s" s v "\\%" err
                 in
                 Mk_table.cell ~escape:false ~last:last add pctl_str);
               ());
