@@ -62,6 +62,7 @@ let system = XSys.command_must_succeed_or_virtual
 
 let arg_virtual_run = XCmd.mem_flag "virtual_run"
 let arg_virtual_build = XCmd.mem_flag "virtual_build"
+let arg_print_err = XCmd.parse_or_default_bool "print_error" false
 let arg_nb_runs = XCmd.parse_or_default_int "runs" 1
 let arg_mode = Mk_runs.mode_from_command_line "mode"
 let arg_skips = XCmd.parse_or_default_list_string "skip" []
@@ -981,7 +982,7 @@ let name = "bfs"
         "paths_100_phases_1_large"; "unbalanced_tree_trunk_first_large"; "rmat24_large";
       ]
     in
-    List.concat [manual; List.map (fun n -> (n, 0)) other]
+    List.concat [manual; List.map (fun n -> (n, 0)) [] (*other*)]
 
   let graphfiles = List.map (fun (n, _) -> n) graphfiles'
 
@@ -1091,7 +1092,7 @@ let name = "bfs"
                                              let nghl = if p = "bfs" then "Seq. ngh. list" else "Par. ngh. list" in
                                              sprintf "Oracle guided, kappa := %sus (%s)" kappa nghl
                                            else "<bogus>" *)
-                 ));    
+                                        ));    
 		 ("type", Format_custom (fun n -> ""));
 		 ("source", Format_custom (fun n -> ""));
 	       ]
@@ -1133,56 +1134,67 @@ let plot() =
 
   let experiment_name = "bfs" in
   let nb_extensions = List.length extensions in
+  let nb_inner_loop = List.length arg_inner_loop in
   let tex_file = file_tables_src experiment_name in
   let pdf_file = file_tables experiment_name in
     Mk_table.build_table tex_file pdf_file (fun add ->
-      let ls = String.concat "|" (XList.init nb_extensions (fun _ -> "l")) in
-      let hdr = Printf.sprintf "p{1cm}l|l|%s" ls in
+      let ls = String.concat "|" (XList.init ((nb_extensions+1) * nb_inner_loop) (fun _ -> "l")) in
+      let hdr = Printf.sprintf "l|%s" ls in
       add (Latex.tabular_begin hdr);                                    
-      Mk_table.cell ~escape:true ~last:false add (Latex.tabular_multicol 2 "l|" "Application/input");
-      Mk_table.cell ~escape:true ~last:false add "\\begin{tabular}[x]{@{}c@{}}Time (s)\\\\original\\end{tabular}";
-      ~~ List.iteri arg_inner_loop (fun inner_loop_i inner_loop ->
-        Mk_table.cell add (Latex.tabular_multicol 2 "l|" (sprintf "\\textbf{%s}" (Latex.escape inner_loop)));
-        add Latex.tabular_newline;
+      let _ = Mk_table.cell ~escape:false ~last:false add "" in
+      ~~ List.iteri arg_inner_loop (fun i inner_loop ->
+            let last = i + 1 = nb_inner_loop in
+            let n = if inner_loop = "bfs" then "Flat" else "Nested" in
+            let l = if last then "l" else "l|" in
+            let label = Latex.tabular_multicol (nb_extensions+1) l n in
+            Mk_table.cell ~escape:false ~last:last add label);
+      add Latex.tabular_newline;
+      let _ = Mk_table.cell ~escape:false ~last:false add "Graph" in
+      for i=1 to nb_inner_loop do (
+        Mk_table.cell ~escape:false ~last:false add "Baseline";
+        ~~ List.iteri extensions (fun ext_i ext ->
+              let last = i + ext_i + 1 = nb_extensions + nb_inner_loop in
+              let label = pretty_extension ext in
+              Mk_table.cell ~escape:false ~last:last add label))
+      done;
+      add Latex.tabular_newline;
         ~~ List.iteri extensions (fun i ext ->
-            let last = i + 1 = nb_extensions in
-            let label = pretty_extension ext in
-            Mk_table.cell ~escape:true ~last:last add label);
-            add Latex.tabular_newline;
-            let results_file = "_results/results_bfs.txt" in
-            let all_results = Results.from_file results_file in
-            let results = all_results in
-            let env = Env.empty in
-            let env_rows = mk_infiles graphfiles env in
-            ~~ List.iter env_rows (fun env_rows ->  (* loop over each input for current benchmark *)
-              let results = Results.filter env_rows results in
-              let env = Env.append env env_rows in
-              let row_title = main_formatter env_rows in
-              let _ = Mk_table.cell ~escape:true ~last:false add "" in
-              let _ = Mk_table.cell ~escape:true ~last:false add row_title in
+          let results_file = "_results/results_bfs.txt" in
+          let all_results = Results.from_file results_file in
+          let results = all_results in
+          let env = Env.empty in
+          let env_rows = mk_infiles graphfiles env in
+          ~~ List.iter env_rows (fun env_rows ->  (* loop over each input for current benchmark *)
+            let results = Results.filter env_rows results in
+            let env = Env.append env env_rows in
+            let row_title = main_formatter env_rows in
+            let _ = Mk_table.cell ~escape:false ~last:false add row_title in
+            ~~ List.iteri arg_inner_loop (fun inner_loop_i inner_loop ->
               let pbbs_str =
                 let [col] = (mk_bfs_prog inner_loop "manc" "pbbs") env in
                 let env = Env.append env col in
                 let results = Results.filter col results in
                 let v = eval_exectime env all_results results in
-                let e = eval_exectime_stddev env all_results results in 
-                Printf.sprintf "%.3f (%.2f%s) " v e "$\\sigma$"
+                let e = eval_exectime_stddev env all_results results in
+                let err = if arg_print_err then Printf.sprintf "(%.2f%s)" e "$\\sigma$" else "" in
+                Printf.sprintf "%.2fsec %s" v err
               in
               let _ = Mk_table.cell ~escape:false ~last:false add pbbs_str in
               ~~ List.iteri extensions (fun i ext ->
-                let last = i + 1 = nb_extensions in
+                let last = i + inner_loop_i + 2 = nb_extensions + nb_inner_loop in
                 let pctl_str = 
                   let [col] = (mk_bfs_prog inner_loop ext "pctl") env in
                   let env = Env.append env col in
                   let results = Results.filter col results in
                   let v = eval_relative_main env all_results results in
                   let s = if v < 0.0 then "" else "+" in
-                  let e = eval_exectime_stddev env all_results results in 
-                  Printf.sprintf "%s%.2f%s (%.2f%s)" s v "\\%" e "$\\sigma$"
+                  let e = eval_exectime_stddev env all_results results in
+                  let err = if arg_print_err then Printf.sprintf "(%.2f%s)" e "$\\sigma$" else "" in
+                  Printf.sprintf "%s%.1f%s %s" s v "\\%" err
                 in
                 Mk_table.cell ~escape:false ~last:last add pctl_str);
-              add Latex.tabular_newline);
-            ());
+              ());
+            add Latex.tabular_newline));
           add Latex.tabular_end;
           add Latex.new_page;
           ());
