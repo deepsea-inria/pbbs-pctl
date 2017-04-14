@@ -1125,11 +1125,11 @@ let plot() =
     if l < plen then
       "<unknown extension>"
     else if l = plen then
-      sprintf "Oracle guided (%d %s)" 300 "$\\mu$"
+      sprintf "Ours (%d %s)" 300 "$\\mu$"
     else
       let p = String.sub ext 0 plen in
       let mu = int_of_string (String.sub ext plen (l - plen)) in
-      sprintf "Oracle guided (%d %s)" mu "$\\mu$"
+      sprintf "Ours (%d %s)" mu "$\\mu$"
   in
 
   let experiment_name = "bfs" in
@@ -1151,7 +1151,7 @@ let plot() =
       add Latex.tabular_newline;
       let _ = Mk_table.cell ~escape:false ~last:false add "Graph" in
       for i=1 to nb_inner_loop do (
-        Mk_table.cell ~escape:false ~last:false add "Baseline";
+        Mk_table.cell ~escape:false ~last:false add "PBBS orig.";
         ~~ List.iteri extensions (fun ext_i ext ->
               let last = i + ext_i + 1 = nb_extensions + nb_inner_loop in
               let label = pretty_extension ext in
@@ -1190,7 +1190,8 @@ let plot() =
                   let s = if v < 0.0 then "" else "+" in
                   let e = eval_exectime_stddev env all_results results in
                   let err = if arg_print_err then Printf.sprintf "(%.2f%s)" e "$\\sigma$" else "" in
-                  Printf.sprintf "%s%.1f%s %s" s v "\\%" err
+                  let pos = if v >= 0.0 then "+" else "" in
+                  Printf.sprintf "%s%s%.1f%s %s" pos s v "\\%" err
                 in
                 Mk_table.cell ~escape:false ~last:last add pctl_str);
               ());
