@@ -963,9 +963,6 @@ end
 module ExpBFS = struct
 
 let name = "bfs"
-
-let baseline_prog = "bfs_bench.manc"
-let pbaseline_prog = "pbfs_bench.manc"
                    
   let graphfile_of n = "_data/" ^ n ^ ".bin"
 					
@@ -1014,23 +1011,24 @@ let pbaseline_prog = "pbfs_bench.manc"
 
   let extensions = XCmd.parse_or_default_list_string "exts" [ "unks100"; ]
 
+  let arg_inner_loop = XCmd.parse_or_default_list_string "inner_loop" ["bfs";"pbfs"]
+
   let prog benchmark extension =
     sprintf "%s_bench.%s" benchmark extension
 
+  let baseline_progs = List.map (fun inner_loop -> prog inner_loop "manc") arg_inner_loop
+
+  let oracle_progs = List.flatten 
+    (List.map (fun extension -> List.map (fun inner_loop -> prog inner_loop extension) arg_inner_loop) extensions)
+
+  let all_progs = List.append baseline_progs oracle_progs                       
+
   let make() =
-    List.iter (fun extension ->
-      build "." [prog "bfs" extension; prog "pbfs" extension;] arg_virtual_build
-    ) ("manc" :: extensions)
+    build "." all_progs arg_virtual_build
 
   let mk_lib_type t =
     mk string "lib_type" t
 
-  let mk_baseline_prog =
-    (mk_prog baseline_prog) & (mk_lib_type "pbbs")
-
-  let mk_pbaseline_prog =
-    (mk_prog pbaseline_prog) & (mk_lib_type "pbbs")
-                                
   let mk_infile n =
     mk string "infile" n
 
@@ -1053,29 +1051,26 @@ let pbaseline_prog = "pbfs_bench.manc"
     | n :: ns ->
 	mk_input n ++ mk_infiles ns
 
-  let results_filename = "_results/results_bfs.txt"
+  let results_filename = sprintf "_results/results_bfs.txt" 
 
-  let mk_pctl_bfs_prog prog =
-    (mk_prog prog) & (mk_lib_type "pctl")
-
-  let prog_descrs = List.flatten
-    (List.map (fun (p:string) -> (List.map (fun (e:string) -> (p, e)) extensions)) ["bfs"; "pbfs";])
+  let prog_assoc = List.flatten (List.map (fun (p:string) -> 
+                                 List.map (fun (e:string) -> (p, e)) extensions) arg_inner_loop)
 
   let prog_of (p, e) = sprintf "%s_bench.%s" p e
 
-  let pctl_progs = List.map prog_of prog_descrs
+  let mk_bfs_prog inner_loop extension lib_type =
+    (mk string "prog" (prog inner_loop extension)) & (mk_lib_type lib_type)
 
   let mk_progs =
-    ((mk_list string "prog" pctl_progs)  & (mk_lib_type "pctl")) ++
-      mk_baseline_prog ++ mk_pbaseline_prog
+    ((mk_list string "prog" oracle_progs)  & (mk_lib_type "pctl")) ++
+      ((mk_list string "prog" baseline_progs)  & (mk_lib_type "pbbs"))
                                  
-let run() =
-  Mk_runs.(call (run_modes @ [
-    Output results_filename;
-    Timeout 400;
-    Args (mk_progs & (mk string "type" "graph") & (mk_infiles graphfiles) & mk_proc)
-          
-  ]))
+  let run() =
+    Mk_runs.(call (run_modes @ [
+                      Output results_filename;
+                      Timeout 400;
+                      Args (mk_progs & (mk string "type" "graph") & (mk_infiles graphfiles) & mk_proc);                           
+                    ]))
 
   let check = nothing  (* do something here *)
 
@@ -1086,52 +1081,21 @@ let run() =
 		 ("lib_type", Format_custom (fun n -> ""));
 		 ("infile", Format_custom (fun n -> ""));
 		 ("graph_name", Format_custom pretty_graph_name);
-		 ("prog", Format_custom (fun n -> 
-                                         if n = baseline_prog then
-                                           "PBBS (Seq. neighbor list; authors orig.)"
-                                         else if n = pbaseline_prog then
-                                           "PBBS (Par. neighbor list)"
-                                         else
-                                           let ps = List.map2 (fun x y -> (x, y)) (List.map prog_of prog_descrs) prog_descrs in
+		 ("prog", Format_custom (fun n ->  ""
+(*                                           let ps = List.map2 (fun x y -> (x, y)) oracle_progs prog_assoc in
                                            if List.mem_assoc n ps then
                                              let (p, e) = List.assoc n ps in
                                              let commonext = "unks" in
                                              let extlength = String.length commonext in
-                                             let kappa = String.sub e (extlength ) (String.length e - extlength) in
+                                             let kappa = String.sub e extlength (String.length e - extlength) in
                                              let nghl = if p = "bfs" then "Seq. ngh. list" else "Par. ngh. list" in
                                              sprintf "Oracle guided, kappa := %sus (%s)" kappa nghl
-                                           else "<bogus>"
+                                           else "<bogus>" *)
                  ));    
 		 ("type", Format_custom (fun n -> ""));
 		 ("source", Format_custom (fun n -> ""));
 	       ]
 	         ))
-               
-let eval_relative baseline_prog = fun env all_results results ->
-  (*  let _ = Printf.printf "p=%s\n" (Env.get_as_string env "prog") in*)
-  let pbbs_results = ~~ Results.filter_by_params all_results (
-                          from_env (Env.add (
-                                        Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))
-                                            "prog" (Env.Vstring baseline_prog))
-                        ) in
-  if pbbs_results = [] then Pbench.error ("no results for pbbs library");
-  let v = Results.get_mean_of "exectime" results in
-  let b = Results.get_mean_of "exectime" pbbs_results in
-  100.0 *. (v /. b -. 1.0)
-
-let eval_relative_stddev baseline_prog = fun env all_results results ->
-  let pbbs_results = ~~ Results.filter_by_params all_results (
-                          from_env (Env.add (
-                                        Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))
-                                            "prog" (Env.Vstring baseline_prog))
-                        ) in
-  if pbbs_results = [] then Pbench.error ("no results for pbbs library");
-  try 
-  let b = Results.get_mean_of "exectime" pbbs_results in
-  let times = Results.get Env.as_float "exectime" results in
-  let rels = List.map (fun v -> 100.0 *. (v /. b -. 1.0)) times in
-  XFloat.list_stddev rels
-  with Results.Missing_key _ -> nan
 
 let eval_relative_main = fun env all_results results ->
   let pbbs_results = ~~ Results.filter_by_params all_results (
@@ -1154,10 +1118,6 @@ let eval_relative_stddev_main = fun env all_results results ->
   with Results.Missing_key _ -> nan
                                   
 let plot() =
-    let mk_pctl_prog benchmark extension lib_type = 
-    (mk string "prog" (prog benchmark extension)) & (mk string "lib_type" lib_type)
-  in
-
   let pretty_extension ext =
     let l = String.length ext in
     let plen = 4 in
@@ -1181,74 +1141,54 @@ let plot() =
       add (Latex.tabular_begin hdr);                                    
       Mk_table.cell ~escape:true ~last:false add (Latex.tabular_multicol 2 "l|" "Application/input");
       Mk_table.cell ~escape:true ~last:false add "\\begin{tabular}[x]{@{}c@{}}Time (s)\\\\original\\end{tabular}";
-      ~~ List.iteri extensions (fun i ext ->
-        let last = i + 1 = nb_extensions in
-        let label = pretty_extension ext in
-        Mk_table.cell ~escape:true ~last:last add label);
-      add Latex.tabular_newline;
-        Mk_table.cell add (Latex.tabular_multicol 2 "l|" (sprintf "\\textbf{%s}" (Latex.escape "bfs")));
+      ~~ List.iteri arg_inner_loop (fun inner_loop_i inner_loop ->
+        Mk_table.cell add (Latex.tabular_multicol 2 "l|" (sprintf "\\textbf{%s}" (Latex.escape inner_loop)));
         add Latex.tabular_newline;
-        let results_file = Printf.sprintf "_results/results_%s.txt" "bfs" in
-        let all_results = Results.from_file results_file in
-        let results = all_results in
-        let env = Env.empty in
-        let mk_rows = mk_infiles graphfiles in
-        let env_rows = mk_rows env in
-        ~~ List.iter env_rows (fun env_rows ->  (* loop over each input for current benchmark *)
-        let results = Results.filter env_rows results in
-        let env = Env.append env env_rows in
-        let row_title = main_formatter env_rows in
-        let _ = Mk_table.cell ~escape:true ~last:false add "" in
-        let _ = Mk_table.cell ~escape:true ~last:false add row_title in
-        let pbbs_str =
-          let [col] = (mk_pctl_prog "bfs" "manc" "pbbs") env in
-          let env = Env.append env col in
-          let results = Results.filter col results in
-          let v = eval_exectime env all_results results in
-          let e = eval_exectime_stddev env all_results results in 
-          Printf.sprintf "%.3f (%.2f%s) " v e "$\\sigma$"
-        in
-        let _ = Mk_table.cell ~escape:false ~last:false add pbbs_str in
         ~~ List.iteri extensions (fun i ext ->
-          let last = i + 1 = nb_extensions in
-          let pctl_str = 
-            let [col] = (mk_pctl_prog "bfs" ext "pctl") env in
-            let env = Env.append env col in
-            let results = Results.filter col results in
-            let v = eval_relative_main env all_results results in
-            let s = if v < 0.0 then "" else "+" in
-            let e = eval_exectime_stddev env all_results results in 
-            Printf.sprintf "%s%.2f%s (%.2f%s)" s v "\\%" e "$\\sigma$"
-          in
-          Mk_table.cell ~escape:false ~last:last add pctl_str);
-        add Latex.tabular_newline);
-      ();
-      add Latex.tabular_end;
-      add Latex.new_page;
-      ());
+            let last = i + 1 = nb_extensions in
+            let label = pretty_extension ext in
+            Mk_table.cell ~escape:true ~last:last add label);
+            add Latex.tabular_newline;
+            let results_file = "_results/results_bfs.txt" in
+            let all_results = Results.from_file results_file in
+            let results = all_results in
+            let env = Env.empty in
+            let env_rows = mk_infiles graphfiles env in
+            ~~ List.iter env_rows (fun env_rows ->  (* loop over each input for current benchmark *)
+              let results = Results.filter env_rows results in
+              let env = Env.append env env_rows in
+              let row_title = main_formatter env_rows in
+              let _ = Mk_table.cell ~escape:true ~last:false add "" in
+              let _ = Mk_table.cell ~escape:true ~last:false add row_title in
+              let pbbs_str =
+                let [col] = (mk_bfs_prog inner_loop "manc" "pbbs") env in
+                let env = Env.append env col in
+                let results = Results.filter col results in
+                let v = eval_exectime env all_results results in
+                let e = eval_exectime_stddev env all_results results in 
+                Printf.sprintf "%.3f (%.2f%s) " v e "$\\sigma$"
+              in
+              let _ = Mk_table.cell ~escape:false ~last:false add pbbs_str in
+              ~~ List.iteri extensions (fun i ext ->
+                let last = i + 1 = nb_extensions in
+                let pctl_str = 
+                  let [col] = (mk_bfs_prog inner_loop ext "pctl") env in
+                  let env = Env.append env col in
+                  let results = Results.filter col results in
+                  let v = eval_relative_main env all_results results in
+                  let s = if v < 0.0 then "" else "+" in
+                  let e = eval_exectime_stddev env all_results results in 
+                  Printf.sprintf "%s%.2f%s (%.2f%s)" s v "\\%" e "$\\sigma$"
+                in
+                Mk_table.cell ~escape:false ~last:last add pctl_str);
+              add Latex.tabular_newline);
+            ());
+          add Latex.tabular_end;
+          add Latex.new_page;
+          ());
 
     ()
 
-      (* BFS plotting *) 
-(*    Mk_bar_plot.(call ([
-         Chart_opt Chart.([
-            Legend_opt Legend.([
-               Legend_pos Bottom_left
-               ])]);
-      Bar_plot_opt Bar_plot.([
-                              Chart_opt Chart.([Dimensions (13.,8.) ]);
-         X_titles_dir Vertical;
-         Y_axis [Axis.Lower (Some (-250.0)); Axis.Upper (Some (250.0))] ]);
-      Formatter main_formatter;
-      Charts mk_proc;
-      Series mk_progs;
-      X (mk_infiles graphfiles);
-      Input results_filename;
-      Output "plots_bfs.pdf";
-      Y_label "Percent difference relative to authors orig. PBBS BFS";
-      Y (eval_relative baseline_prog);
-      Y_whiskers (eval_relative_stddev baseline_prog);
-                    ])) *)
 
 let all () = select make run check plot
 
