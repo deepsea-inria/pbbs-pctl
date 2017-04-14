@@ -858,46 +858,6 @@ let main_formatter =
 
 
 let plot() = (
-  (* BFS plotting *) (*
-  let baseline_bfs_prog = "bfs_bench.manc" in
-  Mk_bar_plot.(call ([
-                      Chart_opt Chart.([
-            Legend_opt Legend.([
-               Legend_pos Top_left
-               ])]);
-      Bar_plot_opt Bar_plot.([
-                              Chart_opt Chart.([Dimensions (13.,8.) ]);
-         X_titles_dir Vertical;
-         Y_axis [Axis.Lower (Some (-100.0)); Axis.Upper (Some (100.0))] ]);
-      Formatter bfs_formatter;
-      Charts mk_proc;
-      Series my_mk_progs;
-      X mk_graphs;
-      Input "_results/results_bfs_main.txt";
-      Output "plots_bfs.pdf";
-      Y_label "% relative to original PBBS BFS";
-      Y (eval_relative baseline_bfs_prog);
-      Y_whiskers (eval_relative_stddev baseline_bfs_prog);
-                    ])); *)
-  (************)
-  (* Main plot *)
-  (*
-  let mk_inputs = (mk_sequence_input_names "suffix_array")
-                  ++ (mk_sequence_input_names "blockradix_sort")
-  in
-  let mk_suffixarray =
-    ((mk string "lib_type" "pctl") & (mk string "prog" "suffixarray_bench.unke100"))
-    ++     ((mk string "lib_type" "pctl") & (mk string "prog" "blockradixsort_bench.unke100"))
-  in
-  let mk_progs = mk_suffixarray in *)
-
-  (* 
-     - manc : authors' manual control  
-     - norm<x> : without bootstrapping / kappa := x
-     - unke<x> : some mode that doesn't seem to be relevant anymore
-     - unkm<x> : oracle guided / kappa := x
-   *)
-
   let mk_pctl_prog benchmark extension lib_type = 
     (mk string "prog" (prog benchmark extension)) & (mk string "lib_type" lib_type)
   in
@@ -972,7 +932,7 @@ let plot() = (
       add Latex.tabular_end;
       add Latex.new_page;
       ());
-                         
+(*                         
   List.iter (fun benchmark -> 
     Mk_bar_plot.(call ([
              Chart_opt Chart.([
@@ -992,7 +952,7 @@ let plot() = (
         Y_label "% relative to original PBBS";
         Y eval_relative_main;
         Y_whiskers eval_relative_stddev_main;
-                      ])) ) arg_benchmarks;
+                      ])) ) arg_benchmarks; *)
  ()  
 )
 
@@ -1106,7 +1066,7 @@ let pbaseline_prog = "pbfs_bench.manc"
   let pctl_progs = List.map prog_of prog_descrs
 
   let mk_progs =
-    mk_list string "prog" pctl_progs ++
+    ((mk_list string "prog" pctl_progs)  & (mk_lib_type "pctl")) ++
       mk_baseline_prog ++ mk_pbaseline_prog
                                  
 let run() =
@@ -1172,10 +1132,105 @@ let eval_relative_stddev baseline_prog = fun env all_results results ->
   let rels = List.map (fun v -> 100.0 *. (v /. b -. 1.0)) times in
   XFloat.list_stddev rels
   with Results.Missing_key _ -> nan
-      
-  let plot() = 
-  (* BFS plotting *) 
-    Mk_bar_plot.(call ([
+
+let eval_relative_main = fun env all_results results ->
+  let pbbs_results = ~~ Results.filter_by_params all_results (
+                          from_env (Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))) in
+  if pbbs_results = [] then Pbench.error ("no results for pbbs library");
+  let v = Results.get_mean_of "exectime" results in
+  let b = Results.get_mean_of "exectime" pbbs_results in
+  100.0 *. (v /. b -. 1.0)
+
+let eval_relative_stddev_main = fun env all_results results ->
+  let pbbs_results = ~~ Results.filter_by_params all_results (
+                          from_env (Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))
+                        ) in
+  if pbbs_results = [] then Pbench.error ("no results for pbbs library");
+  try 
+  let b = Results.get_mean_of "exectime" pbbs_results in
+  let times = Results.get Env.as_float "exectime" results in
+  let rels = List.map (fun v -> 100.0 *. (v /. b -. 1.0)) times in
+  XFloat.list_stddev rels
+  with Results.Missing_key _ -> nan
+                                  
+let plot() =
+    let mk_pctl_prog benchmark extension lib_type = 
+    (mk string "prog" (prog benchmark extension)) & (mk string "lib_type" lib_type)
+  in
+
+  let pretty_extension ext =
+    let l = String.length ext in
+    let plen = 4 in
+    if l < plen then
+      "<unknown extension>"
+    else if l = plen then
+      sprintf "Oracle guided (%d %s)" 300 "$\\mu$"
+    else
+      let p = String.sub ext 0 plen in
+      let mu = int_of_string (String.sub ext plen (l - plen)) in
+      sprintf "Oracle guided (%d %s)" mu "$\\mu$"
+  in
+
+  let experiment_name = "bfs" in
+  let nb_extensions = List.length extensions in
+  let tex_file = file_tables_src experiment_name in
+  let pdf_file = file_tables experiment_name in
+    Mk_table.build_table tex_file pdf_file (fun add ->
+      let ls = String.concat "|" (XList.init nb_extensions (fun _ -> "l")) in
+      let hdr = Printf.sprintf "p{1cm}l|l|%s" ls in
+      add (Latex.tabular_begin hdr);                                    
+      Mk_table.cell ~escape:true ~last:false add (Latex.tabular_multicol 2 "l|" "Application/input");
+      Mk_table.cell ~escape:true ~last:false add "\\begin{tabular}[x]{@{}c@{}}Time (s)\\\\original\\end{tabular}";
+      ~~ List.iteri extensions (fun i ext ->
+        let last = i + 1 = nb_extensions in
+        let label = pretty_extension ext in
+        Mk_table.cell ~escape:true ~last:last add label);
+      add Latex.tabular_newline;
+        Mk_table.cell add (Latex.tabular_multicol 2 "l|" (sprintf "\\textbf{%s}" (Latex.escape "bfs")));
+        add Latex.tabular_newline;
+        let results_file = Printf.sprintf "_results/results_%s.txt" "bfs" in
+        let all_results = Results.from_file results_file in
+        let results = all_results in
+        let env = Env.empty in
+        let mk_rows = mk_infiles graphfiles in
+        let env_rows = mk_rows env in
+        ~~ List.iter env_rows (fun env_rows ->  (* loop over each input for current benchmark *)
+        let results = Results.filter env_rows results in
+        let env = Env.append env env_rows in
+        let row_title = main_formatter env_rows in
+        let _ = Mk_table.cell ~escape:true ~last:false add "" in
+        let _ = Mk_table.cell ~escape:true ~last:false add row_title in
+        let pbbs_str =
+          let [col] = (mk_pctl_prog "bfs" "manc" "pbbs") env in
+          let env = Env.append env col in
+          let results = Results.filter col results in
+          let v = eval_exectime env all_results results in
+          let e = eval_exectime_stddev env all_results results in 
+          Printf.sprintf "%.3f (%.2f%s) " v e "$\\sigma$"
+        in
+        let _ = Mk_table.cell ~escape:false ~last:false add pbbs_str in
+        ~~ List.iteri extensions (fun i ext ->
+          let last = i + 1 = nb_extensions in
+          let pctl_str = 
+            let [col] = (mk_pctl_prog "bfs" ext "pctl") env in
+            let env = Env.append env col in
+            let results = Results.filter col results in
+            let v = eval_relative_main env all_results results in
+            let s = if v < 0.0 then "" else "+" in
+            let e = eval_exectime_stddev env all_results results in 
+            Printf.sprintf "%s%.2f%s (%.2f%s)" s v "\\%" e "$\\sigma$"
+          in
+          Mk_table.cell ~escape:false ~last:last add pctl_str);
+        add Latex.tabular_newline);
+      ();
+      add Latex.tabular_end;
+      add Latex.new_page;
+      ());
+
+    ()
+
+      (* BFS plotting *) 
+(*    Mk_bar_plot.(call ([
          Chart_opt Chart.([
             Legend_opt Legend.([
                Legend_pos Bottom_left
@@ -1193,7 +1248,7 @@ let eval_relative_stddev baseline_prog = fun env all_results results ->
       Y_label "Percent difference relative to authors orig. PBBS BFS";
       Y (eval_relative baseline_prog);
       Y_whiskers (eval_relative_stddev baseline_prog);
-                    ]))
+                    ])) *)
 
 let all () = select make run check plot
 
