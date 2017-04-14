@@ -308,7 +308,7 @@ public:
   intT get(intT i) { return (i*k)%n; }
 };
 
-triangles<point2d> delaunay(parray<point2d> p) {
+triangles<point2d> delaunay(parray<point2d>& p) {
   intT boundary_size = 10;
   int n = p.size();
   
@@ -343,7 +343,7 @@ triangles<point2d> delaunay(parray<point2d> p) {
   
   // main loop to add all points
   incrementally_add_points(v.begin(), n, v0);
-  
+  v.clear();
   if (CHECK) checkDelaunay1(triangles.begin(), num_triangles, boundary_size);
   
   triangle* rt = newA(triangle, num_triangles);
@@ -362,7 +362,7 @@ triangles<point2d> delaunay(parray<point2d> p) {
     vertex** vtx = triangles[i].vtx;
     rt[i] = triangle(m[vtx[0]->id], m[vtx[1]->id], m[vtx[2]->id]);
   });
-
+  m.clear();
   point2d* rp = newA(point2d, num_vertices);
   parallel_for((intT)0, n, [&] (intT i) {
     rp[i] = p[i];
