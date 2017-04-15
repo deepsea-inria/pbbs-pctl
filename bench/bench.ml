@@ -126,6 +126,23 @@ let default_formatter =
   Env.format (Env.(format_values  [ "size"; ]))
 
 let mk_proc = mk_list int "proc" arg_proc
+                      
+let string_of_percentage_value v =
+    let x = 100. *. v in
+    (* let sx = if abs_float x < 10. then (sprintf "%.1f" x) else (sprintf "%.0f" x)  in *)
+    let sx = sprintf "%.1f" x in
+    sx
+
+let string_of_percentage ?(show_plus=true) v =
+   match classify_float v with
+   | FP_subnormal | FP_zero | FP_normal ->
+       sprintf "%s%s%s"  (if v > 0. && show_plus then "+" else "") (string_of_percentage_value v) "\\%"
+   | FP_infinite -> "$+\\infty$"
+   | FP_nan -> "na"
+
+let string_of_percentage_change ?(show_plus=true) vold vnew =
+  string_of_percentage ~show_plus:show_plus (vnew /. vold -. 1.0)
+
 
 (*****************************************************************************)
 (** Input data **)
@@ -677,51 +694,15 @@ let pretty_graph_name n =
   else
     n
 
-let eval_relative baseline_prog = fun env all_results results ->
-  let _ = Printf.printf "p=%s\n" (Env.get_as_string env "prog") in
-  let pbbs_results = ~~ Results.filter_by_params all_results (
-                          from_env (Env.add (
-                                        Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))
-                                            "prog" (Env.Vstring baseline_prog))
-                        ) in
-  if pbbs_results = [] then Pbench.error ("no results for pbbs library");
-  let v = Results.get_mean_of "exectime" results in
-  let b = Results.get_mean_of "exectime" pbbs_results in
-  100.0 *. (v /. b -. 1.0)
-
-let eval_relative_stddev baseline_prog = fun env all_results results ->
-  let pbbs_results = ~~ Results.filter_by_params all_results (
-                          from_env (Env.add (
-                                        Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))
-                                            "prog" (Env.Vstring baseline_prog))
-                        ) in
-  if pbbs_results = [] then Pbench.error ("no results for pbbs library");
-  try 
-  let b = Results.get_mean_of "exectime" pbbs_results in
-  let times = Results.get Env.as_float "exectime" results in
-  let rels = List.map (fun v -> 100.0 *. (v /. b -. 1.0)) times in
-  XFloat.list_stddev rels
-  with Results.Missing_key _ -> nan
-
 let eval_relative_main = fun env all_results results ->
   let pbbs_results = ~~ Results.filter_by_params all_results (
                           from_env (Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))) in
   if pbbs_results = [] then Pbench.error ("no results for pbbs library");
   let v = Results.get_mean_of "exectime" results in
   let b = Results.get_mean_of "exectime" pbbs_results in
-  100.0 *. (v /. b -. 1.0)
+  (b, v)
+  (*  100.0 *. (v /. b -. 1.0)*)
 
-let eval_relative_stddev_main = fun env all_results results ->
-  let pbbs_results = ~~ Results.filter_by_params all_results (
-                          from_env (Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))
-                        ) in
-  if pbbs_results = [] then Pbench.error ("no results for pbbs library");
-  try 
-  let b = Results.get_mean_of "exectime" pbbs_results in
-  let times = Results.get Env.as_float "exectime" results in
-  let rels = List.map (fun v -> 100.0 *. (v /. b -. 1.0)) times in
-  XFloat.list_stddev rels
-  with Results.Missing_key _ -> nan
 
 let pretty_prog p =
   if p = "bfs_bench.unks30" then
@@ -922,10 +903,9 @@ let plot() = (
               let [col] = (mk_pctl_prog benchmark ext "pctl") env in
               let env = Env.append env col in
               let results = Results.filter col results in
-              let v = eval_relative_main env all_results results in
-              let s = if v < 0.0 then "" else "+" in
-              let e = eval_exectime_stddev env all_results results in 
-              Printf.sprintf "%s%.2f%s (%.2f%s)" s v "\\%" e "$\\sigma$"
+              let (b,v) = eval_relative_main env all_results results in
+              let vs = string_of_percentage_change b v in
+              Printf.sprintf "%s" vs 
             in
             Mk_table.cell ~escape:false ~last:last add pctl_str);
           add Latex.tabular_newline);
@@ -977,9 +957,8 @@ let name = "bfs"
     in
     let other =
       [
-        
         "wikipedia-20070206"; "rgg"; (*"delaunay";*) "europe"; 
-        "random_arity_100_large"; "rmat27_large"; "phased_mix_10_large";
+        "random_arity_100_large"; "rmat27_large"; (*"phased_mix_10_large";*)
         "phased_low_50_large"; "rmat24_large";  "tree_2_512_1024_large";"cube_large";  "phased_524288_single_large"; (*"grid_sq_large"; *)
         "paths_100_phases_1_large"; "unbalanced_tree_trunk_first_large"; 
       ]
@@ -1106,19 +1085,7 @@ let eval_relative_main = fun env all_results results ->
   if pbbs_results = [] then Pbench.error ("no results for pbbs library");
   let v = Results.get_mean_of "exectime" results in
   let b = Results.get_mean_of "exectime" pbbs_results in
-  100.0 *. (v /. b -. 1.0)
-
-let eval_relative_stddev_main = fun env all_results results ->
-  let pbbs_results = ~~ Results.filter_by_params all_results (
-                          from_env (Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))
-                        ) in
-  if pbbs_results = [] then Pbench.error ("no results for pbbs library");
-  try 
-  let b = Results.get_mean_of "exectime" pbbs_results in
-  let times = Results.get Env.as_float "exectime" results in
-  let rels = List.map (fun v -> 100.0 *. (v /. b -. 1.0)) times in
-  XFloat.list_stddev rels
-  with Results.Missing_key _ -> nan
+  (b, v)
                                   
 let plot() =
   let pretty_extension ext =
@@ -1148,13 +1115,13 @@ let plot() =
       ~~ List.iteri arg_inner_loop (fun i inner_loop ->
             let last = i + 1 = nb_inner_loop in
             let n = "{" ^ (if inner_loop = "bfs" then "Flat" else "Nested") ^ "}" in
-            let l = if last then "l" else "l|" in
+            let l = if last then "c" else "c|" in
             let label = Latex.tabular_multicol (nb_extensions+1) l n in
             Mk_table.cell ~escape:false ~last:last add label);
       add Latex.tabular_newline;
       let _ = Mk_table.cell ~escape:false ~last:false add "Graph" in
       for i=1 to nb_inner_loop do (
-        let l = "{\\begin{tabular}[x]{@{}c@{}}PBBS orig.\\\\(sec.)\\end{tabular}}" in
+        let l = "{\\begin{tabular}[x]{@{}c@{}}PBBS\\\\(sec.)\\end{tabular}}" in
         Mk_table.cell ~escape:false ~last:false add l;
         ~~ List.iteri extensions (fun ext_i ext ->
               let last = i + ext_i + 1 = nb_extensions + nb_inner_loop in
@@ -1162,7 +1129,6 @@ let plot() =
               Mk_table.cell ~escape:false ~last:last add label))
       done;
       add Latex.tabular_newline;
-        ~~ List.iteri extensions (fun i ext ->
           let results_file = "_results/results_bfs.txt" in
           let all_results = Results.from_file results_file in
           let results = all_results in
@@ -1190,15 +1156,15 @@ let plot() =
                   let [col] = (mk_bfs_prog inner_loop ext "pctl") env in
                   let env = Env.append env col in
                   let results = Results.filter col results in
-                  let v = eval_relative_main env all_results results in
-                  let s = if v < 0.0 then "" else "+" in
+                  let (b,v) = eval_relative_main env all_results results in
+                  let vs = string_of_percentage_change b v in
                   let e = eval_exectime_stddev env all_results results in
                   let err = if arg_print_err then Printf.sprintf "(%.2f%s)" e "$\\sigma$" else "" in
-                  Printf.sprintf "%s%.1f%s %s" s v "\\%" err
+                  Printf.sprintf "%s %s" vs err
                 in
                 Mk_table.cell ~escape:false ~last:last add pctl_str);
               ());
-            add Latex.tabular_newline));
+            add Latex.tabular_newline);
           add Latex.tabular_end;
           add Latex.new_page;
           ());
