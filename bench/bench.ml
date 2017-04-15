@@ -889,13 +889,13 @@ let plot() = (
           let row_title = main_formatter env_rows in
           let _ = Mk_table.cell ~escape:true ~last:false add "" in
           let _ = Mk_table.cell ~escape:true ~last:false add row_title in
-          let pbbs_str = 
+          let (pbbs_str, b) = 
             let [col] = (mk_pctl_prog benchmark "manc" "pbbs") env in
             let env = Env.append env col in
             let results = Results.filter col results in
             let v = eval_exectime env all_results results in
             let e = eval_exectime_stddev env all_results results in 
-            Printf.sprintf "%.3f (%.2f%s) " v e "$\\sigma$"
+            (Printf.sprintf "%.3f (%.2f%s) " v e "$\\sigma$", v)
           in
           let _ = Mk_table.cell ~escape:false ~last:false add pbbs_str in
           ~~ List.iteri extensions (fun i ext ->
@@ -904,7 +904,7 @@ let plot() = (
               let [col] = (mk_pctl_prog benchmark ext "pctl") env in
               let env = Env.append env col in
               let results = Results.filter col results in
-              let (b,v) = eval_relative_main env all_results results in
+              let (_,v) = eval_relative_main env all_results results in
               let vs = string_of_percentage_change b v in
               Printf.sprintf "%s" vs 
             in
@@ -914,27 +914,6 @@ let plot() = (
       add Latex.tabular_end;
       add Latex.new_page;
       ());
-(*                         
-  List.iter (fun benchmark -> 
-    Mk_bar_plot.(call ([
-             Chart_opt Chart.([
-              Legend_opt Legend.([
-                 Legend_pos Top_left
-                 ])]);
-        Bar_plot_opt Bar_plot.([
-                                Chart_opt Chart.([Dimensions (6.,8.) ]);
-           X_titles_dir Vertical;
-           Y_axis [Axis.Lower (Some (-40.0)); Axis.Upper (Some (40.0))] ]);
-        Formatter main_formatter;
-        Charts mk_proc;
-        Series (mk_sequence_input_names benchmark);
-      X (mk_pctl_progs benchmark);
-      Input (Printf.sprintf "_results/results_%s.txt" benchmark);
-      Output (Printf.sprintf "plots_%s.pdf" benchmark);
-        Y_label "% relative to original PBBS";
-        Y eval_relative_main;
-        Y_whiskers eval_relative_stddev_main;
-                      ])) ) arg_benchmarks; *)
  ()  
 )
 
@@ -1141,14 +1120,14 @@ let plot() =
             let row_title = main_formatter env_rows in
             let _ = Mk_table.cell ~escape:false ~last:false add row_title in
             ~~ List.iteri arg_inner_loop (fun inner_loop_i inner_loop ->
-              let pbbs_str =
+              let (pbbs_str, b) =
                 let [col] = (mk_bfs_prog inner_loop "manc" "pbbs") env in
                 let env = Env.append env col in
                 let results = Results.filter col results in
-                let v = eval_exectime env all_results results in
+                let b = eval_exectime env all_results results in
                 let e = eval_exectime_stddev env all_results results in
                 let err = if arg_print_err then Printf.sprintf "(%.2f%s)" e "$\\sigma$" else "" in
-                Printf.sprintf "%.2f %s" v err
+                (Printf.sprintf "%.2f %s" b err, b)
               in
               let _ = Mk_table.cell ~escape:false ~last:false add pbbs_str in
               ~~ List.iteri extensions (fun i ext ->
@@ -1157,7 +1136,7 @@ let plot() =
                   let [col] = (mk_bfs_prog inner_loop ext "pctl") env in
                   let env = Env.append env col in
                   let results = Results.filter col results in
-                  let (b,v) = eval_relative_main env all_results results in
+                  let (_,v) = eval_relative_main env all_results results in
                   let vs = string_of_percentage_change b v in
                   let e = eval_exectime_stddev env all_results results in
                   let err = if arg_print_err then Printf.sprintf "(%.2f%s)" e "$\\sigma$" else "" in
