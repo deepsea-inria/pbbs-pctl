@@ -1205,6 +1205,7 @@ let run() =
    & mk_digests
    & mk_sizes
    & mk_proc
+   & (mk string "algorithm" "parallel")
       )]))
 
 let check = nothing  (* do something here *)
