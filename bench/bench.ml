@@ -924,151 +924,320 @@ end
 module ExpBFS = struct
 
 let name = "bfs"
+
+let results_file = "_results/results_bfs.txt" 
                    
-  let graphfile_of n = "_data/" ^ n ^ ".bin"
-					
-  let graphfiles' =
-    let manual = 
-      [
-        "livejournal", 0;
-        "twitter", 1;
-        (*        "usa", 1;*)
-      ]
-    in
-    let other =
-      [
-        "wikipedia-20070206"; "rgg"; (*"delaunay";*) "europe"; 
-        "random_arity_100_large"; "rmat27_large"; (*"phased_mix_10_large";*)
-        "phased_low_50_large"; "rmat24_large";  "tree_2_512_1024_large";"cube_large";  "phased_524288_single_large"; (*"grid_sq_large"; *)
-        "paths_100_phases_1_large"; "unbalanced_tree_trunk_first_large"; 
-      ]
-    in
-    List.concat [manual; List.map (fun n -> (n, 0)) other]
+let graphfile_of n = "_data/" ^ n ^ ".bin"
 
-  let graphfiles = List.map (fun (n, _) -> n) graphfiles'
-
-  let graph_renaming =
+let graphfiles' =
+  let manual = 
     [
-     "grid_sq_large", "square-grid";
-     "wikipedia-20070206", "wikipedia";
-     "paths_100_phases_1_large", "par-chains-100";
-     "phased_524288_single_large", "trees-524k";
-     "phased_low_50_large", "phases-50-d-5";
-     "phased_mix_10_large", "phases-10-d-2";
-     "random_arity_100_large", "random-arity-100";
-     "tree_2_512_1024_large", "trees-512-1024";
-     "unbalanced_tree_trunk_first_large", "trunk-first";
-     "randLocalGraph_J_5_10000000", "random";
-     "rMatGraph_J_5_10000000", "rMat";
-     "cube_large", "cube-grid";
-     "rmat24_large", "rmat24";
-     "rmat27_large", "rmat27";
-   ]
+      "livejournal", 0;
+      "twitter", 1;
+      (*        "usa", 1;*)
+    ]
+  in
+  let other =
+    [
+      "wikipedia-20070206"; "rgg"; (*"delaunay";*) "europe"; 
+      "random_arity_100_large"; "rmat27_large"; (*"phased_mix_10_large";*)
+      "phased_low_50_large"; "rmat24_large";  "tree_2_512_1024_large";"cube_large";  "phased_524288_single_large"; (*"grid_sq_large"; *)
+      "paths_100_phases_1_large"; "unbalanced_tree_trunk_first_large"; 
+    ]
+  in
+  List.concat [manual; List.map (fun n -> (n, 0)) other]
 
-  let pretty_graph_name n =
-    if List.mem_assoc n graph_renaming then
-      List.assoc n graph_renaming
-    else
-      n
+let graphfiles = List.map (fun (n, _) -> n) graphfiles'
 
-  let extensions = XCmd.parse_or_default_list_string "exts" [ "unks100"; ]
+let graph_renaming =
+  [
+   "grid_sq_large", "square-grid";
+   "wikipedia-20070206", "wikipedia";
+   "paths_100_phases_1_large", "par-chains-100";
+   "phased_524288_single_large", "trees-524k";
+   "phased_low_50_large", "phases-50-d-5";
+   "phased_mix_10_large", "phases-10-d-2";
+   "random_arity_100_large", "random-arity-100";
+   "tree_2_512_1024_large", "trees-512-1024";
+   "unbalanced_tree_trunk_first_large", "trunk-first";
+   "randLocalGraph_J_5_10000000", "random";
+   "rMatGraph_J_5_10000000", "rMat";
+   "cube_large", "cube-grid";
+   "rmat24_large", "rmat24";
+   "rmat27_large", "rmat27";
+ ]
 
-  let arg_inner_loop = XCmd.parse_or_default_list_string "inner_loop" ["bfs";"pbfs"]
+let pretty_graph_name n =
+  if List.mem_assoc n graph_renaming then
+    List.assoc n graph_renaming
+  else
+    n
 
-  let prog benchmark extension =
-    sprintf "%s_bench.%s" benchmark extension
+let extensions = XCmd.parse_or_default_list_string "exts" [ "unks100"; ]
 
-  let baseline_progs = List.map (fun inner_loop -> prog inner_loop "manc") arg_inner_loop
+let arg_inner_loop = XCmd.parse_or_default_list_string "inner_loop" ["bfs";"pbfs"]
 
-  let oracle_progs = List.flatten 
-    (List.map (fun extension -> List.map (fun inner_loop -> prog inner_loop extension) arg_inner_loop) extensions)
+let prog benchmark extension =
+  sprintf "%s_bench.%s" benchmark extension
 
-  let all_progs = List.append baseline_progs oracle_progs                       
+let baseline_progs = List.map (fun inner_loop -> prog inner_loop "manc") arg_inner_loop
 
-  let make() =
-    build "." all_progs arg_virtual_build
+let oracle_progs = List.flatten 
+  (List.map (fun extension -> List.map (fun inner_loop -> prog inner_loop extension) arg_inner_loop) extensions)
 
-  let mk_lib_type t =
-    mk string "lib_type" t
+let all_progs = List.append baseline_progs oracle_progs                       
 
-  let mk_infile n =
-    mk string "infile" n
+let make() =
+  build "." all_progs arg_virtual_build
 
-  let mk_infile' n =
-    let (_, source) = List.find (fun (m, _) -> m = n) graphfiles' in
-    mk string "infile" (graphfile_of n) & mk int "source" source
+let mk_lib_type t =
+  mk string "lib_type" t
 
-  let mk_graphname n =
-    mk string "graph_name" n
+let mk_infile n =
+  mk string "infile" n
 
-  let mk_input n =
-    (mk_infile' n & mk_graphname n)
+let mk_infile' n =
+  let (_, source) = List.find (fun (m, _) -> m = n) graphfiles' in
+  mk string "infile" (graphfile_of n) & mk int "source" source
 
-  let rec mk_infiles ns =
-    match ns with
-    | [] ->
-	failwith ""
-    | [n] ->
-	mk_input n
-    | n :: ns ->
-	mk_input n ++ mk_infiles ns
+let mk_graphname n =
+  mk string "graph_name" n
 
-  let results_filename = sprintf "_results/results_bfs.txt" 
+let mk_input n =
+  (mk_infile' n & mk_graphname n)
 
-  let prog_assoc = List.flatten (List.map (fun (p:string) -> 
-                                 List.map (fun (e:string) -> (p, e)) extensions) arg_inner_loop)
+let rec mk_infiles ns =
+  match ns with
+  | [] ->
+      failwith ""
+  | [n] ->
+      mk_input n
+  | n :: ns ->
+      mk_input n ++ mk_infiles ns
 
-  let prog_of (p, e) = sprintf "%s_bench.%s" p e
+let prog_assoc = List.flatten (List.map (fun (p:string) -> 
+                               List.map (fun (e:string) -> (p, e)) extensions) arg_inner_loop)
 
-  let mk_bfs_prog inner_loop extension lib_type =
-    (mk string "prog" (prog inner_loop extension)) & (mk_lib_type lib_type)
+let prog_of (p, e) = sprintf "%s_bench.%s" p e
 
-  let mk_progs =
-    ((mk_list string "prog" oracle_progs)  & (mk_lib_type "pctl")) ++
-      ((mk_list string "prog" baseline_progs)  & (mk_lib_type "pbbs"))
-                                 
-  let run() =
-    Mk_runs.(call (run_modes @ [
-                      Output results_filename;
-                      Timeout 400;
-                      Args (mk_progs & (mk string "type" "graph") & (mk_infiles graphfiles) & mk_proc);                           
-                    ]))
+let mk_bfs_prog inner_loop extension lib_type =
+  (mk string "prog" (prog inner_loop extension)) & (mk_lib_type lib_type)
 
-  let check = nothing  (* do something here *)
+let mk_progs =
+  ((mk_list string "prog" oracle_progs)  & (mk_lib_type "pctl")) ++
+    ((mk_list string "prog" baseline_progs)  & (mk_lib_type "pbbs"))
 
-  let main_formatter =
-    Env.format (Env.(
-		[
-		 ("proc", Format_custom (fun n -> ""));
-		 ("lib_type", Format_custom (fun n -> ""));
-		 ("infile", Format_custom (fun n -> ""));
-		 ("graph_name", Format_custom pretty_graph_name);
-		 ("prog", Format_custom (fun n ->  ""
+let run() =
+  Mk_runs.(call (run_modes @ [
+                    Output results_file;
+                    Timeout 400;
+                    Args (mk_progs & (mk string "type" "graph") & (mk_infiles graphfiles) & mk_proc);                           
+                  ]))
+
+let check = nothing  (* do something here *)
+
+let main_formatter =
+  Env.format (Env.(
+              [
+               ("proc", Format_custom (fun n -> ""));
+               ("lib_type", Format_custom (fun n -> ""));
+               ("infile", Format_custom (fun n -> ""));
+               ("graph_name", Format_custom pretty_graph_name);
+               ("prog", Format_custom (fun n ->  ""
 (*                                           let ps = List.map2 (fun x y -> (x, y)) oracle_progs prog_assoc in
-                                           if List.mem_assoc n ps then
-                                             let (p, e) = List.assoc n ps in
-                                             let commonext = "unks" in
-                                             let extlength = String.length commonext in
-                                             let kappa = String.sub e extlength (String.length e - extlength) in
-                                             let nghl = if p = "bfs" then "Seq. ngh. list" else "Par. ngh. list" in
-                                             sprintf "Oracle guided, kappa := %sus (%s)" kappa nghl
-                                           else "<bogus>" *)
-                                        ));    
-		 ("type", Format_custom (fun n -> ""));
-		 ("source", Format_custom (fun n -> ""));
-	       ]
-	         ))
+                                         if List.mem_assoc n ps then
+                                           let (p, e) = List.assoc n ps in
+                                           let commonext = "unks" in
+                                           let extlength = String.length commonext in
+                                           let kappa = String.sub e extlength (String.length e - extlength) in
+                                           let nghl = if p = "bfs" then "Seq. ngh. list" else "Par. ngh. list" in
+                                           sprintf "Oracle guided, kappa := %sus (%s)" kappa nghl
+                                         else "<bogus>" *)
+                                      ));    
+               ("type", Format_custom (fun n -> ""));
+               ("source", Format_custom (fun n -> ""));
+             ]
+               ))
 
 let eval_relative_main = fun env all_results results ->
-  let pbbs_results = ~~ Results.filter_by_params all_results (
-                          from_env (Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))) in
-  if pbbs_results = [] then Pbench.error ("no results for pbbs library");
-  let v = Results.get_mean_of "exectime" results in
-  let b = Results.get_mean_of "exectime" pbbs_results in
-  (b, v)
-                                  
+let pbbs_results = ~~ Results.filter_by_params all_results (
+                        from_env (Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))) in
+if pbbs_results = [] then Pbench.error ("no results for pbbs library");
+let v = Results.get_mean_of "exectime" results in
+let b = Results.get_mean_of "exectime" pbbs_results in
+(b, v)
+
 let plot() =
-  let pretty_extension ext =
+let pretty_extension ext =
+  let l = String.length ext in
+  let plen = 4 in
+  if l < plen then
+    "<unknown extension>"
+  else
+    let p = String.sub ext 0 plen in
+    let mu = int_of_string (String.sub ext plen (l - plen)) in
+    sprintf "{\\begin{tabular}[x]{@{}c@{}}Ours\\\\($\kappa$ := %d%ssec.)\\end{tabular}}" mu "$\\mu$"
+in
+
+let nb_extensions = List.length extensions in
+let nb_inner_loop = List.length arg_inner_loop in
+let tex_file = file_tables_src name in
+let pdf_file = file_tables name in
+Mk_table.build_table tex_file pdf_file (fun add ->
+                                        let l = "S[table-format=2.2]" in
+    let ls = String.concat "|" (XList.init ((nb_extensions+1) * nb_inner_loop) (fun _ -> "l")) in
+    let hdr = Printf.sprintf "l|%s" ls in
+    add (Latex.tabular_begin hdr);                                    
+    let _ = Mk_table.cell ~escape:false ~last:false add "" in
+    ~~ List.iteri arg_inner_loop (fun i inner_loop ->
+          let last = i + 1 = nb_inner_loop in
+          let n = "{" ^ (if inner_loop = "bfs" then "Flat" else "Nested") ^ "}" in
+          let l = if last then "c" else "c|" in
+          let label = Latex.tabular_multicol (nb_extensions+1) l n in
+          Mk_table.cell ~escape:false ~last:last add label);
+    add Latex.tabular_newline;
+    let _ = Mk_table.cell ~escape:false ~last:false add "Graph" in
+    for i=1 to nb_inner_loop do (
+      let l = "{\\begin{tabular}[x]{@{}c@{}}PBBS\\\\(sec.)\\end{tabular}}" in
+      Mk_table.cell ~escape:false ~last:false add l;
+      ~~ List.iteri extensions (fun ext_i ext ->
+            let last = i + ext_i + 1 = nb_extensions + nb_inner_loop in
+            let label = pretty_extension ext in
+            Mk_table.cell ~escape:false ~last:last add label))
+    done;
+    add Latex.tabular_newline;
+        let all_results = Results.from_file results_file in
+        let results = all_results in
+        let env = Env.empty in
+        let env_rows = mk_infiles graphfiles env in
+        ~~ List.iter env_rows (fun env_rows ->  (* loop over each input for current benchmark *)
+          let results = Results.filter env_rows results in
+          let env = Env.append env env_rows in
+          let row_title = main_formatter env_rows in
+          let _ = Mk_table.cell ~escape:false ~last:false add row_title in
+          ~~ List.iteri arg_inner_loop (fun inner_loop_i inner_loop ->
+            let (pbbs_str, b) =
+              let [col] = (mk_bfs_prog inner_loop "manc" "pbbs") env in
+              let env = Env.append env col in
+              let results = Results.filter col results in
+              let b = eval_exectime env all_results results in
+              let e = eval_exectime_stddev env all_results results in
+              let err = if arg_print_err then Printf.sprintf "(%.2f%s)" e "$\\sigma$" else "" in
+              (Printf.sprintf "%.2f %s" b err, b)
+            in
+            let _ = Mk_table.cell ~escape:false ~last:false add pbbs_str in
+            ~~ List.iteri extensions (fun i ext ->
+              let last = i + inner_loop_i + 2 = nb_extensions + nb_inner_loop in
+              let pctl_str = 
+                let [col] = (mk_bfs_prog inner_loop ext "pctl") env in
+                let env = Env.append env col in
+                let results = Results.filter col results in
+                let (_,v) = eval_relative_main env all_results results in
+                let vs = string_of_percentage_change b v in
+                let e = eval_exectime_stddev env all_results results in
+                let err = if arg_print_err then Printf.sprintf "(%.2f%s)" e "$\\sigma$" else "" in
+                Printf.sprintf "%s %s" vs err
+              in
+              Mk_table.cell ~escape:false ~last:last add pctl_str);
+            ());
+          add Latex.tabular_newline);
+        add Latex.tabular_end;
+        add Latex.new_page;
+        ());
+
+  ()
+
+
+let all () = select make run check plot
+
+end
+
+(*****************************************************************************)
+(** Merkle Tree experiment *)
+
+module ExpMerkleTree = struct
+
+let name = "merkletree"
+
+let results_file = "_results/results_merkletree.txt"
+
+let extensions = XCmd.parse_or_default_list_string "exts" [ "unks100"; ]
+
+let prog_of = Printf.sprintf "merkletree_bench.%s"
+                             
+let oracle_progs = List.map prog_of extensions
+                                                     
+let manual_prog = "merkletree_bench.manc"
+
+let make() =
+  build "." (List.flatten [oracle_progs; [manual_prog];]) arg_virtual_build
+
+let digests = ["pbbs32";"sha256";"sha384";"sha512";]
+
+let mk_digests = mk_list string "digest" digests
+
+let mk_proc = mk int "proc" (List.hd (List.rev arg_proc))
+
+let mk_block_szb_lg n = mk int "block_szb_lg" n
+
+let mk_nb_blocks_lg n = mk int "nb_blocks_lg" n
+
+let sizes = [(9, 21); (13, 17); (18, 12); (24, 6)]
+
+let mk_sizes =
+  let mks = List.map (fun (bs, nbs) -> (mk_block_szb_lg bs) & (mk_nb_blocks_lg nbs)) sizes in
+  List.fold_left (fun acc x -> x ++ acc) (List.hd mks) (List.tl mks)
+
+let mk_oracle_prog =
+  mk_list string "prog" oracle_progs
+
+let mk_baseline_prog = mk_prog manual_prog
+          
+let mk_progs =
+  mk_oracle_prog ++ mk_baseline_prog
+                                                        
+let run() =
+  Mk_runs.(call (run_modes @ [
+    Output results_file;
+    Timeout 400;
+    Args (
+     mk_progs
+   & mk_digests
+   & mk_sizes
+   & mk_proc
+      )]))
+
+let check = nothing  (* do something here *)
+
+let formatter =
+ Env.format (Env.(
+  [
+    ("proc", Format_custom (fun n -> sprintf "Nb. cores %s" n));
+    ("use_hash", Format_custom (fun n -> ""));
+    ("digest", Format_custom (function | "pbbs32" -> "32-bit hash" | "sha256" -> "sha256" | "sha384" -> "sha384" | "sha512" -> "sha512" | _ -> ""));
+    ("mode", Format_custom (fun n -> "")(*(fun n -> if n = "manual" then "cilk_for" else "oracle guided")*));
+    ("prog", Format_custom (fun n -> ""
+(*                             if n = manual_prog then
+                               "cilk_for"
+                             else if n = oracle_prog then
+                               "oracle guided"
+                             else
+                              "<unknown program>" *) ));
+    ("block_szb_lg", Format_custom (fun n -> sprintf "B=2^%s" n));
+    ("nb_blocks_lg", Format_custom (fun n -> sprintf "N=2^%s" n));
+   ]
+  ))            
+
+let eval_relative = fun env all_results results ->
+  let cilk_results = ~~ Results.filter_by_params all_results (
+                          from_env (Env.add (Env.filter_keys ["digest"; "block_szb_lg"; "nb_blocks_lg"] env) "prog" (Env.Vstring manual_prog))) in
+  if cilk_results = [] then Pbench.error ("no results for manual mode");
+  let v = Results.get_mean_of "exectime" results in
+  let b = Results.get_mean_of "exectime" cilk_results in
+  (b, v)
+
+let plot() =
+    let pretty_extension ext =
     let l = String.length ext in
     let plen = 4 in
     if l < plen then
@@ -1079,47 +1248,33 @@ let plot() =
       sprintf "{\\begin{tabular}[x]{@{}c@{}}Ours\\\\($\kappa$ := %d%ssec.)\\end{tabular}}" mu "$\\mu$"
   in
 
-  let experiment_name = "bfs" in
   let nb_extensions = List.length extensions in
-  let nb_inner_loop = List.length arg_inner_loop in
-  let tex_file = file_tables_src experiment_name in
-  let pdf_file = file_tables experiment_name in
+  let nb_sizes = List.length sizes in
+  let tex_file = file_tables_src name in
+  let pdf_file = file_tables name in
   Mk_table.build_table tex_file pdf_file (fun add ->
                                           let l = "S[table-format=2.2]" in
-      let ls = String.concat "|" (XList.init ((nb_extensions+1) * nb_inner_loop) (fun _ -> "l")) in
+      let ls = String.concat "|" (XList.init ((nb_extensions+1) * nb_sizes) (fun _ -> "l")) in
       let hdr = Printf.sprintf "l|%s" ls in
       add (Latex.tabular_begin hdr);                                    
       let _ = Mk_table.cell ~escape:false ~last:false add "" in
-      ~~ List.iteri arg_inner_loop (fun i inner_loop ->
-            let last = i + 1 = nb_inner_loop in
-            let n = "{" ^ (if inner_loop = "bfs" then "Flat" else "Nested") ^ "}" in
-            let l = if last then "c" else "c|" in
-            let label = Latex.tabular_multicol (nb_extensions+1) l n in
+      ~~ List.iteri sizes (fun i (b, n) ->
+            let last = i + 1 = nb_sizes in
+            let label = Printf.sprintf "$B^{%d}, N^{%d}" b n in
             Mk_table.cell ~escape:false ~last:last add label);
       add Latex.tabular_newline;
-      let _ = Mk_table.cell ~escape:false ~last:false add "Graph" in
-      for i=1 to nb_inner_loop do (
-        let l = "{\\begin{tabular}[x]{@{}c@{}}PBBS\\\\(sec.)\\end{tabular}}" in
-        Mk_table.cell ~escape:false ~last:false add l;
-        ~~ List.iteri extensions (fun ext_i ext ->
-              let last = i + ext_i + 1 = nb_extensions + nb_inner_loop in
-              let label = pretty_extension ext in
-              Mk_table.cell ~escape:false ~last:last add label))
-      done;
-      add Latex.tabular_newline;
-          let results_file = "_results/results_bfs.txt" in
           let all_results = Results.from_file results_file in
           let results = all_results in
           let env = Env.empty in
-          let env_rows = mk_infiles graphfiles env in
+          let env_rows = mk_digests env in
           ~~ List.iter env_rows (fun env_rows ->  (* loop over each input for current benchmark *)
             let results = Results.filter env_rows results in
             let env = Env.append env env_rows in
-            let row_title = main_formatter env_rows in
+            let row_title = formatter env_rows in
             let _ = Mk_table.cell ~escape:false ~last:false add row_title in
-            ~~ List.iteri arg_inner_loop (fun inner_loop_i inner_loop ->
+            ~~ List.iteri sizes (fun size_i (bs, ns) ->
               let (pbbs_str, b) =
-                let [col] = (mk_bfs_prog inner_loop "manc" "pbbs") env in
+                let [col] = mk_baseline_prog env in
                 let env = Env.append env col in
                 let results = Results.filter col results in
                 let b = eval_exectime env all_results results in
@@ -1129,12 +1284,12 @@ let plot() =
               in
               let _ = Mk_table.cell ~escape:false ~last:false add pbbs_str in
               ~~ List.iteri extensions (fun i ext ->
-                let last = i + inner_loop_i + 2 = nb_extensions + nb_inner_loop in
+                let last = i + size_i + 2 = nb_extensions + nb_sizes in
                 let pctl_str = 
-                  let [col] = (mk_bfs_prog inner_loop ext "pctl") env in
+                  let [col] = mk_oracle_prog env in
                   let env = Env.append env col in
                   let results = Results.filter col results in
-                  let (_,v) = eval_relative_main env all_results results in
+                  let (_,v) = eval_relative env all_results results in
                   let vs = string_of_percentage_change b v in
                   let e = eval_exectime_stddev env all_results results in
                   let err = if arg_print_err then Printf.sprintf "(%.2f%s)" e "$\\sigma$" else "" in
@@ -1148,127 +1303,6 @@ let plot() =
           ());
 
     ()
-
-
-let all () = select make run check plot
-
-end
-
-(*****************************************************************************)
-(** Merkle Tree experiment *)
-
-module ExpMerkleTree = struct
-
-  let name = "merkletree"
-
-  let file_results =
-    Printf.sprintf "_results/results_%s.txt" name
-                   
-  let file_plots =
-    Printf.sprintf "plot_%s.pdf" name
-
-let oracle_prog = "merkletree_bench.unks100"
-
-let manual_prog = "merkletree_bench.manc"
-
-let make() =
-  build "." [oracle_prog; manual_prog;] arg_virtual_build
-
-let mk_digests = mk_list string "digest" ["pbbs32";"sha256";"sha384";"sha512";]
-
-let mk_proc = mk int "proc" (List.hd (List.rev arg_proc))
-
-let mk_parallel_common = mk_proc & (mk string "algorithm" "parallel")
-
-let mk_sequential_common = mk string "algorithm" "sequential"
-
-let mk_block_szb_lg n = mk int "block_szb_lg" n
-
-let mk_nb_blocks_lg n = mk int "nb_blocks_lg" n
-
-let sizes = [(9, 21); (13, 17); (*(17, 13);*) (18, 12); (24, 6)]
-
-let mk_sizes =
-  let mks = List.map (fun (bs, nbs) -> (mk_block_szb_lg bs) & (mk_nb_blocks_lg nbs)) sizes in
-  List.fold_left (fun acc x -> x ++ acc) (List.hd mks) (List.tl mks)
-
-let mk_oracle_prog =
-  mk_prog oracle_prog
-
-let mk_progs =
-  mk_oracle_prog ++ (mk_prog manual_prog)
-                                                        
-let run() =
-  Mk_runs.(call (run_modes @ [
-    Output file_results;
-    Timeout 400;
-    Args (
-     mk_progs
-   & mk_digests
-   & mk_sizes
-   & mk_parallel_common
-      )]))
-
-let check = nothing  (* do something here *)
-
-let formatter =
- Env.format (Env.(
-  [
-    ("proc", Format_custom (fun n -> sprintf "Nb. cores %s" n));
-    ("use_hash", Format_custom (fun n -> ""));
-    ("digest", Format_custom (function | "pbbs32" -> "32-bit hash" | "sha256" -> "sha256" | "sha384" -> "sha384" | "sha512" -> "sha512" | _ -> ""));
-    ("mode", Format_custom (fun n -> "")(*(fun n -> if n = "manual" then "cilk_for" else "oracle guided")*));
-    ("prog", Format_custom (fun n ->
-                             if n = manual_prog then
-                               "cilk_for"
-                             else if n = oracle_prog then
-                               "oracle guided"
-                             else
-                              "<unknown program>"));
-    ("block_szb_lg", Format_custom (fun n -> sprintf "B=2^%s" n));
-    ("nb_blocks_lg", Format_custom (fun n -> sprintf "N=2^%s" n));
-   ]
-  ))            
-
-let eval_relative = fun env all_results results ->
-  let cilk_results = ~~ Results.filter_by_params all_results (
-                          from_env (Env.add (Env.filter_keys ["digest"; "block_szb_lg"; "nb_blocks_lg"] env) "prog" (Env.Vstring manual_prog))) in
-  if cilk_results = [] then Pbench.error ("no results for manual mode");
-  let v = Results.get_mean_of "exectime" results in
-  let b = Results.get_mean_of "exectime" cilk_results in
-  100.0 *. (v /. b -. 1.0)
-
-let eval_relative_stddev = fun env all_results results ->
-  let cilk_results = ~~ Results.filter_by_params all_results (
-                          from_env (Env.add (Env.filter_keys ["digest"; "block_szb_lg"; "nb_blocks_lg"] env) "prog" (Env.Vstring manual_prog))) in
-  if cilk_results = [] then Pbench.error ("no results from manual mode");
-  try
-  let b = Results.get_mean_of "exectime" cilk_results in
-  let times = Results.get Env.as_float "exectime" results in
-  let rels = List.map (fun v -> 100.0 *. (v /. b -. 1.0)) times in
-  XFloat.list_stddev rels
-  with Results.Missing_key _ -> nan
-
-let plot() =
-  Mk_bar_plot.(call ([
-      Chart_opt Chart.([
-            Legend_opt Legend.([
-               Legend_pos Bottom_left
-               ])]);
-      Bar_plot_opt Bar_plot.([
-         X_titles_dir Vertical;
-         Y_axis [ Axis.Is_log false; Axis.Lower (Some (-100.0)); Axis.Upper(Some (30.0));] ]);
-      Formatter formatter;
-      Charts mk_unit;
-      Series (mk_oracle_prog & mk_digests);
-      X mk_sizes;
-      Input file_results;
-      Output file_plots;
-      Y_label "Percent difference relative to algorithm with cilk_for";
-      Y eval_relative;
-      Y_whiskers eval_relative_stddev;
-  ]))
-
 
 let all () = select make run check plot
 
