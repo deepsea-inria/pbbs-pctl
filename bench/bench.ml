@@ -1073,8 +1073,6 @@ let plot() =
     let plen = 4 in
     if l < plen then
       "<unknown extension>"
-    else if l = plen then
-      sprintf "Ours (%d %s)" 300 "$\\mu$"
     else
       let p = String.sub ext 0 plen in
       let mu = int_of_string (String.sub ext plen (l - plen)) in
