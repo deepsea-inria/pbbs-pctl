@@ -1060,31 +1060,31 @@ let main_formatter =
                ))
 
 let eval_relative_main = fun env all_results results ->
-let pbbs_results = ~~ Results.filter_by_params all_results (
-                        from_env (Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))) in
-if pbbs_results = [] then Pbench.error ("no results for pbbs library");
-let v = Results.get_mean_of "exectime" results in
-let b = Results.get_mean_of "exectime" pbbs_results in
-(b, v)
+  let pbbs_results = ~~ Results.filter_by_params all_results (
+                          from_env (Env.add (Env.filter_keys ["type"; "infile"; "proc"] env) "lib_type" (Env.Vstring "pbbs"))) in
+  if pbbs_results = [] then Pbench.error ("no results for pbbs library");
+  let v = Results.get_mean_of "exectime" results in
+  let b = Results.get_mean_of "exectime" pbbs_results in
+  (b, v)
 
 let plot() =
-let pretty_extension ext =
-  let l = String.length ext in
-  let plen = 4 in
-  if l < plen then
-    "<unknown extension>"
-  else
-    let p = String.sub ext 0 plen in
-    let mu = int_of_string (String.sub ext plen (l - plen)) in
-    sprintf "{\\begin{tabular}[x]{@{}c@{}}Ours\\\\($\kappa$ := %d%ssec.)\\end{tabular}}" mu "$\\mu$"
-in
+  let pretty_extension ext =
+    let l = String.length ext in
+    let plen = 4 in
+    if l < plen then
+      "<unknown extension>"
+    else
+      let p = String.sub ext 0 plen in
+      let mu = int_of_string (String.sub ext plen (l - plen)) in
+      sprintf "{\\begin{tabular}[x]{@{}c@{}}Ours\\\\($\kappa$ := %d%ssec.)\\end{tabular}}" mu "$\\mu$"
+  in
 
-let nb_extensions = List.length extensions in
-let nb_inner_loop = List.length arg_inner_loop in
-let tex_file = file_tables_src name in
-let pdf_file = file_tables name in
-Mk_table.build_table tex_file pdf_file (fun add ->
-                                        let l = "S[table-format=2.2]" in
+  let nb_extensions = List.length extensions in
+  let nb_inner_loop = List.length arg_inner_loop in
+  let tex_file = file_tables_src name in
+  let pdf_file = file_tables name in
+  Mk_table.build_table tex_file pdf_file (fun add ->
+    let l = "S[table-format=2.2]" in (* later: use *)
     let ls = String.concat "|" (XList.init ((nb_extensions+1) * nb_inner_loop) (fun _ -> "l")) in
     let hdr = Printf.sprintf "l|%s" ls in
     add (Latex.tabular_begin hdr);                                    
@@ -1174,6 +1174,8 @@ let make() =
 
 let digests = ["pbbs32";"sha256";"sha384";"sha512";]
 
+let mk_digest = mk string "digest"
+
 let mk_digests = mk_list string "digest" digests
 
 let mk_proc = mk int "proc" (List.hd (List.rev arg_proc))
@@ -1188,13 +1190,16 @@ let mk_sizes =
   let mks = List.map (fun (bs, nbs) -> (mk_block_szb_lg bs) & (mk_nb_blocks_lg nbs)) sizes in
   List.fold_left (fun acc x -> x ++ acc) (List.hd mks) (List.tl mks)
 
-let mk_oracle_prog =
+let mk_oracle_prog ext =
+  mk_prog (prog_of ext)
+
+let mk_oracle_progs =
   mk_list string "prog" oracle_progs
 
 let mk_baseline_prog = mk_prog manual_prog
           
 let mk_progs =
-  mk_oracle_prog ++ mk_baseline_prog
+  mk_oracle_progs ++ mk_baseline_prog
                                                         
 let run() =
   Mk_runs.(call (run_modes @ [
@@ -1210,12 +1215,15 @@ let run() =
 
 let check = nothing  (* do something here *)
 
+let pretty_digest =
+  (function | "pbbs32" -> "32-bit hash" | "sha256" -> "sha256" | "sha384" -> "sha384" | "sha512" -> "sha512" | _ -> "")
+
 let formatter =
  Env.format (Env.(
   [
     ("proc", Format_custom (fun n -> sprintf "Nb. cores %s" n));
     ("use_hash", Format_custom (fun n -> ""));
-    ("digest", Format_custom (function | "pbbs32" -> "32-bit hash" | "sha256" -> "sha256" | "sha384" -> "sha384" | "sha512" -> "sha512" | _ -> ""));
+    ("digest", Format_custom pretty_digest);
     ("mode", Format_custom (fun n -> "")(*(fun n -> if n = "manual" then "cilk_for" else "oracle guided")*));
     ("prog", Format_custom (fun n -> ""
 (*                             if n = manual_prog then
@@ -1224,8 +1232,8 @@ let formatter =
                                "oracle guided"
                              else
                               "<unknown program>" *) ));
-    ("block_szb_lg", Format_custom (fun n -> sprintf "B=2^%s" n));
-    ("nb_blocks_lg", Format_custom (fun n -> sprintf "N=2^%s" n));
+    ("block_szb_lg", Format_custom (fun n -> sprintf "$B=2^{%s}$" n));
+    ("nb_blocks_lg", Format_custom (fun n -> sprintf "$N=2^{%s}$" n));
    ]
   ))            
 
@@ -1238,7 +1246,7 @@ let eval_relative = fun env all_results results ->
   (b, v)
 
 let plot() =
-    let pretty_extension ext =
+  let pretty_extension ext =
     let l = String.length ext in
     let plen = 4 in
     if l < plen then
@@ -1251,57 +1259,71 @@ let plot() =
 
   let nb_extensions = List.length extensions in
   let nb_sizes = List.length sizes in
+  let nb_digests = List.length digests in
+  let nb_cols = nb_digests * (nb_extensions + 1) + 1 in
   let tex_file = file_tables_src name in
   let pdf_file = file_tables name in
   Mk_table.build_table tex_file pdf_file (fun add ->
-                                          let l = "S[table-format=2.2]" in
-      let ls = String.concat "|" (XList.init ((nb_extensions+1) * nb_sizes) (fun _ -> "l")) in
-      let hdr = Printf.sprintf "l|%s" ls in
+      let l = "S[table-format=2.2]" in
+      let ls = String.concat "|" (XList.init nb_cols (fun _ -> "l")) in
+      let hdr = Printf.sprintf "%s" ls in
       add (Latex.tabular_begin hdr);                                    
       let _ = Mk_table.cell ~escape:false ~last:false add "" in
-      ~~ List.iteri sizes (fun i (b, n) ->
-            let last = i + 1 = nb_sizes in
-            let label = Printf.sprintf "$B^{%d}, N^{%d}" b n in
-            Mk_table.cell ~escape:false ~last:last add label);
-      add Latex.tabular_newline;
-          let all_results = Results.from_file results_file in
-          let results = all_results in
-          let env = Env.empty in
-          let env_rows = mk_digests env in
-          ~~ List.iter env_rows (fun env_rows ->  (* loop over each input for current benchmark *)
-            let results = Results.filter env_rows results in
-            let env = Env.append env env_rows in
-            let row_title = formatter env_rows in
-            let _ = Mk_table.cell ~escape:false ~last:false add row_title in
-            ~~ List.iteri sizes (fun size_i (bs, ns) ->
-              let (pbbs_str, b) =
-                let [col] = mk_baseline_prog env in
-                let env = Env.append env col in
-                let results = Results.filter col results in
-                let b = eval_exectime env all_results results in
-                let e = eval_exectime_stddev env all_results results in
-                let err = if arg_print_err then Printf.sprintf "(%.2f%s)" e "$\\sigma$" else "" in
-                (Printf.sprintf "%.2f %s" b err, b)
-              in
-              let _ = Mk_table.cell ~escape:false ~last:false add pbbs_str in
-              ~~ List.iteri extensions (fun i ext ->
-                let last = i + size_i + 2 = nb_extensions + nb_sizes in
-                let pctl_str = 
-                  let [col] = mk_oracle_prog env in
-                  let env = Env.append env col in
-                  let results = Results.filter col results in
-                  let (_,v) = eval_relative env all_results results in
-                  let vs = string_of_percentage_change b v in
-                  let e = eval_exectime_stddev env all_results results in
-                  let err = if arg_print_err then Printf.sprintf "(%.2f%s)" e "$\\sigma$" else "" in
-                  Printf.sprintf "%s %s" vs err
-                in
-                Mk_table.cell ~escape:false ~last:last add pctl_str);
-              ());
-            add Latex.tabular_newline);
-          add Latex.tabular_end;
-          add Latex.new_page;
-          ());
+      ~~ List.iteri digests (fun i d ->
+          let last = i + 1 = nb_digests in
+          let n = "{" ^ (pretty_digest d) ^ "}" in
+          let l = if last then "c" else "c|" in
+          let label = Latex.tabular_multicol (1+nb_extensions) l n in
+          Mk_table.cell ~escape:false ~last:last add label);
+    add Latex.tabular_newline;
+    let _ = Mk_table.cell ~escape:false ~last:false add "" in
+    for i=1 to nb_digests do (
+      let lab = "{\\begin{tabular}[x]{@{}c@{}}cilk\_for\\\\(sec.)\\end{tabular}}" in
+      let _ = Mk_table.cell ~escape:false ~last:false add lab in      
+    ~~ List.iteri extensions (fun ext_i ext ->
+            let last = (i = nb_digests) && (ext_i + 1 = nb_extensions) in
+            let label = pretty_extension ext in
+            Mk_table.cell ~escape:false ~last:last add label))
+    done;
+    add Latex.tabular_newline;
+    let all_results = Results.from_file results_file in
+    let results = all_results in
+    let env = Env.empty in
+    let env_rows = mk_sizes env in
+    ~~ List.iter env_rows (fun env_rows ->  (* loop over each input for current benchmark *)
+      let results = Results.filter env_rows results in
+      let env = Env.append env env_rows in
+      let row_title = formatter env_rows in
+      let _ = Mk_table.cell ~escape:false ~last:false add row_title in
+      ~~ List.iteri digests (fun digest_i digest ->
+        let (pbbs_str, b) =
+          let [col] = (mk_baseline_prog & (mk_digest digest)) env in
+          let env = Env.append env col in
+          let results = Results.filter col results in
+          let b = eval_exectime env all_results results in
+          let e = eval_exectime_stddev env all_results results in
+          let err = if arg_print_err then Printf.sprintf "(%.2f%s)" e "$\\sigma$" else "" in
+          (Printf.sprintf "%.2f %s" b err, b)
+        in
+        let _ = Mk_table.cell ~escape:false ~last:false add pbbs_str in
+        ~~ List.iteri extensions (fun i ext ->
+          let last = (digest_i + 1 = nb_digests) && (digest_i + 1 = nb_digests) in
+          let pctl_str = 
+            let [col] = ((mk_oracle_prog ext) & (mk_digest digest)) env in
+            let env = Env.append env col in
+            let results = Results.filter col results in
+            let (_,v) = eval_relative env all_results results in
+            let vs = string_of_percentage_change b v in
+            let e = eval_exectime_stddev env all_results results in
+            let err = if arg_print_err then Printf.sprintf "(%.2f%s)" e "$\\sigma$" else "" in
+            Printf.sprintf "%s %s" vs err
+          in
+          Mk_table.cell ~escape:false ~last:last add pctl_str);
+        ());
+      add Latex.tabular_newline);
+    add Latex.tabular_end;
+    add Latex.new_page;
+    ());
 
     ()
 
