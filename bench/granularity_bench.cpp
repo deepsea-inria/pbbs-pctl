@@ -16,6 +16,8 @@
 namespace cmdline = deepsea::cmdline;
 
 static constexpr
+int szb0 = 256;
+static constexpr
 int szb1 = 4 * 256;
 static constexpr
 int szb2 = 2*szb1;
@@ -522,6 +524,8 @@ void determine_item_type(pbbs::measured_type measure) {
   int item_szb = cmdline::parse<int>("item_szb");
   if (item_szb == 1) {
     using_item_type<char>(measure);
+  } else if (item_szb == szb0) {
+    using_item_type<bytes<szb0>>(measure);
   } else if (item_szb == szb1) {
     using_item_type<bytes<szb1>>(measure);
   } else if (item_szb == szb2) {
