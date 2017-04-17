@@ -165,7 +165,7 @@ let arg_sizes =
    | ["all"] -> ["small"; "medium"; "large"]
    | _ -> arg_sizes
 
-let sequence_benchmarks = ["comparison_sort"; "blockradix_sort"; "remove_duplicates";
+let sequence_benchmarks = ["blockradix_sort"; "comparison_sort"; "remove_duplicates";
                       "suffix_array"; "convex_hull"; "nearest_neighbours"; "ray_cast"; "delaunay"; (*"delaunay_refine"; "bfs"; *) ]
 
 let arg_benchmarks = 
@@ -894,8 +894,9 @@ let plot() = (
             let env = Env.append env col in
             let results = Results.filter col results in
             let v = eval_exectime env all_results results in
-            let e = eval_exectime_stddev env all_results results in 
-            (Printf.sprintf "%.3f (%.2f%s) " v e "$\\sigma$", v)
+            let e = eval_exectime_stddev env all_results results in
+            let err =  if arg_print_err then Printf.sprintf "(%.2f%s)"  e "$\\sigma$" else "" in
+            (Printf.sprintf "%.3f %s" v err, v)
           in
           let _ = Mk_table.cell ~escape:false ~last:false add pbbs_str in
           ~~ List.iteri extensions (fun i ext ->
@@ -939,9 +940,9 @@ let graphfiles' =
   in
   let other =
     [
-      "wikipedia-20070206"; "rgg"; (*"delaunay";*) "europe"; 
+      "wikipedia-20070206"; (*"rgg";*) (*"delaunay";*) "europe"; 
       "random_arity_100_large"; "rmat27_large"; (*"phased_mix_10_large";*)
-      "phased_low_50_large"; "rmat24_large";  "tree_2_512_1024_large";"cube_large";  "phased_524288_single_large"; (*"grid_sq_large"; *)
+      (*"phased_low_50_large";*) "rmat24_large";  (*"tree_2_512_1024_large";*) "cube_large";  (*"phased_524288_single_large";*) (*"grid_sq_large"; *)
       "paths_100_phases_1_large"; "unbalanced_tree_trunk_first_large"; 
     ]
   in

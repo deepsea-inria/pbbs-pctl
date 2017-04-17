@@ -12,7 +12,7 @@ let arg_nb_runs = XCmd.parse_or_default_int "runs" 1
 let arg_mode = Mk_runs.mode_from_command_line "mode"
 let arg_skips = XCmd.parse_or_default_list_string "skip" []
 let arg_onlys = XCmd.parse_or_default_list_string "only" []
-let arg_max_proc = XCmd.parse_or_default_int "max_proc" 40
+let arg_max_proc = XCmd.parse_or_default_int "proc" 40
 
 let run_modes =
   Mk_runs.([
