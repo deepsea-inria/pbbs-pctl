@@ -749,14 +749,14 @@ let pretty_input_name n =
   else if (inputfile_of "array_pair_int_int_random_256") = n then
     "random kvp 256"
   else if (inputfile_of "array_pair_int_int_random_100000000") = n then
-    "random kvp $10^6$"
+    "random kvp $10^8$"
 
   else if (inputfile_of "array_string_trigrams") = n then
     "trigrams"
   else if (inputfile_of "array_int_random") = n then
     "random"
   else if (inputfile_of "array_int_random_bounded_100000") = n then
-    "random unbounded"
+    "random bounded"
   else if (inputfile_of "array_int_exponential") = n then
     "exponential"
 
