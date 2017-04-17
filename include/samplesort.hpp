@@ -83,14 +83,14 @@ constexpr char samplesort_file[] = "samplesort";
 
 template<class E, class BinPred, class intT>
 void sample_sort (E* a, intT n, BinPred compare) {
-  par::cstmt<samplesort_file, E, BinPred, intT>([&] { return (90 * n * log(n) + 1); }, [&] { return (n * log(n) + 1); }, [&] {
-#ifdef MANUAL_CONTROL
+//  par::cstmt<samplesort_file, E, BinPred, intT>([&] { return (90 * n * log(n) + 1); }, [&] { return (n * log(n) + 1); }, [&] {
+//#ifdef MANUAL_CONTROL
     if (n <= SSORT_THR) {
-//      comparison_sort(a, n, compare);
-      std::sort(a, a + n, compare);
+      comparison_sort(a, n, compare);
+//      std::sort(a, a + n, compare);
       return;
     }
-#endif
+//#endif
     if (n <= 1) {
       return;
     }
@@ -282,10 +282,10 @@ void sample_sort (E* a, intT n, BinPred compare) {
     free(pivots);
     free(offset_b);
 #endif
-  }, [&] {
+/*  }, [&] {
 //    quick_sort(a, n, compare);
     std::sort(a, a + n, compare);
-  });
+  });*/
 }
   
 } // end namespace
