@@ -1,6 +1,8 @@
 
 #include <iostream>
 #include <chrono>
+#include <unistd.h>
+#include <limits.h>
 
 #include "io.hpp"
 #include "cmdline.hpp"
@@ -40,6 +42,25 @@ hwloc_topology_t    topology;
 #endif
   
   namespace {
+
+    void load_granularity_parameters() {
+      char hostname[HOST_NAME_MAX];
+      gethostname(hostname, HOST_NAME_MAX);
+      if (hostname == "teraram") {
+	pasl::pctl::granularity::kappa = 25.0;
+	pasl::pctl::granularity::update_size_ratio = 1.5;
+      } else if (hostname == "cadmium") {
+	pasl::pctl::granularity::kappa = 100.0;
+	pasl::pctl::granularity::update_size_ratio = 2.0;
+      } else if (hostname == "hiphi") {
+	pasl::pctl::granularity::kappa = 100.0;
+	pasl::pctl::granularity::update_size_ratio = 2.0;
+      }
+      pasl::pctl::granularity::kappa =
+	deepsea::cmdline::parse_or_default_double("kappa", pasl::pctl::granularity::kappa);
+      pasl::pctl::granularity::update_size_ratio =
+	deepsea::cmdline::parse_or_default_double("alpha", pasl::pctl::granularity::update_size_ratio);
+    }
     
     template <class Body>
     void launch(const Body& body) {  
@@ -64,6 +85,7 @@ hwloc_topology_t    topology;
   void launch(int argc, char** argv, const Body& body) {
     deepsea::cmdline::set(argc, argv);
     pasl::pctl::callback::init();
+    load_granularity_parameters();
     pasl::pctl::granularity::try_read_constants_from_file();
 
 #if defined(USE_PASL_RUNTIME)
