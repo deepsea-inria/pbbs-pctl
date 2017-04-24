@@ -849,13 +849,11 @@ let plot() = (
     let plen = 4 in
     if l < plen then
       "<unknown extension>"
-(*    else if l = plen then
-      sprintf "Oracle guided (%d %s)" 300 "$\\mu$" *)
     else
-      let p = String.sub ext 0 plen in
+      "Ours"
+(*      let p = String.sub ext 0 plen in
       let mu = int_of_string (String.sub ext plen (l - plen)) in
-      sprintf "{\\begin{tabular}[x]{@{}c@{}}Ours\\\\($\kappa$ := %d%ssec.)\\end{tabular}}" mu "$\\mu$"
-              (*      sprintf "Ours (%d %s)" mu "$\\mu$"*)
+      sprintf "{\\begin{tabular}[x]{@{}c@{}}Ours\\\\($\kappa$ := %d%ssec.)\\end{tabular}}" mu "$\\mu$" *)
   in
 
   let nb_benchmarks = List.length arg_benchmarks in
@@ -1075,9 +1073,10 @@ let plot() =
     if l < plen then
       "<unknown extension>"
     else
-      let p = String.sub ext 0 plen in
+      "Ours"
+(*      let p = String.sub ext 0 plen in
       let mu = int_of_string (String.sub ext plen (l - plen)) in
-      sprintf "{\\begin{tabular}[x]{@{}c@{}}Ours\\\\($\kappa$ := %d%ssec.)\\end{tabular}}" mu "$\\mu$"
+      sprintf "{\\begin{tabular}[x]{@{}c@{}}Ours\\\\($\kappa$ := %d%ssec.)\\end{tabular}}" mu "$\\mu$" *)
   in
 
   let nb_extensions = List.length extensions in
@@ -1253,9 +1252,10 @@ let plot() =
     if l < plen then
       "<unknown extension>"
     else
-      let p = String.sub ext 0 plen in
+      "Ours"
+(*      let p = String.sub ext 0 plen in
       let mu = int_of_string (String.sub ext plen (l - plen)) in
-      sprintf "{\\begin{tabular}[x]{@{}c@{}}Ours\\\\($\kappa$ := %d%ssec.)\\end{tabular}}" mu "$\\mu$"
+      sprintf "{\\begin{tabular}[x]{@{}c@{}}Ours\\\\($\kappa$ := %d%ssec.)\\end{tabular}}" mu "$\\mu$" *)
   in
 
   let nb_extensions = List.length extensions in
