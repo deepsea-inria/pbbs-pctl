@@ -410,8 +410,8 @@ let mk_files_inputs benchmark : Params.t =
   | "ray_cast" ->
     (mk_type "ray_cast_test" &
     ((mk_infile "data/happyTriangles.txt" & mk_infile2 "data/happyRays.txt" & mk_outfile "_data/happy_ray_cast_dataset.bin") ++
-     (mk_infile "data/angelTriangles.txt" & mk_infile2 "data/angelRays.txt" & mk_outfile "_data/angel_ray_cast_dataset.bin") ++
-     (mk_infile "data/dragonTriangles.txt" & mk_infile2 "data/dragonRays.txt" & mk_outfile "_data/dragon_ray_cast_dataset.bin") ++
+       (*     (mk_infile "data/angelTriangles.txt" & mk_infile2 "data/angelRays.txt" & mk_outfile "_data/angel_ray_cast_dataset.bin") ++*)
+       (*     (mk_infile "data/dragonTriangles.txt" & mk_infile2 "data/dragonRays.txt" & mk_outfile "_data/dragon_ray_cast_dataset.bin") ++*)
 (*     (mk_infile "data/xyzrgb_dragon_triangles.txt" & mk_infile2 "data/xyzrgb_dragon_rays.txt" & mk_outfile "_data/xyzrgb_dragon_ray_cast_dataset.bin") ++*)
      (mk_infile "data/xyzrgb_manuscript_triangles.txt" & mk_infile2 "data/xyzrgb_manuscript_rays.txt" & mk_outfile "_data/xyzrgb_manuscript_ray_cast_dataset.bin") ++
      (mk_infile "data/turbine_triangles.txt" & mk_infile2 "data/turbine_rays.txt" & mk_outfile "_data/turbine_ray_cast_dataset.bin")
@@ -943,7 +943,7 @@ let graphfiles' =
       "wikipedia-20070206"; (*"rgg";*) (*"delaunay";*) "europe"; 
       "random_arity_100_large"; "rmat27_large"; (*"phased_mix_10_large";*)
       (*"phased_low_50_large";*) "rmat24_large";  (*"tree_2_512_1024_large";*) "cube_large";  (*"phased_524288_single_large";*) (*"grid_sq_large"; *)
-      "paths_100_phases_1_large"; "unbalanced_tree_trunk_first_large"; 
+      "paths_100_phases_1_large"; (*"unbalanced_tree_trunk_first_large"; *)
     ]
   in
   List.concat [manual; List.map (fun n -> (n, 0)) other]
