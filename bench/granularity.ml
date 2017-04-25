@@ -87,10 +87,13 @@ let thresholds =
   f 10000
 
 let single_byte_threshold = List.nth thresholds 3
+let sixty_four_byte_threshold = 8
     
 let big_n = 804800000
 
 let small_n = 400000
+
+let medium_n = 20013000
 
 let tiny_n = 10000
 
@@ -251,7 +254,7 @@ let prog = "./granularity.virtual"
 let make() =
   build "." ["granularity_bench.unmk100"] arg_virtual_build
 
-let mk_thresholds = mk_list int "threshold" [1;single_byte_threshold]
+let mk_thresholds = mk_list int "threshold" [1;single_byte_threshold;sixty_four_byte_threshold;]
 
 let mk_common = mk_numa_interleave & mk_proc & ExpSingleByte.mk_algorithm_parallel_with_gc
 
@@ -259,12 +262,18 @@ let mk_with_char =
   (mk_item_szb 1) & (mk_use_hash 0) & (mk_n big_n)
                                           
 let mk_with_hash_small =
+    (mk_item_szb 64) & (mk_use_hash 1) & (mk_n medium_n)
+
+let mk_with_hash_medium =
     (mk_item_szb 2048) & (mk_use_hash 1) & (mk_n small_n)
                                              
 let mk_with_hash_big =
     (mk_item_szb 131072) & (mk_use_hash 1) & (mk_n tiny_n)
 
-let mk_configurations = mk_with_char ++ mk_with_hash_small ++ mk_with_hash_big
+let mk_with_hash_one_word =
+    (mk_item_szb 2048) & (mk_use_hash 1) & (mk_n small_n)  & (mk int "nb_hash_iters" 256)
+
+let mk_configurations = ((mk_with_hash_small ++ mk_with_hash_medium ++ mk_with_hash_big))  ++ mk_with_hash_one_word ++ mk_with_char
                                                              
 let run() =
   Mk_runs.(call (run_modes @ [
@@ -306,7 +315,7 @@ module ExpOracleGuided = struct
 
 let name = "oracle_guided"
 
-let prog = "./granularity_bench.unks100"
+let prog = "./granularity_bench.unks25"
 
 let make() =
   build "." [prog] arg_virtual_build
@@ -341,16 +350,20 @@ let pretty_n n = "" (*
   let sn = int_of_string n in
   if sn = big_n then
     "large"
-  else if sn = small_n then
+  else if sn = medium_n then
     "medium"
-  else if sn = tiny_n then
+  else if sn = small_n then
     "small"
+  else if sn = tiny_n then
+    "tiny"
   else
     "<unknown problem size>" *)
 
 let pretty_item_szb n =
   if n = "1" then
     "char"
+  else if n = "64" then
+    "64 char"
   else if n = "2048" then
     "2k char"
   else if n = "131072" then
@@ -420,6 +433,7 @@ let make() =
 
 let big_n = 40000
 let small_n = 1500
+let medium_n = (big_n + small_n) / 2
 let tiny_n = 150
 
 let mk_item_szb = mk int "item_szb" 1
@@ -503,13 +517,19 @@ let mk_algorithm_manual =
 let mk_with_char =
   (mk_item_szb 1) & (mk_use_hash 0) & (mk_n ExpNestedSingleByte.big_n)
                                           
+let mk_with_hash_medium =
+    (mk_item_szb 64) & (mk_use_hash 1) & (mk_n ExpNestedSingleByte.medium_n)
+
 let mk_with_hash_small =
-    (mk_item_szb 2048) & (mk_use_hash 1) & (mk_n ExpNestedSingleByte.small_n)
+    (mk_item_szb 12048) & (mk_use_hash 1) & (mk_n ExpNestedSingleByte.small_n)
                                              
 let mk_with_hash_big =
     (mk_item_szb 131072) & (mk_use_hash 1) & (mk_n ExpNestedSingleByte.tiny_n)
 
-let mk_configurations = mk_with_char ++ mk_with_hash_small ++ mk_with_hash_big
+let mk_with_hash_one_word =
+    (mk_item_szb 131072) & (mk_use_hash (-1024)) & (mk_n ExpNestedSingleByte.tiny_n)
+
+let mk_configurations = mk_with_char ++ mk_with_hash_small ++ mk_with_hash_big ++ mk_with_hash_one_word
 
 let pretty_algorithm n =
   if n = "nested_parallel_with_gc" then
@@ -523,10 +543,12 @@ let pretty_n n = ""
 (*  let sn = int_of_string n in
   if sn = ExpNestedSingleByte.big_n then
     "large"
-  else if sn = ExpNestedSingleByte.small_n then
+  else if sn = ExpNestedSingleByte.medium_n
     "medium"
-  else if sn = ExpNestedSingleByte.tiny_n then
+  else if sn = ExpNestedSingleByte.small_n then
     "small"
+  else if sn = ExpNestedSingleByte.tiny_n then
+    "tiny"
 else
 n *)
 
@@ -534,6 +556,8 @@ let pretty_item_szb n =
   let sn = int_of_string n in
   if sn = 1 then
     "char"
+  else if sn = 64 then
+    "64 char"
   else if sn = 2048 then
     "2k char"
   else if sn = 131072 then

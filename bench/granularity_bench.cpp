@@ -8,6 +8,7 @@
  *
  */
 
+#include <algorithm>
 #include "bench.hpp"
 #include "prandgen.hpp"
 
@@ -15,6 +16,12 @@
 
 namespace cmdline = deepsea::cmdline;
 
+static constexpr
+int szb0 = 64;
+static constexpr
+int szb6 = 128;
+static constexpr
+int szb5 = 256;
 static constexpr
 int szb1 = 4 * 256;
 static constexpr
@@ -37,7 +44,25 @@ namespace pasl {
 namespace pctl {
   
 using namespace granularity;
-  
+
+template <class Number>
+Number dotp(Number* lo1, Number* hi1, Number* lo2) {
+  Number* it1 = lo1;
+  Number* it2 = lo2;
+  Number r = 0;
+  for (; it1 != hi1; it1++, it2++) {
+    r += *it1 + *it2;
+  }
+  return r;
+}
+
+template <class Number>
+void mmult(Number* mtx, Number* vec, Number* dst, int dim) {
+  for (int i = 0; i < dim; i++) {
+    dst[i] = dotp(vec, vec + dim, mtx + (i * dim));
+  }
+}
+
 template <class Item, class Predicate>
 int nb_occurrences_seq(Item* lo, Item* hi, const Predicate& p) {
   int r = 0;
@@ -323,10 +348,10 @@ void check_nb_occurrences(int n) {
 }
 
 template <class Item>
-unsigned int hash(Item& x) {
+unsigned int hash(const Item& x) {
   unsigned int h = 0;
   assert(sizeof(Item) % sizeof(unsigned int) == 0);
-  auto lo = (unsigned int*)&x;
+  auto lo = (const unsigned int*)&x;
   auto hi = lo + (sizeof(Item) / sizeof(unsigned int));
   for (auto it = lo; it != hi; it++) {
     h = prandgen::hashu(*it + h);
@@ -441,6 +466,19 @@ void benchmark(pbbs::measured_type measure) {
         return d == c;
       };
       benchmark(lo, hi, p, measure);
+    } else if (cmdline::parse_or_default("heavy_hash", false)) {
+      auto h = hash(c);
+      int dim = sizeof(Item);
+      char* mtx = new char[dim * dim];
+      for (int i = 0; i < (dim * dim); i++) {
+        mtx[i] = hash(i);
+      }
+      auto p = [h,mtx,dim] (Item& d) {
+        char* beg = (char*)&d;
+        mmult(mtx, beg, beg, dim);
+        return h == hash(d);
+      };
+      benchmark(lo, hi, p, measure);      
     } else if (nb_hash_iters == 0) {
       auto h = hash(c);
       auto p = [h] (Item& d) {
@@ -450,10 +488,14 @@ void benchmark(pbbs::measured_type measure) {
     } else {
       auto h = hash(c);
       auto p = [h,nb_hash_iters] (Item& d) {
-        unsigned int hh = hash(d);
-        for (int i = 0; i < nb_hash_iters; i++) {
-          hh = hash(hh);
-        }
+	char* beg = (char*)&d;
+        char* end = beg + std::min(nb_hash_iters, (int)sizeof(Item));
+	unsigned int hh = 0;
+        for (auto it = beg; it + sizeof(unsigned int) != end; it += sizeof(unsigned int)) {
+	  unsigned int* p = (unsigned int*)it;
+	  unsigned int x = *p;
+	  hh = hash(hh | x);
+	}
         return h == hh;
       };
       benchmark(lo, hi, p, measure);
@@ -522,6 +564,12 @@ void determine_item_type(pbbs::measured_type measure) {
   int item_szb = cmdline::parse<int>("item_szb");
   if (item_szb == 1) {
     using_item_type<char>(measure);
+  } else if (item_szb == szb0) {
+    using_item_type<bytes<szb0>>(measure);
+  } else if (item_szb == szb6) {
+    using_item_type<bytes<szb6>>(measure);
+  } else if (item_szb == szb5) {
+    using_item_type<bytes<szb5>>(measure);
   } else if (item_szb == szb1) {
     using_item_type<bytes<szb1>>(measure);
   } else if (item_szb == szb2) {
