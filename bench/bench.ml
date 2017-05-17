@@ -70,7 +70,7 @@ let arg_onlys = XCmd.parse_or_default_list_string "only" []
 let arg_sizes = XCmd.parse_or_default_list_string "size" ["all"]
 let arg_benchmarks = XCmd.parse_or_default_list_string "benchmark" ["all"]
 let arg_proc = XCmd.parse_or_default_list_int "proc" [1; 10; 39]
-let arg_extension = XCmd.parse_or_default_string "ext" "norm"
+let arg_extension = XCmd.parse_or_default_string "ext" "unks"
 
 let run_modes = Mk_runs.([
 	 Mode arg_mode;
