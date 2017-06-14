@@ -54,8 +54,8 @@ hwloc_topology_t    topology;
 	pasl::pctl::granularity::kappa = 50.0;
 	pasl::pctl::granularity::update_size_ratio = 0.5;
       } else if (hostname == "hiphi.aladdin.cs.cmu.edu") {
-	pasl::pctl::granularity::kappa = 100.0;
-	pasl::pctl::granularity::update_size_ratio = 2.0;
+	pasl::pctl::granularity::kappa = 40.0;
+	pasl::pctl::granularity::update_size_ratio = 1.2;
       }
 
       pasl::pctl::granularity::kappa =
