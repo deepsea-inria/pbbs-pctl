@@ -69,7 +69,20 @@ let arg_skips = XCmd.parse_or_default_list_string "skip" []
 let arg_onlys = XCmd.parse_or_default_list_string "only" []
 let arg_sizes = XCmd.parse_or_default_list_string "size" ["all"]
 let arg_benchmarks = XCmd.parse_or_default_list_string "benchmark" ["all"]
-let arg_proc = XCmd.parse_or_default_list_int "proc" [1; 10; 39]
+let hostname = Unix.gethostname ()
+let _ = Printf.printf "hostname=%s\n" (Unix.gethostname ())
+let arg_proc = 
+  let default =
+    if hostname = "teraram" then
+      [ 40; ]
+    else if hostname = "cadmium" then
+      [ 48; ]
+    else if hostname = "hiphi.aladdin.cs.cmu.edu" then
+      [ 64; ]
+    else
+      [ 1; ]
+  in
+  XCmd.parse_or_default_list_int "proc" default
 let arg_extension = XCmd.parse_or_default_string "ext" "unks"
 
 let run_modes = Mk_runs.([
