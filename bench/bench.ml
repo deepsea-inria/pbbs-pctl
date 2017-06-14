@@ -67,7 +67,7 @@ let arg_nb_runs = XCmd.parse_or_default_int "runs" 1
 let arg_mode = Mk_runs.mode_from_command_line "mode"
 let arg_skips = XCmd.parse_or_default_list_string "skip" []
 let arg_onlys = XCmd.parse_or_default_list_string "only" []
-let arg_sizes = XCmd.parse_or_default_list_string "size" ["all"]
+let arg_sizes = XCmd.parse_or_default_list_string "size" ["large"]
 let arg_benchmarks = XCmd.parse_or_default_list_string "benchmark" ["all"]
 let hostname = Unix.gethostname ()
 let _ = Printf.printf "hostname=%s\n" (Unix.gethostname ())
