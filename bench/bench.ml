@@ -606,7 +606,7 @@ let prog_names = function
   | "pbfs" -> "pbfs"
   | x -> Pbench.error "invalid benchmark " ^ x
 
-let extensions = XCmd.parse_or_default_list_string "exts" [ "manc"; "norm"; "unko"; "unke"]
+let extensions = XCmd.parse_or_default_list_string "exts" [ "unks" ]
 
 let no_pbbs = XCmd.mem_flag "nopbbs"
 
