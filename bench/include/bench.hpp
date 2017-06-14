@@ -51,8 +51,8 @@ hwloc_topology_t    topology;
 	pasl::pctl::granularity::kappa = 25.0;
 	pasl::pctl::granularity::update_size_ratio = 1.5;
       } else if (hostname == "cadmium") {
-	pasl::pctl::granularity::kappa = 50.0;
-	pasl::pctl::granularity::update_size_ratio = 0.5;
+	pasl::pctl::granularity::kappa = 30.0;
+	pasl::pctl::granularity::update_size_ratio = 1.1;
       } else if (hostname == "hiphi.aladdin.cs.cmu.edu") {
 	pasl::pctl::granularity::kappa = 40.0;
 	pasl::pctl::granularity::update_size_ratio = 1.2;
