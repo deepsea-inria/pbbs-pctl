@@ -136,10 +136,10 @@ pair<int,int> bfs(int start, graph::graph<int> graph) {
        for (int j = 0; j < g[v].degree; j++) {
          int ngh = g[v].Neighbors[j];
            if (visited_ptr[ngh] == 0 && !__sync_val_compare_and_swap(&visited_ptr[ngh], 0, 1)) {//utils::CAS(&visited_ptr[ngh], 0, 1)) {
-             frontier_next_ptr[o + j] = g[v].Neighbors[k++] = ngh;
+             frontier_next_ptr[o + j] = /*g[v].Neighbors[k++] = */ ngh;
            }
          else frontier_next_ptr[o + j] = -1;}
-        g[v].degree = k;
+       //g[v].degree = k;
      }, [&, frontier_next_ptr, frontier_ptr, g, visited_ptr] (int l, int r) {
        for (int i = l; i < r; i++) {
          int k = 0;
@@ -149,11 +149,11 @@ pair<int,int> bfs(int start, graph::graph<int> graph) {
         for (int j = 0; j < g[v].degree; j++) {
           int ngh = g[v].Neighbors[j];
           if (visited_ptr[ngh] == 0 && !__sync_val_compare_and_swap(&visited_ptr[ngh], 0, 1)) {
-            frontier_next_ptr[o + j] = g[v].Neighbors[k++] = ngh;
+            frontier_next_ptr[o + j] = /*g[v].Neighbors[k++] = */ ngh;
           }
           else frontier_next_ptr[o + j] = -1;
         }
-        g[v].degree = k;
+        //g[v].degree = k;
       }
     });
 //      }}
