@@ -626,9 +626,9 @@ let no_pbbs = XCmd.mem_flag "nopbbs"
 let my_mk_progs =
 (*  ((mk string "lib_type" "pbbs") & (mk string "prog" "bfs_bench.manc"))
   ++*)   ((mk string "lib_type" "pctl") & (mk string "prog" "bfs_bench.unks30"))
-         ++ ((mk string "lib_type" "pctl") & (mk string "prog" "bfs_bench.unks100"))
+         ++ ((mk string "lib_type" "pctl") & (mk string "prog" "bfs_bench.unks"))
          ++ ((mk string "lib_type" "pctl") & (mk string "prog" "pbfs_bench.unks30"))
-         ++ ((mk string "lib_type" "pctl") & (mk string "prog" "pbfs_bench.unks100"))
+         ++ ((mk string "lib_type" "pctl") & (mk string "prog" "pbfs_bench.unks"))
          ++ ((mk string "lib_type" "pbbs") & (mk string "prog" "pbfs_bench.manc"))
                             
 let prog benchmark extension =
@@ -720,11 +720,11 @@ let eval_relative_main = fun env all_results results ->
 let pretty_prog p =
   if p = "bfs_bench.unks30" then
     "Seq. neighbor list, oracle guided, kappa := 30usec"
-  else if p = "bfs_bench.unks100" then
+  else if p = "bfs_bench.unks" then
     "Seq. neighbor list, oracle guided, kappa := 100usec"
   else if p = "pbfs_bench.unks30" then
     "Par. neighbor list, oracle guided, kappa := 30usec"
-  else if p = "pbfs_bench.unks100" then
+  else if p = "pbfs_bench.unks" then
     "Par. neighbor list, oracle guided, kappa := 100usec"
   else if p = "bfs_bench.manc" then
     "Seq. neighbor list, PBBS BFS"
@@ -985,7 +985,7 @@ let pretty_graph_name n =
   else
     n
 
-let extensions = XCmd.parse_or_default_list_string "exts" [ "unks100"; ]
+let extensions = XCmd.parse_or_default_list_string "exts" [ "unks"; ]
 
 let arg_inner_loop = XCmd.parse_or_default_list_string "inner_loop" ["bfs";"pbfs"]
 
@@ -1174,7 +1174,7 @@ let name = "merkletree"
 
 let results_file = "_results/results_merkletree.txt"
 
-let extensions = XCmd.parse_or_default_list_string "exts" [ "unks100"; ]
+let extensions = XCmd.parse_or_default_list_string "exts" [ "unks"; ]
 
 let prog_of = Printf.sprintf "merkletree_bench.%s"
                              
