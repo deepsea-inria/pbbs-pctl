@@ -44,15 +44,16 @@ hwloc_topology_t    topology;
   namespace {
 
     void load_granularity_parameters() {
-      char hostname[HOST_NAME_MAX];
-      gethostname(hostname, HOST_NAME_MAX);
+      char _hostname[HOST_NAME_MAX];
+      gethostname(_hostname, HOST_NAME_MAX);
+      std::string hostname = std::string(_hostname);
       if (hostname == "teraram") {
 	pasl::pctl::granularity::kappa = 25.0;
 	pasl::pctl::granularity::update_size_ratio = 1.5;
       } else if (hostname == "cadmium") {
-	pasl::pctl::granularity::kappa = 100.0;
-	pasl::pctl::granularity::update_size_ratio = 2.0;
-      } else if (strcmp(hostname, "hiphi.aladdin.cs.cmu.edu") == 0) {
+	pasl::pctl::granularity::kappa = 50.0;
+	pasl::pctl::granularity::update_size_ratio = 0.5;
+      } else if (hostname == "hiphi.aladdin.cs.cmu.edu") {
 	pasl::pctl::granularity::kappa = 100.0;
 	pasl::pctl::granularity::update_size_ratio = 2.0;
       }
