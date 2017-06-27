@@ -952,13 +952,19 @@ let graphfiles' =
   let other =
     [
       "wikipedia-20070206"; (*"rgg";*) (*"delaunay";*) "europe"; 
-      "random_arity_100_large"; "rmat27_large"; (*"phased_mix_10_large";*)
+      "random_arity_100_large"; "rmat27_large"; "phased_mix_10_large";
       (*"phased_low_50_large";*) "rmat24_large";  (*"tree_2_512_1024_large";*) "cube_large";  (*"phased_524288_single_large";*) (*"grid_sq_large"; *)
       "paths_100_phases_1_large"; (*"unbalanced_tree_trunk_first_large"; *)
     ]
   in
   List.concat [manual; List.map (fun n -> (n, 0)) other]
 
+let user_graph_argument = XCmd.parse_optional_string "graph"
+
+let graphfiles' = match user_graph_argument with
+  | None -> graphfiles'
+  | Some s -> [s, List.assoc s graphfiles']
+              
 let graphfiles = List.map (fun (n, _) -> n) graphfiles'
 
 let graph_renaming =
@@ -1098,7 +1104,7 @@ let plot() =
   let pdf_file = file_tables name in
   Mk_table.build_table tex_file pdf_file (fun add ->
     let l = "S[table-format=2.2]" in (* later: use *)
-    let ls = String.concat "|" (XList.init ((nb_extensions+1) * nb_inner_loop) (fun _ -> "l")) in
+    let ls = String.concat "|" (XList.init ((nb_extensions+1) * nb_inner_loop + 1) (fun _ -> "l")) in
     let hdr = Printf.sprintf "l|%s" ls in
     add (Latex.tabular_begin hdr);                                    
     let _ = Mk_table.cell ~escape:false ~last:false add "" in
@@ -1116,8 +1122,9 @@ let plot() =
       ~~ List.iteri extensions (fun ext_i ext ->
             let last = i + ext_i + 1 = nb_extensions + nb_inner_loop in
             let label = pretty_extension ext in
-            Mk_table.cell ~escape:false ~last:last add label))
+            Mk_table.cell ~escape:false ~last:false add label))
     done;
+    Mk_table.cell ~escape:false ~last:true add "Ours Nested vs. Ours Flat";
     add Latex.tabular_newline;
         let all_results = Results.from_file results_file in
         let results = all_results in
@@ -1128,6 +1135,8 @@ let plot() =
           let env = Env.append env env_rows in
           let row_title = main_formatter env_rows in
           let _ = Mk_table.cell ~escape:false ~last:false add row_title in
+          let exectime_bfs_pctl = ref 0.0 in
+          let exectime_pbfs_pctl = ref 0.0 in
           ~~ List.iteri arg_inner_loop (fun inner_loop_i inner_loop ->
             let (pbbs_str, b) =
               let [col] = (mk_bfs_prog inner_loop "manc" "pbbs") env in
@@ -1146,13 +1155,16 @@ let plot() =
                 let env = Env.append env col in
                 let results = Results.filter col results in
                 let (_,v) = eval_relative_main env all_results results in
+                let _ = if inner_loop = "bfs" then (exectime_bfs_pctl := v) else (exectime_pbfs_pctl := v) in
                 let vs = string_of_percentage_change b v in
                 let e = eval_exectime_stddev env all_results results in
                 let err = if arg_print_err then Printf.sprintf "(%.2f%s)" e "$\\sigma$" else "" in
                 Printf.sprintf "%s %s" vs err
               in
-              Mk_table.cell ~escape:false ~last:last add pctl_str);
+              Mk_table.cell ~escape:false add pctl_str);
             ());
+          let str_diff = string_of_percentage_change (!exectime_bfs_pctl) (!exectime_pbfs_pctl) in
+          Mk_table.cell ~escape:false ~last:true add str_diff;
           add Latex.tabular_newline);
         add Latex.tabular_end;
         add Latex.new_page;
