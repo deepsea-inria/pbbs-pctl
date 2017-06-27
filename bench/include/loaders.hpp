@@ -129,6 +129,7 @@ ray_cast_test load_ray_cast_test(std::string file, std::string triangles_file, s
     write_to_file(out, test.rays);
     return test;
   }
+  return test;
 }
 
 void parse_filename(std::string fname, std::string& base, std::string& extension) {

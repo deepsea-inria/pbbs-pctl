@@ -28,6 +28,8 @@ public:
     this->points = other.points;
     this->triangles = other.triangles;
     this->rays = other.rays;
+    ray_cast_test foo;
+    return foo;
   }
 };
 
