@@ -78,6 +78,8 @@ let arg_proc =
       [ 48; ]
     else if hostname = "hiphi.aladdin.cs.cmu.edu" then
       [ 64; ]
+    else if hostname = "aware.aladdin.cs.cmu.edu" then
+      [ 72; ]
     else
       [ 1; ]
   in
