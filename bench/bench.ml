@@ -1112,11 +1112,13 @@ let plot() =
     add (Latex.tabular_begin hdr);                                    
     let _ = Mk_table.cell ~escape:false ~last:false add "" in
     ~~ List.iteri arg_inner_loop (fun i inner_loop ->
-          let last = i + 1 = nb_inner_loop in
+          let last = false (* i + 1 = nb_inner_loop*) in
           let n = "{" ^ (if inner_loop = "bfs" then "Flat" else "Nested") ^ "}" in
           let l = if last then "c" else "c|" in
           let label = Latex.tabular_multicol (nb_extensions+1) l n in
           Mk_table.cell ~escape:false ~last:last add label);
+    let label = Latex.tabular_multicol (nb_extensions+1) "c" "" in
+    Mk_table.cell ~escape:false ~last:true add label;
     add Latex.tabular_newline;
     let _ = Mk_table.cell ~escape:false ~last:false add "Graph" in
     for i=1 to nb_inner_loop do (
@@ -1127,8 +1129,8 @@ let plot() =
             let label = pretty_extension ext in
             Mk_table.cell ~escape:false ~last:false add label))
     done;
-    Mk_table.cell ~escape:false ~last:false add "PBBS Nested vs. PBBS Flat";
-    Mk_table.cell ~escape:false ~last:true add "Ours Nested vs. PBBS Flat";
+    Mk_table.cell ~escape:false ~last:false add "{\\begin{tabular}[x]{@{}c@{}}PBBS Nested vs. \\\\PBBS Flat\\end{tabular}}";
+    Mk_table.cell ~escape:false ~last:true add "{\\begin{tabular}[x]{@{}c@{}}Ours Nested vs. \\\\PBBS Flat\\end{tabular}}";
     add Latex.tabular_newline;
         let all_results = Results.from_file results_file in
         let results = all_results in
