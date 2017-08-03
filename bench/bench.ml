@@ -956,7 +956,7 @@ let graphfiles' =
       "random_arity_100_large"; "rmat27_large"; 
       "rmat24_large";  "cube_large"; "grid_sq_large";
       "paths_100_phases_1_large"; "unbalanced_tree_trunk_first_large";
-      "phased_mix_10_large"; "tree_2_512_1024_large"; "phased_low_50_large";
+      "phased_mix_10_large"; (*"tree_2_512_1024_large";*) "phased_low_50_large";
       "phased_524288_single_large"; 
     ]
   in
