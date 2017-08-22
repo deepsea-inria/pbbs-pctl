@@ -315,7 +315,7 @@ module ExpOracleGuided = struct
 
 let name = "oracle_guided"
 
-let prog = "./granularity_bench.unks25"
+let prog = "./granularity_bench.unks"
 
 let make() =
   build "." [prog] arg_virtual_build
