@@ -213,6 +213,7 @@ let types_list = function
   | "delaunay" -> [ "array_point2d"; ]
   | "delaunay_refine" -> [ "triangles_point2d"; ]
   | "bfs" | "pbfs" -> [ "graph"; ]
+  | "mis" -> [ "graph3"; ]
   | _ -> Pbench.error "invalid benchmark"
 
 let generators_list = function
@@ -315,6 +316,7 @@ let generators_list = function
       ]
     | _ -> Pbench.error "invalid_type")
   | "bfs" | "pbfs" -> (function n -> function typ -> [])
+  | "mis" -> (function n -> function typ -> [])
   | _ -> Pbench.error "invalid benchmark"
 
 let graphfile_of n = "_data/" ^ n ^ ".bin"
@@ -475,6 +477,18 @@ let mk_files_inputs benchmark : Params.t =
      (mk_infile "/home/rainey/pasl/graph/bench/graph/paths_5percent_large.adj_bin" & mk_outfile "_data/paths_5percent_large.bin") ++
      (mk_infile "/home/rainey/pasl/graph/bench/graph/phased_mix_100_large.adj_bin" & mk_outfile "_data/phased_mix_100_large.bin"))*)
     ))
+  | "mis" ->
+         (mk_type "graph3" &
+    ((*(mk_infile "data/3Dgrid_J_10000000.txt" & mk_outfile "_data/3Dgrid_J_10000000.bin") ++
+     (mk_infile "data/randLocalGraph_J_5_10000000.txt" & mk_outfile "_data/randLocalGraph_J_5_10000000.bin") ++
+     (mk_infile "data/rMatGraph_J_5_10000000.txt" & mk_outfile "_data/rMatGraph_J_5_10000000.bin") ++*)
+   
+     (let mk_input graph size = mk string "infile" (sprintf "/home/rainey/new-sc15-graph/graph/bench/_data/%s_%s.adj_bin" graph size) in
+      let mk_output graph size = mk string "outfile" (sprintf "_data/%s_%s.bin" graph size) in
+      Params.concat(~~ List.map arg_sizes (fun size ->
+      Params.concat(~~ List.map graphs (fun graph ->
+        (mk_input graph size & mk_output graph size)
+     )))))(* ++*)))
   | _ -> Params.concat ([])
 
 let mk_sequence_inputs benchmark : Params.t =
@@ -549,6 +563,7 @@ let prog_names = function
   | "delaunay_refine" -> "delaunayrefine"
   | "bfs" -> "bfs"
   | "pbfs" -> "pbfs"
+  | "mis" -> "mis"
   | _ -> Pbench.error "invalid benchmark"
 
 let prog benchmark =
@@ -621,6 +636,7 @@ let prog_names = function
   | "delaunay_refine" -> "delaunayrefine"
   | "bfs" -> "bfs"
   | "pbfs" -> "pbfs"
+  | "mis" -> "mis"
   | x -> Pbench.error "invalid benchmark " ^ x
 
 let extensions = XCmd.parse_or_default_list_string "exts" [ "unks" ]
