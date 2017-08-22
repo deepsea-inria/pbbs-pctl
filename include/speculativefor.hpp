@@ -27,11 +27,11 @@
 
 #if defined(LONG)
 typedef long intT;
-typedef unsigned long uintT;
+//typedef unsigned long uintT;
 #define INT_T_MAX LONG_MAX
 #else
 typedef int intT;
-typedef unsigned int uintT;
+//typedef unsigned int uintT;
 #define INT_T_MAX INT_MAX
 #endif
 
@@ -60,9 +60,9 @@ inline void reserveLoc(intT& x, intT i) {utils::writeMin(&x,i);}
 
 template <class S>
 intT speculative_for(S step, intT s, intT e, int granularity,
-                     bool hasState=1, int maxTries=-1) {
-  if (maxTries < 0) maxTries = 100 + 200*granularity;
-  intT maxRoundSize = (e-s)/granularity+1;
+                     bool hasState = 1, int maxTries = -1) {
+  if (maxTries < 0) maxTries = 100 + 200 * granularity;
+  intT maxRoundSize = (e - s) / granularity + 1;
   parray<intT> I(maxRoundSize);
   parray<intT> Ihold(maxRoundSize);
   parray<bool> keep(maxRoundSize);
@@ -108,7 +108,7 @@ intT speculative_for(S step, intT s, intT e, int granularity,
     }
     
     // keep edges that failed to hook for next round
-    numberKeep = (intT)dps::pack(keep.begin(), I.begin(), I.begin()+size, Ihold.begin());
+    numberKeep = (intT)dps::pack(keep.begin(), I.begin(), I.begin() + size, Ihold.begin());
     I.swap(Ihold);
     numberDone += size - numberKeep;
   }

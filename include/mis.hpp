@@ -24,7 +24,6 @@
 #include "datapar.hpp"
 #include "graph.hpp"
 #include "speculativefor.hpp"
-#include "graphutils.hpp"
 
 #ifndef MIS_H_
 #define MIS_H_
@@ -43,9 +42,9 @@ namespace pctl {
 //   Flags = 2 indicates a neighbor is chosen
 struct MISstep {
   char flag;
-  char *Flags;  vertex<intT>*G;
+  char* flags;  graph::vertex<int>* G;
   MISstep() { }
-  MISstep(char* _F, vertex<intT>* _G) : Flags(_F), G(_G) {}
+  MISstep(char* _F, graph::vertex<int>* _G) : flags(_F), G(_G) {}
   
   bool reserve(intT i) {
     intT d = G[i].degree;
@@ -53,24 +52,24 @@ struct MISstep {
     for (intT j = 0; j < d; j++) {
       intT ngh = G[i].Neighbors[j];
       if (ngh < i) {
-        if (Flags[ngh] == 1) { flag = 2; return 1;}
+        if (flags[ngh] == 1) { flag = 2; return 1;}
         // need to wait for higher priority neighbor to decide
-        else if (Flags[ngh] == 0) flag = 0;
+        else if (flags[ngh] == 0) flag = 0;
       }
     }
     return 1;
   }
   
-  bool commit(intT i) { return (Flags[i] = flag) > 0;}
+  bool commit(intT i) { return (flags[i] = flag) > 0;}
 };
 
-parray<char> maximalIndependentSet(graph<intT> GS) {
+parray<char> maximalIndependentSet(graph::graph<int> GS) {
   intT n = GS.n;
-  vertex<intT>* G = GS.V;
-  parray<char> Flags(n, 0);
-  MISstep mis(Flags.begin(), G);
-  speculative_for(mis,0,n,20);
-  return Flags;
+  graph::vertex<int>* G = GS.V;
+  parray<char> flags(n, (char) 0);
+  MISstep mis(flags.begin(), G);
+  speculative_for(mis, 0, n, 20);
+  return flags;
 }
   
 } // end namespace
