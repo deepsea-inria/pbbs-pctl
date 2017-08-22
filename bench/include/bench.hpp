@@ -56,7 +56,11 @@ hwloc_topology_t    topology;
       } else if (hostname == "hiphi.aladdin.cs.cmu.edu") {
 	pasl::pctl::granularity::kappa = 40.0;
 	pasl::pctl::granularity::update_size_ratio = 1.2;
+      } else if (hostname == "aware.aladdin.cs.cmu.edu") {
+	pasl::pctl::granularity::kappa = 40.0;
+	pasl::pctl::granularity::update_size_ratio = 1.2;
       }
+
 
       pasl::pctl::granularity::kappa =
 	deepsea::cmdline::parse_or_default_double("kappa", pasl::pctl::granularity::kappa);
