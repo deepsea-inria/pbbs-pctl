@@ -48,6 +48,7 @@ PROGRAMS=\
         delaunayrefine_bench.cpp \
         bfs_bench.cpp \
         pbfs_bench.cpp \
+	mis_bench.cpp \
         sequence_data.cpp \
 
 ####################################################################
