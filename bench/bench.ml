@@ -154,8 +154,11 @@ let string_of_percentage ?(show_plus=true) v =
    | FP_infinite -> "$+\\infty$"
    | FP_nan -> "na"
 
+let percentage_change vold vnew =
+  vnew /. vold -. 1.0
+
 let string_of_percentage_change ?(show_plus=true) vold vnew =
-  string_of_percentage ~show_plus:show_plus (vnew /. vold -. 1.0)
+  string_of_percentage ~show_plus:show_plus (percentage_change vold vnew)
 
 
 (*****************************************************************************)
@@ -876,15 +879,16 @@ let plot() = (
   let tex_file = file_tables_src experiment_name in
   let pdf_file = file_tables experiment_name in
     Mk_table.build_table tex_file pdf_file (fun add ->
-      let ls = String.concat "|" (XList.init nb_extensions (fun _ -> "l")) in
-      let hdr = Printf.sprintf "p{1cm}l|l|%s" ls in
+      let ls = String.concat "|" (XList.init nb_extensions (fun _ -> "d{3.2}")) in
+      let hdr = Printf.sprintf "p{1cm}l|d{3.2}|%s|l" ls in
       add (Latex.tabular_begin hdr);                                    
       Mk_table.cell ~escape:true ~last:false add (Latex.tabular_multicol 2 "l|" "Application/input");
-      Mk_table.cell ~escape:true ~last:false add "\\begin{tabular}[x]{@{}c@{}}Time (s)\\\\original\\end{tabular}";
+      Mk_table.cell ~escape:true ~last:false add "\\multicolumn{1}{l|}{\\begin{tabular}[x]{@{}c@{}}Time (s)\\\\original\\end{tabular}}";
       ~~ List.iteri extensions (fun i ext ->
         let last = i + 1 = nb_extensions in
-        let label = pretty_extension ext in
-        Mk_table.cell ~escape:true ~last:last add label);
+        let label = Printf.sprintf "\multicolumn{1}{l|}{%s}" (pretty_extension ext) in
+        Mk_table.cell ~escape:true ~last:false add label);
+      Mk_table.cell ~escape:true ~last:true add "Score";
       add Latex.tabular_newline;
       ~~ List.iteri arg_benchmarks (fun benchmark_i benchmark ->
         Mk_table.cell add (Latex.tabular_multicol 2 "l|" (sprintf "\\textbf{%s}" (Latex.escape benchmark)));
@@ -908,20 +912,34 @@ let plot() = (
             let v = eval_exectime env all_results results in
             let e = eval_exectime_stddev env all_results results in
             let err =  if arg_print_err then Printf.sprintf "(%.2f%s)"  e "$\\sigma$" else "" in
-            (Printf.sprintf "%.3f %s" v err, v)
+            (Printf.sprintf "%.2f %s" v err, v)
           in
           let _ = Mk_table.cell ~escape:false ~last:false add pbbs_str in
           ~~ List.iteri extensions (fun i ext ->
             let last = i + 1 = nb_extensions in
-            let pctl_str = 
+            let (pctl_str, grade_str) = 
               let [col] = (mk_pctl_prog benchmark ext "pctl") env in
               let env = Env.append env col in
               let results = Results.filter col results in
               let (_,v) = eval_relative_main env all_results results in
+              let t = eval_exectime env all_results results in
+              let e = eval_exectime_stddev env all_results results in
               let vs = string_of_percentage_change b v in
-              Printf.sprintf "%s" vs 
+              let grade =
+                let delta = v -. b in
+                let grade = delta /. e in
+                if (abs_float grade) < 0.51 then
+                  Printf.sprintf "$\\approx$"
+                else if grade < 0.0 then
+                  Printf.sprintf "$\\checkmark^{%.0f}$" (abs_float grade)
+                else
+                  Printf.sprintf "$\\times^{%.0f}$" grade
+              in
+              let vs' = Printf.sprintf "%s" vs in
+              (vs', grade)
             in
-            Mk_table.cell ~escape:false ~last:last add pctl_str);
+            Mk_table.cell ~escape:false ~last:false add pctl_str;
+            Mk_table.cell ~escape:false ~last:true add grade_str);
           add Latex.tabular_newline);
         ());
       add Latex.tabular_end;
@@ -1159,7 +1177,7 @@ let plot() =
             let _ = Mk_table.cell ~escape:false ~last:false add pbbs_str in
             ~~ List.iteri extensions (fun i ext ->
               let last = i + inner_loop_i + 2 = nb_extensions + nb_inner_loop in
-              let pctl_str = 
+              let (pctl_str, grade_str) = 
                 let [col] = (mk_bfs_prog inner_loop ext "pctl") env in
                 let env = Env.append env col in
                 let results = Results.filter col results in
@@ -1168,7 +1186,17 @@ let plot() =
                 let vs = string_of_percentage_change b v in
                 let e = eval_exectime_stddev env all_results results in
                 let err = if arg_print_err then Printf.sprintf "(%.2f%s)" e "$\\sigma$" else "" in
-                Printf.sprintf "%s %s" vs err
+                let grade =
+                  let delta = v -. b in
+                  let grade = delta /. e in
+                  if (abs_float grade) < 0.51 then
+                    Printf.sprintf "$\\approx$"
+                  else if grade < 0.0 then
+                    Printf.sprintf "$\\checkmark^{%.0f}$" (abs_float grade)
+                  else
+                    Printf.sprintf "$\\times^{%.0f}$" grade
+                in
+                (Printf.sprintf "%s %s" vs err, grade)
               in
               Mk_table.cell ~escape:false add pctl_str);
             ());
