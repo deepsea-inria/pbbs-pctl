@@ -20,61 +20,46 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include <iostream>
-#include <fstream>
-#include <cstdlib>
-#include <math.h>
 
-#include "graph.hpp"
-#include "prandgen.hpp"
+#include "pmem.hpp"
 
-#ifndef _GRAPH_UTILS_INCLUDED
-#define _GRAPH_UTILS_INCLUDED
+#ifndef UNION_H_
+#define UNION_H_
 
 namespace pasl {
 namespace pctl {
-namespace graph {
 
-using namespace std;
+struct unionFind {
+  int* parents;
 
-template <class intT>
-edgeArray<intT> to_edge_array(graph<intT>& G) {
-  int num_rows = G.n;
-  int non_zeros = G.m;
-  vertex<intT>* v = G.V;
-  edge<intT>* e = newA(edge<intT>, non_zeros);
-
-  int k = 0;
-  for (int i = 0; i < num_rows; i++) {
-    for (int j = 0; j < v[i].degree; j++) {
-      if (i < v[i].Neighbors[j]) {
-        e[k++] = edge<int>(i, v[i].Neighbors[j]);
-      }
-    }
+  // initialize with all roots marked with -1
+  unionFind(int n) {
+    parents = (int*) malloc(sizeof(int) * n);
+    pmem::fill(parents, parents + n, -1);
   }
-  return edgeArray<intT>(e, num_rows, num_rows, non_zeros);
-}
 
-template <class intT>
-wghEdgeArray<intT> to_weighted_edge_array(graph<intT>& G) {
-  int n = G.n;
-  int m = G.m;
-  vertex<intT>* v = G.V;
-  edge<intT>* e = newA(edge<intT>, m);
+  void del() {free(parents);}
 
-  int k = 0;
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j < v[i].degree; j++) {
-      if (i < v[i].Neighbors[j]) {
-        e[k++] = wghEdge<intT>(i, v[i].Neighbors[j], prandgen::hashi(k));
-      }
+  intT find(intT i) {
+    if (parents[i] < 0) return i;
+    intT j = parents[i];     
+    if (parents[j] < 0) return j;
+    do j = parents[j]; 
+    while (parents[j] >= 0);
+    intT tmp;
+    while ((tmp = parents[i]) != j) { 
+      parents[i] = j;
+      i = tmp;
     }
+    return j;
   }
-  return wghEdgeArray<int>(e, n, m);
-}
+
+  void link(intT u, intT v) { 
+    parents[u] = v;
+  }
+};
 
 } // end namespace
 } // end namespace
-} // end namespace
 
-#endif // _GRAPH_UTILS_INCLUDED
+#endif /*! UNION_H_ */
