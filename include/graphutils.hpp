@@ -60,7 +60,7 @@ wghEdgeArray<intT> to_weighted_edge_array(graph<intT>& G) {
   int n = G.n;
   int m = G.m;
   vertex<intT>* v = G.V;
-  edge<intT>* e = newA(edge<intT>, m);
+  wghEdge<intT>* e = newA(wghEdge<intT>, m);
 
   int k = 0;
   for (int i = 0; i < n; i++) {
