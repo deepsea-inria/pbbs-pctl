@@ -49,6 +49,9 @@ PROGRAMS=\
         bfs_bench.cpp \
         pbfs_bench.cpp \
 	mis_bench.cpp \
+	matching_bench.cpp \
+	mst_bench.cpp \
+	spanning_bench.cpp \
         sequence_data.cpp \
 
 ####################################################################
