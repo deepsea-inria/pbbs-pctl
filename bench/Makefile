@@ -71,7 +71,9 @@ include $(TOOLS_BUILD_FOLDER)/Makefile_options
 # (If extending the list, need to add cases for the definition
 # of COMPILE_OPTIONS_FOR further below, and also for "clean".
 
-MODES=manc unks paslopt paslsta pasllog
+ifndef MODES
+	MODES=manc unks paslopt paslsta pasllog
+endif
 
 # Compilation options for each mode
 

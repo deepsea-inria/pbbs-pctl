@@ -1,6 +1,6 @@
 /*!
  * \file matching_bench.cpp
- * \brief Benchmarking script for parallel bread-first search
+ * \brief Benchmarking script for parallel maximal matching
  * \date 2017
  * \copyright COPYRIGHT (c) 2015 Umut Acar, Arthur Chargueraud, and
  * Michael Rainey. All rights reserved.
@@ -27,7 +27,6 @@ pbbs::graph::edgeArray<int> to_pbbs(pasl::pctl::graph::edgeArray<int>& g) {
 
 void pbbs_pctl_call(pbbs::measured_type measured, pasl::pctl::graph::edgeArray<int>& x) {
   std::string lib_type = deepsea::cmdline::parse_or_default_string("lib_type", "pctl");
-  int source = deepsea::cmdline::parse_or_default_int("source", 0);
   if (lib_type == "pbbs") {
     pbbs::graph::edgeArray<int> y = to_pbbs(x);
     measured([&] {
