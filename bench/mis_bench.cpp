@@ -1,6 +1,6 @@
 /*!
  * \file mis_bench.cpp
- * \brief Benchmarking script for parallel bread-first search
+ * \brief Benchmarking script for parallel maximal independent set
  * \date 2017
  * \copyright COPYRIGHT (c) 2015 Umut Acar, Arthur Chargueraud, and
  * Michael Rainey. All rights reserved.
@@ -26,7 +26,6 @@ pbbs::graph::graph<int> to_pbbs(pasl::pctl::graph::graph<int>& g) {
 
 void pbbs_pctl_call(pbbs::measured_type measured, pasl::pctl::graph::graph<int>& x) {
   std::string lib_type = deepsea::cmdline::parse_or_default_string("lib_type", "pctl");
-  int source = deepsea::cmdline::parse_or_default_int("source", 0);
   if (lib_type == "pbbs") {
     pbbs::graph::graph<int> y = to_pbbs(x);
     measured([&] {
