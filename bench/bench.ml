@@ -1005,7 +1005,7 @@ let graph_renaming =
    "phased_524288_single_large", "trees-524k";
    "phased_low_50_large", "phases-50-d-5";
    "phased_mix_10_large", "phases-10-d-2";
-   "random_arity_100_large", "random-arity-100";
+   "random_arity_100_large", "rand-arity-100";
    "tree_2_512_1024_large", "trees-512-1024";
    "unbalanced_tree_trunk_first_large", "trunk-first";
    "randLocalGraph_J_5_10000000", "random";
@@ -1133,8 +1133,9 @@ let plot() =
   let pdf_file = file_tables name in
   Mk_table.build_table tex_file pdf_file (fun add ->
     let l = "S[table-format=2.2]" in (* later: use *)
-    let ls = String.concat "|" (XList.init (2 * nb_inner_loop + 2) (fun _ -> "d{3.2}")) in
-    let hdr = Printf.sprintf "l|%s" ls in
+    (*let ls = String.concat "|" (XList.init (2 * nb_inner_loop + 2) (fun _ -> "d{3.2}")) in*)
+    let ls = "c|d{3.2}|c|d{3.2}|@{}d{3.2}@{}" in
+    let hdr = Printf.sprintf "@{}l@{\,}|%s@{}" ls in
     add (Latex.tabular_begin hdr);                                    
     let _ = Mk_table.cell ~escape:false ~last:false add "" in
     ~~ List.iteri arg_inner_loop (fun i inner_loop ->
@@ -1143,17 +1144,20 @@ let plot() =
           let l = if last then "c" else "c|" in
           let label = Latex.tabular_multicol 2 l n in
           Mk_table.cell ~escape:false ~last:last add label);
-    let label = Latex.tabular_multicol 2 "c" "" in
+    (* let label = Latex.tabular_multicol 2 "c" "" in *)
+    let label = Latex.tabular_multicol 1 "c" "Ours nested" in 
     Mk_table.cell ~escape:false ~last:true add label;
-    add Latex.tabular_newline;
+    (*add Latex.tabular_newline;*)
+    add "\\\\ \cline{1-5}";
     let _ = Mk_table.cell ~escape:false ~last:false add "Graph" in
     for i=1 to nb_inner_loop do (
-      let l = "\multicolumn{1}{l|}{{\\begin{tabular}[x]{@{}c@{}}PBBS\\\\(sec.)\\end{tabular}}}" in
+      let l = "\multicolumn{1}{@{\,}l@{\,}|}{{\\begin{tabular}[x]{@{}c@{}}PBBS\\\\(sec.)\\end{tabular}}}" in
       Mk_table.cell ~escape:false ~last:false add l;
       Mk_table.cell ~escape:false ~last:false add "\multicolumn{1}{l|}{Ours}")
     done;
-    Mk_table.cell ~escape:false ~last:false add "\multicolumn{1}{l|}{{\\begin{tabular}[x]{@{}c@{}}PBBS Nested vs. \\\\PBBS Flat\\end{tabular}}}";
-    Mk_table.cell ~escape:false ~last:true add "\multicolumn{1}{l}{{\\begin{tabular}[x]{@{}c@{}}Ours Nested vs. \\\\PBBS Flat\\end{tabular}}}";
+    (*Mk_table.cell ~escape:false ~last:false add "\multicolumn{1}{l|}{{\\begin{tabular}[x]{@{}c@{}}PBBS Nested vs. \\\\PBBS Flat\\end{tabular}}}";*)
+    Mk_table.cell ~escape:false ~last:true add "\multicolumn{1}{@{}c@{}}{{\\begin{tabular}[x]{@{}c@{}}vs. \\\\PBBS flat\\end{tabular}}}";
+    (* Mk_table.cell ~escape:false ~last:true add "\multicolumn{1}{l}{{\\begin{tabular}[x]{@{}c@{}}Ours Nested vs. \\\\PBBS Flat\\end{tabular}}}";*)
     add Latex.tabular_newline;
         let all_results = Results.from_file results_file in
         let results = all_results in
@@ -1177,7 +1181,8 @@ let plot() =
               let _ = if inner_loop = "bfs" then (exectime_bfs_pbbs := b) else (exectime_pbfs_pbbs := b) in
               let e = eval_exectime_stddev env all_results results in
               let err = if arg_print_err then Printf.sprintf "(%.2f%s)" e "$\\sigma$" else "" in
-              (Printf.sprintf "%.2f %s" b err, b)
+              let str = Printf.sprintf (if b < 10. then "%.2f" else "%.1f") b in
+              (str ^ " " ^ err, b)
             in
             let _ = Mk_table.cell ~escape:false ~last:false add pbbs_str in
               let (pctl_str, grade_str) = 
@@ -1203,8 +1208,8 @@ let plot() =
               in
               Mk_table.cell ~escape:false add pctl_str;
             ());
-          let str_diff_pbbs = string_of_percentage_change (!exectime_bfs_pbbs) (!exectime_pbfs_pbbs) in
-          Mk_table.cell ~escape:false ~last:false add str_diff_pbbs;
+          (*let str_diff_pbbs = string_of_percentage_change (!exectime_bfs_pbbs) (!exectime_pbfs_pbbs) in
+          Mk_table.cell ~escape:false ~last:false add str_diff_pbbs;*)
           let str_diff_pctl = string_of_percentage_change (!exectime_bfs_pbbs) (!exectime_pbfs_pctl) in
           Mk_table.cell ~escape:false ~last:true add str_diff_pctl;
           add Latex.tabular_newline);
