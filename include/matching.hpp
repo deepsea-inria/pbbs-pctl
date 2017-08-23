@@ -48,7 +48,7 @@ parray<int> maximalMatching(graph::edgeArray<int> G) {
   parray<int> r(n, (int) INT_T_MAX);
   parray<bool> matched(n, (bool) 0);
   matchStep mStep(G.E, r.begin(), matched.begin());
-  speculative_for(mStep, 0, m, 200, 0);
+  speculative_for(mStep, 0, m, 150, 0);
   parray<int> matchingIdx = filter(r.begin(), r.end(), [&] (int i) { return i < INT_T_MAX; });
   std::cout << "number of matches = " << matchingIdx.size() << std::endl;
   return matchingIdx;
