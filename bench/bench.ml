@@ -183,7 +183,7 @@ let arg_sizes =
    | _ -> arg_sizes
 
 let sequence_benchmarks = ["blockradix_sort"; "comparison_sort"; "remove_duplicates";
-                      "suffix_array"; "convex_hull"; "nearest_neighbours"; "ray_cast"; "delaunay"; "mis"; (*"delaunay_refine"; "bfs"; *) ]
+                      "suffix_array"; "convex_hull"; "nearest_neighbours"; "ray_cast"; "delaunay"; "mis"; "mst"; "matching"; "spanning"; (*"delaunay_refine"; "bfs"; *) ]
 
 let arg_benchmarks = 
    match arg_benchmarks with
@@ -213,7 +213,7 @@ let types_list = function
   | "delaunay" -> [ "array_point2d"; ]
   | "delaunay_refine" -> [ "triangles_point2d"; ]
   | "bfs" | "pbfs" -> [ "graph"; ]
-  | "mis" -> [ "graph3"; ]
+  | "mis" | "mst" | "matching" | "spanning" -> [ "graph3"; ]
   | _ -> Pbench.error "invalid benchmark"
 
 let generators_list = function
@@ -316,7 +316,7 @@ let generators_list = function
       ]
     | _ -> Pbench.error "invalid_type")
   | "bfs" | "pbfs" -> (function n -> function typ -> [])
-  | "mis" -> (function n -> function typ -> [])
+  | "mis" | "mst" | "matching" | "spanning" -> (function n -> function typ -> [])
   | _ -> Pbench.error "invalid benchmark"
 
 let graphfile_of n = "_data/" ^ n ^ ".bin"
@@ -477,7 +477,7 @@ let mk_files_inputs benchmark : Params.t =
      (mk_infile "/home/rainey/pasl/graph/bench/graph/paths_5percent_large.adj_bin" & mk_outfile "_data/paths_5percent_large.bin") ++
      (mk_infile "/home/rainey/pasl/graph/bench/graph/phased_mix_100_large.adj_bin" & mk_outfile "_data/phased_mix_100_large.bin"))*)
     ))
-  | "mis" ->
+  | "mis" | "mst" | "matching" | "spanning" ->
          (mk_type "graph3" &
     ((*(mk_infile "data/3Dgrid_J_10000000.txt" & mk_outfile "_data/3Dgrid_J_10000000.bin") ++
      (mk_infile "data/randLocalGraph_J_5_10000000.txt" & mk_outfile "_data/randLocalGraph_J_5_10000000.bin") ++
@@ -564,6 +564,9 @@ let prog_names = function
   | "bfs" -> "bfs"
   | "pbfs" -> "pbfs"
   | "mis" -> "mis"
+  | "mst" -> "mst"
+  | "matching" -> "matching"
+  | "spanning" -> "spanning"
   | _ -> Pbench.error "invalid benchmark"
 
 let prog benchmark =
@@ -637,6 +640,9 @@ let prog_names = function
   | "bfs" -> "bfs"
   | "pbfs" -> "pbfs"
   | "mis" -> "mis"
+  | "mst" -> "mst"
+  | "matching" -> "matching"
+  | "spanning" -> "spanning"
   | x -> Pbench.error "invalid benchmark " ^ x
 
 let extensions = XCmd.parse_or_default_list_string "exts" [ "unks" ]
