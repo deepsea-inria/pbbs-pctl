@@ -182,7 +182,7 @@ let arg_sizes =
    | ["all"] -> ["small"; "medium"; "large"]
    | _ -> arg_sizes
 
-let sequence_benchmarks = ["blockradix_sort"; "comparison_sort"; (*"remove_duplicates";*)
+let sequence_benchmarks = ["blockradix_sort"; "comparison_sort"; "remove_duplicates";
                       "suffix_array"; "convex_hull"; "nearest_neighbours"; "ray_cast"; "delaunay"; (*"delaunay_refine"; "bfs"; *) ]
 
 let arg_benchmarks = 
@@ -213,6 +213,7 @@ let types_list = function
   | "delaunay" -> [ "array_point2d"; ]
   | "delaunay_refine" -> [ "triangles_point2d"; ]
   | "bfs" | "pbfs" -> [ "graph"; ]
+  | "mis" -> [ "graph3"; ]
   | _ -> Pbench.error "invalid benchmark"
 
 let generators_list = function
@@ -315,6 +316,7 @@ let generators_list = function
       ]
     | _ -> Pbench.error "invalid_type")
   | "bfs" | "pbfs" -> (function n -> function typ -> [])
+  | "mis" -> (function n -> function typ -> [])
   | _ -> Pbench.error "invalid benchmark"
 
 let graphfile_of n = "_data/" ^ n ^ ".bin"
@@ -475,6 +477,18 @@ let mk_files_inputs benchmark : Params.t =
      (mk_infile "/home/rainey/pasl/graph/bench/graph/paths_5percent_large.adj_bin" & mk_outfile "_data/paths_5percent_large.bin") ++
      (mk_infile "/home/rainey/pasl/graph/bench/graph/phased_mix_100_large.adj_bin" & mk_outfile "_data/phased_mix_100_large.bin"))*)
     ))
+  | "mis" ->
+         (mk_type "graph3" &
+    ((*(mk_infile "data/3Dgrid_J_10000000.txt" & mk_outfile "_data/3Dgrid_J_10000000.bin") ++
+     (mk_infile "data/randLocalGraph_J_5_10000000.txt" & mk_outfile "_data/randLocalGraph_J_5_10000000.bin") ++
+     (mk_infile "data/rMatGraph_J_5_10000000.txt" & mk_outfile "_data/rMatGraph_J_5_10000000.bin") ++*)
+   
+     (let mk_input graph size = mk string "infile" (sprintf "/home/rainey/new-sc15-graph/graph/bench/_data/%s_%s.adj_bin" graph size) in
+      let mk_output graph size = mk string "outfile" (sprintf "_data/%s_%s.bin" graph size) in
+      Params.concat(~~ List.map arg_sizes (fun size ->
+      Params.concat(~~ List.map graphs (fun graph ->
+        (mk_input graph size & mk_output graph size)
+     )))))(* ++*)))
   | _ -> Params.concat ([])
 
 let mk_sequence_inputs benchmark : Params.t =
@@ -549,6 +563,7 @@ let prog_names = function
   | "delaunay_refine" -> "delaunayrefine"
   | "bfs" -> "bfs"
   | "pbfs" -> "pbfs"
+  | "mis" -> "mis"
   | _ -> Pbench.error "invalid benchmark"
 
 let prog benchmark =
@@ -621,6 +636,7 @@ let prog_names = function
   | "delaunay_refine" -> "delaunayrefine"
   | "bfs" -> "bfs"
   | "pbfs" -> "pbfs"
+  | "mis" -> "mis"
   | x -> Pbench.error "invalid benchmark " ^ x
 
 let extensions = XCmd.parse_or_default_list_string "exts" [ "unks" ]
@@ -879,16 +895,12 @@ let plot() = (
   let tex_file = file_tables_src experiment_name in
   let pdf_file = file_tables experiment_name in
     Mk_table.build_table tex_file pdf_file (fun add ->
-      let ls = String.concat "|" (XList.init nb_extensions (fun _ -> "d{3.2}")) in
-      let hdr = Printf.sprintf "p{1cm}l|d{3.2}|%s|l" ls in
+      let hdr = Printf.sprintf "p{1cm}l|d{3.2}|d{3.2}" in
       add (Latex.tabular_begin hdr);                                    
       Mk_table.cell ~escape:true ~last:false add (Latex.tabular_multicol 2 "l|" "Application/input");
       Mk_table.cell ~escape:true ~last:false add "\\multicolumn{1}{l|}{\\begin{tabular}[x]{@{}c@{}}Time (s)\\\\original\\end{tabular}}";
-      ~~ List.iteri extensions (fun i ext ->
-        let last = i + 1 = nb_extensions in
-        let label = Printf.sprintf "\multicolumn{1}{l|}{%s}" (pretty_extension ext) in
-        Mk_table.cell ~escape:true ~last:false add label);
-      Mk_table.cell ~escape:true ~last:true add "Score";
+        let label = Printf.sprintf "\multicolumn{1}{l}{Ours}" in
+        Mk_table.cell ~escape:false ~last:true add label;
       add Latex.tabular_newline;
       ~~ List.iteri arg_benchmarks (fun benchmark_i benchmark ->
         Mk_table.cell add (Latex.tabular_multicol 2 "l|" (sprintf "\\textbf{%s}" (Latex.escape benchmark)));
@@ -915,10 +927,8 @@ let plot() = (
             (Printf.sprintf "%.2f %s" v err, v)
           in
           let _ = Mk_table.cell ~escape:false ~last:false add pbbs_str in
-          ~~ List.iteri extensions (fun i ext ->
-            let last = i + 1 = nb_extensions in
             let (pctl_str, grade_str) = 
-              let [col] = (mk_pctl_prog benchmark ext "pctl") env in
+              let [col] = (mk_pctl_prog benchmark "unks" "pctl") env in
               let env = Env.append env col in
               let results = Results.filter col results in
               let (_,v) = eval_relative_main env all_results results in
@@ -938,8 +948,7 @@ let plot() = (
               let vs' = Printf.sprintf "%s" vs in
               (vs', grade)
             in
-            Mk_table.cell ~escape:false ~last:false add pctl_str;
-            Mk_table.cell ~escape:false ~last:true add grade_str);
+            Mk_table.cell ~escape:false ~last:true add pctl_str;
           add Latex.tabular_newline);
         ());
       add Latex.tabular_end;
@@ -1119,13 +1128,12 @@ let plot() =
       sprintf "{\\begin{tabular}[x]{@{}c@{}}Ours\\\\($\kappa$ := %d%ssec.)\\end{tabular}}" mu "$\\mu$" *)
   in
 
-  let nb_extensions = List.length extensions in
   let nb_inner_loop = List.length arg_inner_loop in
   let tex_file = file_tables_src name in
   let pdf_file = file_tables name in
   Mk_table.build_table tex_file pdf_file (fun add ->
     let l = "S[table-format=2.2]" in (* later: use *)
-    let ls = String.concat "|" (XList.init ((nb_extensions+1) * nb_inner_loop + 2) (fun _ -> "l")) in
+    let ls = String.concat "|" (XList.init (2 * nb_inner_loop + 2) (fun _ -> "d{3.2}")) in
     let hdr = Printf.sprintf "l|%s" ls in
     add (Latex.tabular_begin hdr);                                    
     let _ = Mk_table.cell ~escape:false ~last:false add "" in
@@ -1133,22 +1141,19 @@ let plot() =
           let last = false (* i + 1 = nb_inner_loop*) in
           let n = "{" ^ (if inner_loop = "bfs" then "Flat" else "Nested") ^ "}" in
           let l = if last then "c" else "c|" in
-          let label = Latex.tabular_multicol (nb_extensions+1) l n in
+          let label = Latex.tabular_multicol 2 l n in
           Mk_table.cell ~escape:false ~last:last add label);
-    let label = Latex.tabular_multicol (nb_extensions+1) "c" "" in
+    let label = Latex.tabular_multicol 2 "c" "" in
     Mk_table.cell ~escape:false ~last:true add label;
     add Latex.tabular_newline;
     let _ = Mk_table.cell ~escape:false ~last:false add "Graph" in
     for i=1 to nb_inner_loop do (
-      let l = "{\\begin{tabular}[x]{@{}c@{}}PBBS\\\\(sec.)\\end{tabular}}" in
+      let l = "\multicolumn{1}{l|}{{\\begin{tabular}[x]{@{}c@{}}PBBS\\\\(sec.)\\end{tabular}}}" in
       Mk_table.cell ~escape:false ~last:false add l;
-      ~~ List.iteri extensions (fun ext_i ext ->
-            let last = i + ext_i + 1 = nb_extensions + nb_inner_loop in
-            let label = pretty_extension ext in
-            Mk_table.cell ~escape:false ~last:false add label))
+      Mk_table.cell ~escape:false ~last:false add "\multicolumn{1}{l|}{Ours}")
     done;
-    Mk_table.cell ~escape:false ~last:false add "{\\begin{tabular}[x]{@{}c@{}}PBBS Nested vs. \\\\PBBS Flat\\end{tabular}}";
-    Mk_table.cell ~escape:false ~last:true add "{\\begin{tabular}[x]{@{}c@{}}Ours Nested vs. \\\\PBBS Flat\\end{tabular}}";
+    Mk_table.cell ~escape:false ~last:false add "\multicolumn{1}{l|}{{\\begin{tabular}[x]{@{}c@{}}PBBS Nested vs. \\\\PBBS Flat\\end{tabular}}}";
+    Mk_table.cell ~escape:false ~last:true add "\multicolumn{1}{l}{{\\begin{tabular}[x]{@{}c@{}}Ours Nested vs. \\\\PBBS Flat\\end{tabular}}}";
     add Latex.tabular_newline;
         let all_results = Results.from_file results_file in
         let results = all_results in
@@ -1175,10 +1180,8 @@ let plot() =
               (Printf.sprintf "%.2f %s" b err, b)
             in
             let _ = Mk_table.cell ~escape:false ~last:false add pbbs_str in
-            ~~ List.iteri extensions (fun i ext ->
-              let last = i + inner_loop_i + 2 = nb_extensions + nb_inner_loop in
               let (pctl_str, grade_str) = 
-                let [col] = (mk_bfs_prog inner_loop ext "pctl") env in
+                let [col] = (mk_bfs_prog inner_loop "unks" "pctl") env in
                 let env = Env.append env col in
                 let results = Results.filter col results in
                 let (_,v) = eval_relative_main env all_results results in
@@ -1198,7 +1201,7 @@ let plot() =
                 in
                 (Printf.sprintf "%s %s" vs err, grade)
               in
-              Mk_table.cell ~escape:false add pctl_str);
+              Mk_table.cell ~escape:false add pctl_str;
             ());
           let str_diff_pbbs = string_of_percentage_change (!exectime_bfs_pbbs) (!exectime_pbfs_pbbs) in
           Mk_table.cell ~escape:false ~last:false add str_diff_pbbs;
