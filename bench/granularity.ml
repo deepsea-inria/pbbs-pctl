@@ -86,8 +86,8 @@ let thresholds =
   in
   f 10000
 
-let single_byte_threshold = List.nth thresholds 3
-let sixty_four_byte_threshold = 8
+let single_byte_threshold = List.nth thresholds 1
+let sixty_four_byte_threshold = 10
     
 let big_n = 804800000
 
@@ -331,8 +331,10 @@ let mk_algorithm_parallel_with_oracle_guided_and_seq_alt_body =
 let mk_algorithm_parallel_with_level1_reduce =
   mk string "algorithm" "parallel_with_level1_reduce"
 
+let thresholds = [5000; 10; 1]
+let mk_thresholds = mk_list int "threshold" thresholds
 let mk_algorithm_manual =
-  ExpSingleByte.mk_algorithm_parallel_with_gc & ExpThresholds.mk_thresholds
+  ExpSingleByte.mk_algorithm_parallel_with_gc & mk_thresholds
 
 let pretty_algorithm n =
   if n = "parallel_with_oracle_guided" then
