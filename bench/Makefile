@@ -75,7 +75,7 @@ include $(TOOLS_BUILD_FOLDER)/Makefile_options
 # of COMPILE_OPTIONS_FOR further below, and also for "clean".
 
 ifndef MODES
-	MODES=manc unks paslopt paslsta pasllog
+	MODES=manc unks paslopt paslsta pasllog dbg
 endif
 
 # Compilation options for each mode
@@ -88,7 +88,9 @@ COMPILE_OPTIONS_FOR_pasl=-DUSE_PASL_RUNTIME -DDISABLE_INTERRUPTS -DSTATS_IDLE $(
 
 COMMON_OPTIONS_FOR_unkm=-DTIMING -DEASYOPTIMISTIC
 
-COMPILE_OPTIONS_FOR_paslopt=$(COMPILE_OPTIONS_FOR_pasl)$(COMMON_OPTIONS_FOR_unkm)
+COMPILE_OPTIONS_FOR_dbg=$(OPTIONS_DEBUG) $(OTHER_OPTIONS) -DKAPPA100 $(COMMON_OPTIONS_FOR_unkm)
+
+COMPILE_OPTIONS_FOR_paslopt=$(COMPILE_OPTIONS_FOR_pasl) $(COMMON_OPTIONS_FOR_unkm)
 COMPILE_OPTIONS_FOR_paslsta=$(COMPILE_OPTIONS_FOR_pasl) -DSTATS $(COMMON_OPTIONS_FOR_unkm)
 COMPILE_OPTIONS_FOR_pasllog=$(COMPILE_OPTIONS_FOR_pasl) -DSTATS -DLOGGING $(COMMON_OPTIONS_FOR_unkm)
 
