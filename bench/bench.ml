@@ -901,13 +901,18 @@ let plot() = (
   let tex_file = file_tables_src experiment_name in
   let pdf_file = file_tables experiment_name in
     Mk_table.build_table tex_file pdf_file (fun add ->
-      let hdr = Printf.sprintf "p{1cm}l|d{3.2}|d{3.2}" in
+      let hdr = Printf.sprintf "p{1cm}l|d{3.2}|d{3.2}|d{3.2}|d{3.2}" in
       add (Latex.tabular_begin hdr);                                    
       Mk_table.cell ~escape:true ~last:false add (Latex.tabular_multicol 2 "l|" "Application/input");
-      Mk_table.cell ~escape:true ~last:false add "\\multicolumn{1}{l|}{\\begin{tabular}[x]{@{}c@{}}Time (s)\\\\original\\end{tabular}}";
-        let label = Printf.sprintf "\multicolumn{1}{l}{Ours}" in
-        Mk_table.cell ~escape:false ~last:true add label;
+      Mk_table.cell ~escape:true ~last:false add "\\multicolumn{1}{l|}{\\begin{tabular}[x]{@{}c@{}}Time (s)\\end{tabular}}";
+      Mk_table.cell ~escape:true ~last:true add (Latex.tabular_multicol 3 "c" "\mbox{Ours / original}");
       add Latex.tabular_newline;
+      Mk_table.cell ~escape:true ~last:false add "\\multicolumn{2}{l|}{\\begin{tabular}[x]{@{}c@{}}\\end{tabular}}";
+      Mk_table.cell ~escape:true ~last:false add "\\multicolumn{1}{l|}{\\begin{tabular}[x]{@{}c@{}}original\\end{tabular}}";
+      Mk_table.cell ~escape:true ~last:false add "\\multicolumn{1}{l|}{\\begin{tabular}[x]{@{}c@{}}Time (s)\\end{tabular}}";
+      Mk_table.cell ~escape:true ~last:false add "\\multicolumn{1}{l|}{\\begin{tabular}[x]{@{}c@{}}Idle time\\end{tabular}}";
+      Mk_table.cell ~escape:true ~last:true add "\\multicolumn{1}{l}{\\begin{tabular}[x]{@{}c@{}}Nb. threads\\end{tabular}}";
+      add Latex.tabular_newline; 
       ~~ List.iteri arg_benchmarks (fun benchmark_i benchmark ->
         Mk_table.cell add (Latex.tabular_multicol 2 "l|" (sprintf "\\textbf{%s}" (Latex.escape benchmark)));
         add Latex.tabular_newline;
@@ -923,17 +928,21 @@ let plot() = (
           let row_title = main_formatter env_rows in
           let _ = Mk_table.cell ~escape:true ~last:false add "" in
           let _ = Mk_table.cell ~escape:true ~last:false add row_title in
-          let (pbbs_str, b) = 
+          let (pbbs_str, pbbs_idle_time, pbbs_nb_threads, b) = 
             let [col] = (mk_pctl_prog benchmark "manc" "pbbs") env in
             let env = Env.append env col in
             let results = Results.filter col results in
             let v = eval_exectime env all_results results in
             let e = eval_exectime_stddev env all_results results in
             let err =  if arg_print_err then Printf.sprintf "(%.2f%s)"  e "$\\sigma$" else "" in
-            (Printf.sprintf "%.2f %s" v err, v)
+	    let util = Results.get_mean_of "utilization" results in
+	    let idle_time = util *. v in
+	    let nb_threads = Results.get_mean_of "nb_threads_alloc" results in
+	    let nb_threads = if nb_threads = 0. then 1. else nb_threads in
+            (Printf.sprintf "%.2f %s" v err, idle_time, nb_threads, v)
           in
           let _ = Mk_table.cell ~escape:false ~last:false add pbbs_str in
-            let (pctl_str, grade_str) = 
+            let (pctl_str, grade_str, idle_time_str, nb_threads_str) = 
               let [col] = (mk_pctl_prog benchmark "unks" "pctl") env in
               let env = Env.append env col in
               let results = Results.filter col results in
@@ -952,9 +961,19 @@ let plot() = (
                   Printf.sprintf "$\\times^{%.0f}$" grade
               in
               let vs' = Printf.sprintf "%s" vs in
-              (vs', grade)
+	      let oracle_idle_time = 
+                let util = Results.get_mean_of "utilization" results in
+		util *. v
+              in
+	      let idle_time_oracle_by_pbbs_str = string_of_percentage_change pbbs_idle_time oracle_idle_time in
+	      let oracle_nb_threads = Results.get_mean_of "nb_threads_alloc" results in
+	      let oracle_nb_threads = if oracle_nb_threads = 0. then 1. else oracle_nb_threads in
+	      let nb_threads_oracle_by_pbbs_str = string_of_percentage_change pbbs_nb_threads oracle_nb_threads in
+              (vs', grade, idle_time_oracle_by_pbbs_str, nb_threads_oracle_by_pbbs_str)
             in
-            Mk_table.cell ~escape:false ~last:true add pctl_str;
+            Mk_table.cell ~escape:false ~last:false add pctl_str;
+	    Mk_table.cell ~escape:false ~last:false add idle_time_str;
+	    Mk_table.cell ~escape:false ~last:true add nb_threads_str;
           add Latex.tabular_newline);
         ());
       add Latex.tabular_end;

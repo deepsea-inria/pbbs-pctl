@@ -74,7 +74,13 @@ hwloc_topology_t    topology;
       // hack that seems to be required to initialize cilk runtime cleanly
       cilk_spawn seq_fib(2);
       cilk_sync;
+      __cilkg_take_snapshot_for_stats();
       body();
+      /* recall: if using the custom cilk runtime, need to set the
+       * environment variable as such:
+       *   export LD_LIBRARY_PATH=/home/rainey/cilk-plus-rts/lib:$LD_LIBRARY_PATH
+       */
+      __cilkg_dump_encore_stats_to_stderr();
     #elif defined(USE_PASL_RUNTIME)
       pasl::sched::threaddag::launch(pasl::sched::native::new_multishot_by_lambda(body));
     #else
